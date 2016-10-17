@@ -1,0 +1,37 @@
+---
+- name: Check whether swap file already exists.
+  stat:
+    path: /swapfile
+  register: existing_swapfile_result
+
+- name: Allocate swapfile.
+  command: "fallocate -l {{ zcash_swapfile_size }} /swapfile"
+  when: not existing_swapfile_result.stat.exists
+
+- name: Set permissions of swapfile.
+  file:
+    path: /swapfile
+    owner: root
+    group: root
+    mode: "0600"
+    state: touch
+
+- name: Set up the swapfile.
+  command: mkswap /swapfile
+  when: not existing_swapfile_result.stat.exists
+
+- name: Enable the swapfile.
+  command: swapon /swapfile
+  when: not existing_swapfile_result.stat.exists
+
+- name: Make the swapfile persistent.
+  lineinfile:
+    dest: /etc/fstab
+    regexp: "^/swapfile"
+    line: "/swapfile	none	swap	sw	0	0"
+
+- name: Set vm.swappiness in sysctl.
+  sysctl:
+    name: vm.swappiness
+    value: "{{ zcash_vm_swappiness }}"
+    state: present

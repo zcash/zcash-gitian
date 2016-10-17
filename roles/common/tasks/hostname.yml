@@ -1,0 +1,11 @@
+---
+- name: Set hostname.
+  hostname:
+    name: "zcash-build"
+
+- name: Build /etc/hosts file.
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '^127.0.1.1'
+    line: "127.0.1.1	zcash-build"
+    state: present

@@ -1,0 +1,8 @@
+---
+- include: update_everything.yml
+- include: packages.yml
+- include: make_swap.yml
+- include: add_github_ssh_hostkey.yml
+- include: hostname.yml
+- include: motd.yml
+- include: auto_upgrades.yml

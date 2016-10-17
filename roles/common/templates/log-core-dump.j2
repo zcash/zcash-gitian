@@ -1,0 +1,37 @@
+#!/bin/bash
+# Handler for processing coredumps. Should be invoked only by system
+# via the `kernel.core_pattern` in pipe mode, not run interactively.
+# It assumes that filename, executable, and uid will be passed as args.
+
+
+coredump_filename=$1
+coredump_executable=$2
+coredump_uid=$3
+
+# Ensure we're running as root.
+if [ $EUID -ne 0 ]; then
+  echo "Only root may run this script." 1>&2
+  exit 1
+fi
+
+# Ensure script is running as part of pipe, receiving stdin.
+# If script is run from an interactive terminal, exit.
+if [ -t 0 ]; then
+  echo "No stdin pipe detected, exiting." 1>&2
+  exit 1
+fi
+
+# Check for required arguments for logging and dumping core.
+if [ -z $coredump_filename ] || [ -z $coredump_executable ] || [ -z $coredump_uid ]; then
+  echo "Missing required arguments for handling core dump." 1>&2
+  exit 1
+fi
+
+# Log coredump event to syslog.
+/usr/bin/logger "Core dump detected: ${coredump_executable} owned by uid ${coredump_uid}"
+
+# Ensure files are 0600 root:root.
+umask 277
+
+# Redirect core dump content from stdin to target file.
+cat - > "{{ coredumps_directory }}/${coredump_filename}"

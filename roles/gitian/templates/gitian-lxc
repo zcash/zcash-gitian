@@ -1,0 +1,3 @@
+{{ gitian_user }} ALL=(ALL:ALL) NOPASSWD: ALL
+%sudo ALL=NOPASSWD: /usr/bin/lxc-start
+%sudo ALL=NOPASSWD: /usr/bin/lxc-execute

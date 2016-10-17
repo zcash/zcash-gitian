@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  author: Kevin Gallagher (@ageis)
+  description: Sets up a deterministic Gitian builder VM for Zcash.
+  company: Zcash
+  galaxy_tags: []
+  license: GPLv2
+  min_ansible_version: 2.1.2
+  platforms:
+    - name: Debian
+      versions:
+      - jessie
+  categories:
+    - system
+dependencies: []

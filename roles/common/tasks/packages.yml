@@ -1,0 +1,8 @@
+---
+- name: Install some common packages.
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items: "{{ zcash_common_packages }}"

@@ -1,0 +1,17 @@
+---
+- name: Apply the Zcash Gitian builder role.
+  become: yes
+  hosts: localhost:zcash-build
+  vars:
+    zcash_git_repo_url: https://github.com/zcash/zcash
+    zcash_version: v1.0.0-rc1
+    gpg_key_name: ''
+    git_name: ''
+    git_email: ''
+    gpg_key_id: '' # optional
+    ssh_key_name: '' # optional
+  roles:
+    - role: common
+      tags: common
+    - role: gitian
+      tags: gitian

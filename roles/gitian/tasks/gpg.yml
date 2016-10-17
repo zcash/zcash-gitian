@@ -1,0 +1,55 @@
+---
+- name: Check that the secret key exists.
+  local_action: "command gpg2 --list-secret-keys | grep {{ gpg_key_id }}"
+  register: gpg_list_keys_result
+  environment:
+    GNUPGHOME: "{{ lookup('env', 'HOME') }}/.gnupg"
+
+- name: Export the GPG private key from the local keyring.
+  local_action: "command gpg2 --armor --export-secret-key {{ gpg_key_id }}"
+  register: gpg_private_key
+  changed_when: false
+  environment:
+    GNUPGHOME: "{{ lookup('env', 'HOME') }}/.gnupg"
+  when: gpg_list_keys_result.stdout != ''
+  no_log: True
+
+- name: Write the private key to a temp file.
+  copy:
+    dest: "/tmp/{{ gpg_key_id }}.sec"
+    content: "{{ gpg_private_key.stdout }}"
+    owner: "{{ gitian_user }}"
+    group: "{{ gitian_user }}"
+    mode: "0400"
+  when: gpg_list_keys_result.stdout != ''
+  no_log: True
+
+- name: Make GnuPG home directory.
+  file:
+    path: "/home/{{ gitian_user }}/.gnupg"
+    state: directory
+    mode: "0700"
+    owner: "{{ gitian_user }}"
+    group: "{{ gitian_user }}"
+
+- name: Write GnuPG configuration.
+  template:
+    src: gpg.conf
+    dest: "/home/{{ gitian_user }}/.gnupg/gpg.conf"
+    mode: "0600"
+    owner: "{{ gitian_user }}"
+    group: "{{ gitian_user }}"
+
+- name: Import the GPG private key to the Vagrant user.
+  command: "gpg2 --import /tmp/{{ gpg_key_id }}.sec"
+  become_user: "{{ gitian_user }}"
+  when: gpg_list_keys_result.stdout != '' and gpg_private_key.stdout is defined
+  no_log: True
+  register: gpg_output
+  changed_when: "'secret key imported' in gpg_output.stderr"
+  failed_when: gpg_output.rc != 0 and 'already in secret keyring' not in gpg_output.stderr
+
+- name: Clean up secret key file in /tmp.
+  file:
+    path: "/tmp/{{ gpg_key_id }}.sec"
+    state: absent

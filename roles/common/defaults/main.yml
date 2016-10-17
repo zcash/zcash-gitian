@@ -1,0 +1,19 @@
+---
+zcash_swapfile_size: 2G
+zcash_vm_swappiness: 10
+zcash_common_packages:
+  - apt-show-versions
+  - apt-transport-https
+  - curl
+  - git-core
+  - haveged
+  - htop
+  - ntp
+  - ntpdate
+  - python-pip
+  - rsync
+  - screen
+  - sudo
+  - tmux
+  - tree
+  - vim

@@ -1,0 +1,50 @@
+---
+- name: Check if sudo is installed.
+  command: dpkg-query -l sudo
+  register: sudo_installed_result
+  # dpkg returns 1 if package not found,
+  # so disable the scary red text by setting no-fail mode.
+  # The output from the command is checked in the next task.
+  failed_when: false
+  changed_when: false
+  # Necessary to support --check mode
+  always_run: true
+
+- name: Install sudo.
+  apt:
+    name: sudo
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  when: "'no packages found' in sudo_installed_result.stderr"
+
+- name: Update apt cache.
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install aptitude.
+  apt:
+    name: aptitude
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Perform aptitude safe-upgrade.
+  apt:
+    upgrade: safe
+    update_cache: yes
+    cache_valid_time: 3600
+  tags: apt
+
+- name: Remove unneeded packages.
+  command: apt-get autoremove -y
+  register: autoremove_result
+  changed_when: "'0 upgraded' not in autoremove_result.stdout"
+  tags: apt
+
+- name: Clean the apt cache.
+  command: apt-get autoclean
+  register: autoclean_result
+  changed_when: "'Del' in autoclean_result.stdout"
+  tags: apt

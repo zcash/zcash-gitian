@@ -1,0 +1,6 @@
+Unattended-Upgrade::Origins-Pattern {
+        "o=Debian,n=jessie-updates";
+        "o=Debian,n=jessie,l=Debian-Security";
+};
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+Unattended-Upgrade::Automatic-Reboot "false";

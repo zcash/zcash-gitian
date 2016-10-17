@@ -1,0 +1,14 @@
+---
+- name: Look up GitHub SSH host key.
+  local_action: command ssh-keyscan -t rsa github.com
+  register: github_ssh_keyscan_result
+  changed_when: false
+  always_run: yes
+  run_once: yes
+  become: no
+
+- name: Ensure github.com is a known host.
+  known_hosts:
+    path: /etc/ssh/ssh_known_hosts
+    name: github.com
+    key: "{{ github_ssh_keyscan_result.stdout }}"

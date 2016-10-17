@@ -1,0 +1,223 @@
+---
+- name: Check that custom git variables are defined.
+  assert:
+    that:
+      - "gpg_key_name is defined"
+      - "gpg_key_name != ''"
+      - "git_name is defined"
+      - "git_name != ''"
+      - "git_email is defined"
+      - "git_email != ''"
+    msg: Please set your gpg_key_name, git_name and git_email in gitian.yml.
+
+- name: Install Gitian build dependencies.
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - apt-cacher-ng
+    - bridge-utils
+    - curl
+    - debootstrap
+    - git-core
+    - kpartx
+    - make
+    - parted
+    - python-cheetah
+    - qemu-utils
+    - ruby
+    - sudo
+
+- name: Set up the Gitian build user with sudo.
+  user:
+    name: "{{ gitian_user }}"
+    shell: /bin/bash
+    groups: sudo
+    state: present
+
+- name: Install /etc/rc.local.
+  template:
+    src: rc.local
+    dest: /etc/rc.local
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Enable IP forwarding, etc.
+  sysctl:
+    name: "{{ item }}"
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+  with_items:
+    - net.ipv4.ip_forward
+    - kernel.unprivileged_userns_clone
+
+- name: Enable cgroup clone_children.
+  command: "echo 1 > /sys/fs/cgroup/cpuset/cgroup.clone_children"
+
+- name: Add cgroup fs for LXC.
+  lineinfile:
+    dest: /etc/fstab
+    regexp: '^cgroup'
+    line: 'cgroup  /sys/fs/cgroup  cgroup  defaults  0   0'
+    state: present
+
+- name: Install profile with environment variables.
+  template:
+    src: profile
+    dest: "/home/{{ gitian_user }}/.profile"
+    owner: "{{ gitian_user }}"
+    group: "{{ gitian_user }}"
+    mode: "0644"
+
+- name: Install sudoers file for LXC.
+  template:
+    src: gitian-lxc
+    dest: /etc/sudoers.d/gitian-lxc
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Create directory for downloaded files.
+  file:
+    state: directory
+    dest: "{{ download_directory }}"
+    mode: "0755"
+
+- name: Download and extract VM builder source code.
+  unarchive:
+    src: "{{ vm_builder_url }}"
+    dest: "{{ download_directory }}"
+    copy: no
+    remote_src: yes
+
+- name: Install VM builder Python module.
+  command: "python setup.py install"
+  args:
+    chdir: "/tmp/gitian/{{ vm_builder_name }}"
+
+- name: Install lxc-net configuration.
+  template:
+    src: lxc-net
+    dest: /etc/default/lxc-net
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Set up jessie-backports.
+  apt_repository:
+    repo: 'deb http://httpredir.debian.org/debian/ jessie-backports main'
+    state: present
+
+- name: Install updated version of LXC.
+  apt:
+    name: lxc
+    state: latest
+    default_release: jessie-backports
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Clone git repository for Gitian builder.
+  git:
+    repo: "https://github.com/ageis/gitian-builder"
+    dest: "/home/{{ gitian_user }}/gitian-builder"
+    version: "master"
+    force: yes
+    depth: 1
+  ignore_errors: yes
+  become_user: "{{ gitian_user }}"
+
+- name: Clone git repository for Zcash.
+  git:
+    repo: "{{ zcash_git_repo_url }}"
+    dest: "/home/{{ gitian_user }}/zcash"
+    version: "{{ zcash_version }}"
+    force: yes
+    depth: 1
+  ignore_errors: yes
+  become_user: "{{ gitian_user }}"
+
+- name: Clone git repository for Gitian signatures.
+  git:
+    repo: "{{ zcash_gitian_sigs_repo }}"
+    dest: "/home/{{ gitian_user }}/gitian.sigs"
+    version: master
+    force: yes
+    depth: 1
+  ignore_errors: yes
+  become_user: "{{ gitian_user }}"
+
+- name: Reboot.
+  shell: sleep 3 && shutdown -r now "Rebooting..."
+  async: 1
+  poll: 0
+  ignore_errors: true
+  become: yes
+
+- name: Figure out the Vagrant VM's SSH port number.
+  local_action: "shell vagrant ssh-config zcash-build | grep Port | awk {'print $2'}"
+  register: vagrant_ssh_port
+  become: no
+
+- name: Wait for virtual machine to come back.
+  local_action: wait_for
+    host={{ ansible_host | default('localhost') }}
+    port={{ vagrant_ssh_port.stdout | int }}
+    delay=30
+    state=started
+  become: no
+
+- name: Wait extra time for server to come back up.
+  pause:
+    seconds: 10
+
+- name: Set Git username.
+  command: "git config --global user.name '{{ git_name }}'"
+  become_user: "{{ gitian_user }}"
+
+- name: Set Git email address.
+  command: "git config --global user.email '{{ git_email }}'"
+  become_user: "{{ gitian_user }}"
+
+- name: Copy Gitian build script.
+  template:
+    src: gitian-build.sh
+    dest: "/home/{{ gitian_user }}/gitian-build.sh"
+    owner: "{{ gitian_user }}"
+    group: "{{ gitian_user }}"
+    mode: "0755"
+  tags: script
+
+- name: Check for presence of Gitian LXC image.
+  stat:
+    path: "/home/{{ gitian_user }}/gitian-builder/base-jessie-amd64"
+  register: gitian_lxc_image
+
+- name: Set up the Gitian LXC image.
+  shell: "source ~/.profile && /home/{{ gitian_user }}/gitian-builder/bin/make-base-vm --lxc --arch amd64 --distro debian --suite jessie"
+  when: gitian_lxc_image.stat.exists == false
+  become: yes
+  become_user: "{{ gitian_user }}"
+  args:
+    chdir: "/home/{{ gitian_user }}/gitian-builder"
+    executable: /bin/bash
+
+- include: gpg.yml
+  tags: gpg
+  become: no
+  when: gpg_key_id is defined and gpg_key_id != ''
+
+- include: ssh.yml
+  tags: ssh
+  become: no
+  when: ssh_key_name is defined and ssh_key_name != ''
+
+- name: Display help message.
+  debug:
+    msg: >-
+      Finished bootstrapping the Gitian host VM!
+      To enter the environment, run `vagrant ssh zcash-build`
+      And then use `./gitian-build.sh` to kick off a build.
