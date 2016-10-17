@@ -10,7 +10,7 @@
       - "git_email != ''"
     msg: Please set your gpg_key_name, git_name and git_email in gitian.yml.
 
-- name: Install Gitian build dependencies.
+- name: Install Gitian dependencies.
   apt:
     name: "{{ item }}"
     state: present
@@ -122,12 +122,10 @@
 
 - name: Clone git repository for Gitian builder.
   git:
-    repo: "https://github.com/ageis/gitian-builder"
+    repo: "{{ gitian_builder_url }}"
     dest: "/home/{{ gitian_user }}/gitian-builder"
     version: "master"
     force: yes
-    depth: 1
-  ignore_errors: yes
   become_user: "{{ gitian_user }}"
 
 - name: Clone git repository for Zcash.
@@ -136,8 +134,6 @@
     dest: "/home/{{ gitian_user }}/zcash"
     version: "{{ zcash_version }}"
     force: yes
-    depth: 1
-  ignore_errors: yes
   become_user: "{{ gitian_user }}"
 
 - name: Clone git repository for Gitian signatures.
@@ -146,8 +142,6 @@
     dest: "/home/{{ gitian_user }}/gitian.sigs"
     version: master
     force: yes
-    depth: 1
-  ignore_errors: yes
   become_user: "{{ gitian_user }}"
 
 - name: Reboot.
@@ -170,7 +164,7 @@
     state=started
   become: no
 
-- name: Wait extra time for server to come back up.
+- name: Wait extra time for VM to come back up.
   pause:
     seconds: 10
 
@@ -220,4 +214,4 @@
     msg: >-
       Finished bootstrapping the Gitian host VM!
       To enter the environment, run `vagrant ssh zcash-build`
-      And then use `./gitian-build.sh` to kick off a build.
+      and then use `./gitian-build.sh` to kick off a build.
