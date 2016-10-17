@@ -1,5 +1,5 @@
 ---
-zcash_swapfile_size: 2G
+zcash_swapfile_size: 1G
 zcash_vm_swappiness: 10
 zcash_common_packages:
   - apt-show-versions
