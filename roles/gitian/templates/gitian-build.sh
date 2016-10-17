@@ -207,11 +207,11 @@ then
         then
 	    # Commit to gitian.sigs repo
             echo ""
-            echo "Committing ${VERSION} Unsigned Sigs"
+            echo "Committing ${VERSION} Signatures"
             echo ""
             pushd gitian.sigs
             git add ${VERSION}/${SIGNER}
-            git commit -a -m "Add ${VERSION} unsigned sigs for ${SIGNER}"
+            git commit -a -m "Add ${VERSION} signatures for ${SIGNER}"
             popd
         fi
 fi
@@ -222,7 +222,7 @@ then
 	# Linux
 	pushd ./gitian-builder
 	echo ""
-	echo "Verifying v${VERSION} Linux"
+	echo "Verifying ${VERSION} Linux"
 	echo ""
 	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION} ../zcash/contrib/gitian-descriptors/gitian-linux.yml
 	popd
@@ -240,9 +240,9 @@ then
             # Commit Sigs
             pushd gitian.sigs
             echo ""
-            echo "Committing ${VERSION} Signed Sigs"
+            echo "Committing ${VERSION} Signed Binary Signatures"
             echo ""
-            git commit -a -m "Add ${VERSION} signed binary sigs for ${SIGNER}"
+            git commit -a -m "Add ${VERSION} signed binary signatures for ${SIGNER}"
             popd
         fi
 fi
