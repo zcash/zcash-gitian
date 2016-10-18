@@ -1,6 +1,6 @@
 ---
 zcash_swapfile_size: 1G
-zcash_vm_swappiness: 10
+zcash_vm_swappiness: 1
 zcash_common_packages:
   - apt-show-versions
   - apt-transport-https

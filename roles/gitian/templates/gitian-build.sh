@@ -16,7 +16,7 @@ VERSION={{ zcash_version }}
 commit=false
 url={{ zcash_git_repo_url }}
 proc=2
-mem=3072
+mem=3584
 lxc=true
 scriptName=$(basename -- "$0")
 signProg="gpg2 --detach-sign"
@@ -40,7 +40,7 @@ Options:
 -s|--sign	Make signed binaries
 -B|--buildsign	Build both signed and unsigned binaries
 -j		Number of processes to use. Default 2
--m		Memory to allocate in MiB. Default 3072
+-m		Memory to allocate in MiB. Default 3584
 --detach-sign   Create the assert file for detached signing. Will not commit anything.
 --no-commit     Do not commit anything to git
 -h|--help	Print this help message

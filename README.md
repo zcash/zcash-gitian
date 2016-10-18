@@ -58,7 +58,9 @@ Building Zcash
 
 The output from `gbuild` is informative. There are some common warnings which can be ignored, e.g. if you get an intermittent privileges error related to LXC then just execute the script again. The most important thing is that one reaches the step which says `Running build script (log in var/build.log)`. If not, then something else is wrong and you should let us know.
 
-Take a look at the variables near the top of `~/gitian-build.sh` and get familiar with its functioning, as it can handle most tasks. It's also a good idea to `git pull` on this repository in order to obtain updates (while using `git stash` to save one's customizations to `gitian.yml`) and re-run the entire VM provisioning for each release to ensure current and consistent state for your builder.
+Take a look at the variables near the top of `~/gitian-build.sh` and get familiar with its functioning, as it can handle most tasks. I
+
+It's also a good idea to regularly `git pull` on this repository to obtain updates (while using `git stash` to save one's customizations to `gitian.yml`) and re-run the entire VM provisioning for each release, to ensure current and consistent state for your builder.
 
 Generating and uploading signatures
 -----------------------------------
