@@ -14,14 +14,30 @@ Requirements
 
 4GB of RAM, at least two cores
 
-It relies upon [Vagrant](https://www.vagrantup.com/) and [VirtualBox](https://www.virtualbox.org/) plus [Ansible](https://www.ansible.com/), which can be installed via Python's [pip](https://bootstrap.pypa.io/get-pip.py). Try `sudo pip install -U ansible`.
+It relies upon [Vagrant](https://www.vagrantup.com/) and [VirtualBox](https://www.virtualbox.org/) plus [Ansible](https://www.ansible.com/).
 
-If you use Linux, then we recommend obtaining VirtualBox through your package manager instead of the Oracle website. Grab the latest version of Vagrant from [their website](https://www.vagrantup.com/downloads.html).
+#### VirtualBox
+
+If you use Linux, we recommend obtaining VirtualBox through your package manager instead of the Oracle website.
+
+    sudo apt-get install linux-headers-amd64 virtualbox
+
+Linux kernel headers are required to setup the `/dev/vboxdrv` device and VirtualBox kernel module via `virtualbox-dkms`.
+
+#### Vagrant
+
+Download the latest version of Vagrant from [their website](https://www.vagrantup.com/downloads.html).
+
+#### Ansible
+
+Install prerequisites first: `sudo apt-get install build-essential libssl-dev libffi-dev python python-dev python-pip`. Then run:
+
+    sudo pip install -U ansible
 
 How to get started
 ------------------
 
-### Settings in gitian.yml
+### Edit settings in gitian.yml
 
 ```yaml
 # URL of repository containing Zcash source code.
@@ -50,6 +66,8 @@ Make sure VirtualBox, Vagrant and Ansible are installed, and then run:
 
 This will provision a Gitian host virtual machine that uses a Linux container (LXC) guest to perform the actual builds.
 
+Use `git stash` to save one's local customizations to `gitian.yml`.
+
 Building Zcash
 --------------
 
@@ -58,9 +76,9 @@ Building Zcash
 
 The output from `gbuild` is informative. There are some common warnings which can be ignored, e.g. if you get an intermittent privileges error related to LXC then just execute the script again. The most important thing is that one reaches the step which says `Running build script (log in var/build.log)`. If not, then something else is wrong and you should let us know.
 
-Take a look at the variables near the top of `~/gitian-build.sh` and get familiar with its functioning, as it can handle most tasks. I
+Take a look at the variables near the top of `~/gitian-build.sh` and get familiar with its functioning, as it can handle most tasks.
 
-It's also a good idea to regularly `git pull` on this repository to obtain updates (while using `git stash` to save one's customizations to `gitian.yml`) and re-run the entire VM provisioning for each release, to ensure current and consistent state for your builder.
+It's also a good idea to regularly `git pull` on this repository to obtain updates and re-run the entire VM provisioning for each release, to ensure current and consistent state for your builder.
 
 Generating and uploading signatures
 -----------------------------------
