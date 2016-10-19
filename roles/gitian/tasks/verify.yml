@@ -1,0 +1,35 @@
+---
+- name: Install expect and GnuPG v2.
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - expect
+    - gnupg2
+
+- name: Copy trust-setting script.
+  copy:
+    src: set-trust.exp
+    dest: /usr/local/bin/set-trust.exp
+    mode: "0755"
+
+- name: Download Zcash developer public keys from website.
+  become: yes
+  get_url:
+    url: "https://z.cash/gpg-pubkeys/{{ item.name }}.asc"
+    dest: "/tmp/{{ item.id }}.asc"
+    owner: "{{ gitian_user }}"
+    group: "{{ gitian_user }}"
+    mode: "0644"
+  with_items: "{{ zcash_developer_pubkeys }}"
+
+- name: Import Zcash developer public keys.
+  command: "gpg --import /tmp/{{ item.id }}.asc"
+  become_user: "{{ gitian_user }}"
+  with_items: "{{ zcash_developer_pubkeys }}"
+
+- name: Set Zcash developer public keys to ultimately trusted.
+  command: "set-trust.exp {{ item.id }}"
+  with_items: "{{ zcash_developer_pubkeys }}"
+  become_user: "{{ gitian_user }}"
+

@@ -42,6 +42,9 @@ gpg_key_id: ''
 
 # OPTIONAL set to import your SSH key into the VM. Example: id_rsa, id_ed25519. Assumed to reside in ~/.ssh
 ssh_key_name: ''
+
+# Set to true in order to verify signed git tags while cloning Zcash. Developer public keys will be imported to the Vagrant user's GPG keyring.
+git_verify_sigs: false
 ```
 
 Make sure VirtualBox, Vagrant and Ansible are installed, and then run:
