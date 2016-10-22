@@ -10,6 +10,7 @@
     git_email: ''
     gpg_key_id: '' # optional
     ssh_key_name: '' # optional
+    git_verify_sigs: true
   roles:
     - role: common
       tags: common

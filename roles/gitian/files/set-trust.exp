@@ -1,7 +1,0 @@
-#!/usr/bin/expect
-
-set timeout 5
-spawn /usr/bin/gpg2 --edit-key $argv 0 --yes trust quit
-expect "Your decision? " { send "5\n" }
-expect "Do you really want to set this key to ultimate trust? (y/N) " { send "y\n" }
-interact
