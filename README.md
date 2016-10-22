@@ -58,9 +58,6 @@ gpg_key_id: ''
 
 # OPTIONAL set to import your SSH key into the VM. Example: id_rsa, id_ed25519. Assumed to reside in ~/.ssh
 ssh_key_name: ''
-
-# Set to true in order to verify signed git tags while cloning Zcash. Developer public keys will be imported to the Vagrant user's GPG keyring.
-git_verify_sigs: false
 ```
 
 Make sure VirtualBox, Vagrant and Ansible are installed, and then run:
@@ -88,6 +85,8 @@ Generating and uploading signatures
 
 After the build successfully completes, `gsign` will be called. Commit and push your signatures (both the .assert and .assert.sig files) to the [zcash/gitian.sigs](https://github.com/zcash/gitian.sigs) repository, or if that's not possible then create a pull request.
 
+Signatures can be verified by running `gitian-build.sh --verify`, but set `build=false` in the script to skip building. Run a `git pull` beforehand on `gitian.sigs` so you have the latest. The provisioning includes a task which imports Zcash developer public keys to the Vagrant user's keyring and sets them to ultimately trusted, but they can also be found at `contrib/gitian-downloader` within the Zcash source repository.
+
 Working with GPG and SSH
 --------------------------
 
@@ -109,7 +108,7 @@ Vagrant synced folders may also work natively with `vboxfs` if you install Virtu
 Copying files
 -------------
 
-You can use the provided script `scp.sh`. Another way to do it is with a plugin.
+The easiest way to do it is with a plugin.
 
     vagrant plugin install vagrant-scp
 

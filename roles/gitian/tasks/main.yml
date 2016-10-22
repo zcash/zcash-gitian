@@ -129,9 +129,8 @@
     force: yes
   become_user: "{{ gitian_user }}"
 
-- include: verify.yml
-  tags: verify
-  when: git_verify_sigs == true
+- include: keys.yml
+  tags: keys
 
 - name: Clone git repository for Zcash.
   git:
@@ -139,7 +138,6 @@
     dest: "/home/{{ gitian_user }}/zcash"
     version: "{{ zcash_version }}"
     force: yes
-    verify_commit: "{% if git_verify_sigs == true %}yes{% else %}no{% endif %}"
   become_user: "{{ gitian_user }}"
 
 - name: Clone git repository for Gitian signatures.
