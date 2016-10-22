@@ -21,6 +21,7 @@
     - curl
     - debootstrap
     - git-core
+    - gnupg2
     - kpartx
     - make
     - parted
@@ -127,6 +128,9 @@
     version: "master"
     force: yes
   become_user: "{{ gitian_user }}"
+
+- include: keys.yml
+  tags: keys
 
 - name: Clone git repository for Zcash.
   git:

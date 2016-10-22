@@ -9,3 +9,16 @@ zcash_gitian_sigs_repo: https://github.com/zcash/gitian.sigs
 zcash_version: master
 gitian_host_ip: 10.0.2.15
 lxc_guest_ip: 10.0.3.5
+zcash_developer_pubkeys:
+  - name: nathan
+    id: ED417FBE79C99E8C
+  - name: daira
+    id: 067F492098CF2762
+  - name: sean
+    id: 95684257D8F8B031
+  - name: jack
+    id: 0EC51FCDA94FB53E
+  - name: simon
+    id: C8F49C081F3AC6C4
+  - name: kevin
+    id: B604C32AD5D7C6D8
