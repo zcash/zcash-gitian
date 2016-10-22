@@ -21,6 +21,7 @@
     - curl
     - debootstrap
     - git-core
+    - gnupg2
     - kpartx
     - make
     - parted
