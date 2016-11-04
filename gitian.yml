@@ -4,7 +4,7 @@
   hosts: localhost:zcash-build
   vars:
     zcash_git_repo_url: https://github.com/zcash/zcash
-    zcash_version: v1.0.0-rc2
+    zcash_version: v1.0.1
     gpg_key_name: ''
     git_name: ''
     git_email: ''
