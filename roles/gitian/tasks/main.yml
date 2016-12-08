@@ -92,7 +92,6 @@
   unarchive:
     src: "{{ vm_builder_url }}"
     dest: "{{ download_directory }}"
-    copy: no
     remote_src: yes
 
 - name: Install VM builder Python module.
