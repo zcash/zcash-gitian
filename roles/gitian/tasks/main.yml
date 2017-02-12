@@ -23,6 +23,7 @@
     - git-core
     - gnupg2
     - kpartx
+    - lintian
     - make
     - parted
     - python-cheetah
