@@ -1,0 +1,21 @@
+---
+- name: Set default EDITOR to vim.
+  command: update-alternatives --set editor /usr/bin/vim.basic
+
+- name: Enable syntax highlighting.
+  lineinfile:
+    dest: /etc/vim/vimrc
+    regexp: "^\"syntax on"
+    line: "syntax on"
+
+- name: Enable filetype detection.
+  lineinfile:
+    dest: /etc/vim/vimrc
+    regexp: "^\"filetype on"
+    line: "filetype on"
+
+- name: Disable swap files.
+  lineinfile:
+    dest: /etc/vim/vimrc
+    regexp: "^\"set noswapfile"
+    line: "set noswapfile"

@@ -5,4 +5,5 @@
 - include: add_github_ssh_hostkey.yml
 - include: hostname.yml
 - include: motd.yml
+- include: vim.yml
 - include: auto_upgrades.yml
