@@ -4,9 +4,6 @@ Vagrant.configure(2) do |config|
 
   config.ssh.forward_agent = true
   config.disksize.size = '16GB'
-  config.vm.provision "shell", inline: <<-SHELL
-    sudo resize2fs /dev/sda1
-  SHELL
   config.vm.define 'zcash-build', autostart: false do |gitian|
     gitian.vm.box = "debian/jessie64"
     gitian.vm.network "forwarded_port", guest: 22, host: 2200, auto_correct: true
@@ -15,6 +12,17 @@ Vagrant.configure(2) do |config|
       ansible.verbose = 'v'
       ansible.raw_arguments = Shellwords.shellsplit(ENV['ANSIBLE_ARGS']) if ENV['ANSIBLE_ARGS']
     end
+    gitian.vm.provision "shell", inline: <<-SHELL
+      sudo swapoff -a
+      sudo /sbin/parted --script /dev/sda rm 5
+      sudo /sbin/parted --script /dev/sda rm 2
+      cat <<EOF | sudo parted ---pretend-input-tty /dev/sda
+unit % resizepart 1
+yes
+100
+EOF
+      sudo resize2fs /dev/sda1
+      SHELL
     gitian.vm.provider "virtualbox" do |v|
       v.name = "zcash-build"
       v.memory = 4096
