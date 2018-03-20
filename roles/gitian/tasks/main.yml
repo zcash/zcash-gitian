@@ -25,7 +25,6 @@
     - kpartx
     - lintian
     - make
-    - parted
     - python-cheetah
     - qemu-utils
     - ruby

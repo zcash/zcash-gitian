@@ -17,12 +17,16 @@
     state: absent
 
 - name: Remove partition number 5
-  command: parted --script /dev/sda rm 5
-  become: yes
+  parted:
+    device: /dev/sda
+    number: 5
+    state: absent
 
 - name: Remove partition number 2
-  command: parted --script /dev/sda rm 2
-  become: yes
+  parted:
+    device: /dev/sda
+    number: 2
+    state: absent
 
 - name: Resize partition number 1 to fill the available space on the disk
   command: parted ---pretend-input-tty /dev/sda unit % resizepart 1 yes 100
