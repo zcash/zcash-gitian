@@ -1,0 +1,35 @@
+---
+- name: Make sure parted is installed
+  apt:
+    name: parted
+    state: present
+    update_cache: yes
+
+- name: Turn off all swap areas
+  command: swapoff -a
+  become: yes
+
+- name: Remove swap partition from /etc/fstab
+  mount:
+    path: none
+    fstype: swap
+    opts: sw
+    state: absent
+
+- name: Remove partition number 5
+  command: parted --script /dev/sda rm 5
+  become: yes
+
+- name: Remove partition number 2
+  command: parted --script /dev/sda rm 2
+  become: yes
+
+- name: Resize partition number 1 to fill the available space on the disk
+  command: parted ---pretend-input-tty /dev/sda unit % resizepart 1 yes 100
+  become: yes
+  register: parted_resize
+
+- name: Resize filesystem on /dev/sda1 to fill the available space on the partition
+  command: resize2fs /dev/sda1
+  become: yes
+  register: resize2fs
