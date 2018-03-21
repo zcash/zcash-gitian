@@ -27,10 +27,12 @@
     device: /dev/sda
     number: 2
     state: absent
+  register: rm_part_2_sda_info
 
-- name: Resize partition number 1 to fill the available space on the disk
+- name: Resize partition 1 to reach end of disk if it does not already
   command: parted ---pretend-input-tty /dev/sda unit % resizepart 1 yes 100
   become: yes
+  when: rm_part_2_sda_info['disk']['size'] != rm_part_2_sda_info['partitions'][0]['end']
   register: parted_resize
 
 - name: Resize filesystem on /dev/sda1 to fill the available space on the partition
