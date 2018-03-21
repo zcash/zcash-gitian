@@ -203,9 +203,8 @@
     executable: /bin/bash
 
 - name: Clean the apt cache to free up space.
-  command: apt-get autoclean
-  register: autoclean_result
-  changed_when: "'Del' in autoclean_result.stdout"
+  apt:
+    autoclean: yes
 
 - include_tasks: gpg.yml
   tags: gpg

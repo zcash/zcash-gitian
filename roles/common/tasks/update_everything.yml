@@ -38,7 +38,6 @@
   tags: apt
 
 - name: Remove unneeded packages.
-  command: apt-get autoremove -y
-  register: autoremove_result
-  changed_when: "'0 upgraded' not in autoremove_result.stdout"
+  apt:
+    autoremove: yes
   tags: apt
