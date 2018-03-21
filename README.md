@@ -34,6 +34,15 @@ Install prerequisites first: `sudo apt-get install build-essential libssl-dev li
 
     sudo pip install -U ansible
 
+#### GnuPG
+
+Make sure GNU privacy guard is installed.
+
+    sudo apt-get install gnupg
+
+Also make sure it is callable using the command 'gpg2' (not just 'gpg'). You may need a workaround
+here, e.g. creating a symlink from gpg2 to gpg.
+
 How to get started
 ------------------
 
