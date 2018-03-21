@@ -60,7 +60,13 @@ gpg_key_id: ''
 ssh_key_name: ''
 ```
 
-Make sure VirtualBox, Vagrant and Ansible are installed, and then run:
+Make sure VirtualBox, Vagrant and Ansible are installed.
+
+Include this vagrant plugin to support resize of the start up disk:
+
+    vagrant plugin install vagrant-disksize
+
+Then run:
 
     vagrant up --provision zcash-build
 

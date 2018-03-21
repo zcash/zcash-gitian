@@ -3,6 +3,7 @@
 Vagrant.configure(2) do |config|
 
   config.ssh.forward_agent = true
+  config.disksize.size = '16GB'
   config.vm.define 'zcash-build', autostart: false do |gitian|
     gitian.vm.box = "debian/jessie64"
     gitian.vm.network "forwarded_port", guest: 22, host: 2200, auto_correct: true
