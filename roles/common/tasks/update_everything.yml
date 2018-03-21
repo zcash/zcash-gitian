@@ -8,7 +8,7 @@
   failed_when: false
   changed_when: false
   # Necessary to support --check mode
-  always_run: true
+  check_mode: no
 
 - name: Install sudo.
   apt:

@@ -3,7 +3,7 @@
   local_action: command ssh-keyscan -t rsa github.com
   register: github_ssh_keyscan_result
   changed_when: false
-  always_run: yes
+  check_mode: no
   run_once: yes
   become: no
 
