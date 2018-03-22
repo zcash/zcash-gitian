@@ -98,6 +98,44 @@ gpg_key_id: 564CDA5C132B8CAB54B7BDE65B52696EF083A700
 gpg_key_name: hpotter
 
 
+## Decide on an ssh keypair to use for gitian
+
+You'll be asked to (optionally) provide an ssh key's filename in gitian.yml. In this example I'm
+using "zcash_gitian_id_rsa".
+
+You can generate a keypair specifically for zcash gitian builds like this:
+
+$ ssh-keygen -t rsa -C "hpotter@hogwarts.wiz" -f ~/.ssh/zcash_gitian_id_rsa -N ''
+Generating public/private rsa key pair.
+Your identification has been saved in /Users/hpotter/.ssh/zcash_gitian_id_rsa.
+Your public key has been saved in /Users/hpotter/.ssh/zcash_gitian_id_rsa.pub.
+The key fingerprint is:
+SHA256:w1ZAgf+Ge+R662PU18ASqx8sZYfg9OxKhE/ZFf9zwvE hpotter@hogwarts.wiz
+The key's randomart image is:
++---[RSA 2048]----+
+|       o+.    .. |
+|      .  .o . .. |
+|       . +.* *. .|
+|       .o.= X.+o.|
+|        S* B oo+E|
+|       ...X = ..+|
+|         B + o   |
+|        . B .    |
+|        .*oo     |
++----[SHA256]-----+
+
+
+Some explanation of the arguments used in the above example:
+-t rsa                         Use a key type of RSA
+-C "hpotter@hogwarts.wiz"      Provide an identity to associate with the key (default is user@host
+                               in the local environment)
+-f ~/.ssh/zcash_gitian_id_rsa  Path to the private key to generate. The corresponding public key
+                               will be saved at ~/.ssh/zcash_gitian_id_rsa.pub
+-N ''                          Passphrase for the generated key. An empty string as shown here means
+                               save the private key unencrypted.
+
+
+
 How to get started
 ------------------
 
