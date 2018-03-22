@@ -43,6 +43,61 @@ Make sure GNU privacy guard is installed.
 Also make sure it is callable using the command 'gpg2' (not just 'gpg'). You may need a workaround
 here, e.g. creating a symlink from gpg2 to gpg.
 
+
+## Decide on a gpg keypair to use for gitian
+
+You'll be asked to (optionally) refer to a gpg key in gitian.yml.
+
+You can generate a keypair specifically for zcash gitian builds with a command like the one below.
+
+$ gpg2 --quick-generate-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
+gpg: directory '/Users/hpotter/.gnupg' created
+gpg: keybox '/Users/hpotter/.gnupg/pubring.kbx' created
+gpg: /Users/hpotter/.gnupg/trustdb.gpg: trustdb created
+gpg: key 5B52696EF083A700 marked as ultimately trusted
+gpg: directory '/Users/hpotter/.gnupg/openpgp-revocs.d' created
+gpg: revocation certificate stored as '/Users/hpotter/.gnupg/openpgp-revocs.d/564CDA5C132B8CAB54B7BDE65B52696EF083A700.rev'
+
+This will generate a primary key and subkey without passphrases, and set default values for
+algorithm, key length, usage, and expiration time which should be fine.
+
+
+Some explanation of the arguments used in the above example:
+--quick-generate-key --batch   This combination of options allows options to be given on the command
+                               line. Other key generation options use interative prompts.
+--passphrase ''                Passphrase for the generated key. An empty string as shown here means
+                               save the private key unencrypted.
+"Name (Comment) <Email>"       The user id (also called uid) to associate with the generated keys.
+                               Concatenating a name, an optional comment, and an email address using
+                               this format is a gpg convention.
+
+
+You can check that the key was generated and added to your local gpg key database, and see its
+fingerprint value, like this:
+
+$ gpg --list-keys
+gpg: checking the trustdb
+gpg: marginals needed: 3  completes needed: 1  trust model: pgp
+gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+gpg: next trustdb check due at 2020-03-13
+/Users/hpotter/.gnupg/pubring.kbx
+-----------------------------------
+pub   rsa2048 2018-03-14 [SC] [expires: 2020-03-13]
+      564CDA5C132B8CAB54B7BDE65B52696EF083A700
+uid           [ultimate] Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>
+sub   rsa2048 2018-03-14 [E]
+
+
+We'll use two values from the above output in our gitian.yml file:
+- For gpg_key_id we'll use the fingerprint for the 'pub' key.
+- For gpg_key_name we'll use the the part before the @ symbol of the associated email address.
+
+Continuing the above example, we would set the two fields in gitian.yml as follows:
+
+gpg_key_id: 564CDA5C132B8CAB54B7BDE65B52696EF083A700
+gpg_key_name: hpotter
+
+
 How to get started
 ------------------
 
