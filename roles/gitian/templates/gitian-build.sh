@@ -189,7 +189,7 @@ then
 	echo ""
 	pushd ./gitian-builder
 	mkdir -p inputs
-	make -C ../zcash/depends download SOURCES_PATH=`pwd`/cache/common
+	make -C ../zcash/depends download-linux SOURCES_PATH=`pwd`/cache/common
 
 	# Linux
 	if [[ $linux = true ]]
