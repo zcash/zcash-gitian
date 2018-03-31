@@ -50,14 +50,15 @@ You'll be asked to (optionally) refer to a gpg key in gitian.yml.
 
 You can generate a keypair specifically for zcash gitian builds with a command like the one below.
 
-$ gpg2 --quick-generate-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
+> $ gpg2 --quick-generate-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
+```
 gpg: directory '/Users/hpotter/.gnupg' created
 gpg: keybox '/Users/hpotter/.gnupg/pubring.kbx' created
 gpg: /Users/hpotter/.gnupg/trustdb.gpg: trustdb created
 gpg: key 5B52696EF083A700 marked as ultimately trusted
 gpg: directory '/Users/hpotter/.gnupg/openpgp-revocs.d' created
 gpg: revocation certificate stored as '/Users/hpotter/.gnupg/openpgp-revocs.d/564CDA5C132B8CAB54B7BDE65B52696EF083A700.rev'
-
+```
 This will generate a primary key and subkey without passphrases, and set default values for
 algorithm, key length, usage, and expiration time which should be fine.
 
@@ -74,7 +75,7 @@ Some explanation of the arguments used in the above example:
 
 You can check that the key was generated and added to your local gpg key database, and see its
 fingerprint value, like this:
-
+```
 $ gpg --list-keys
 gpg: checking the trustdb
 gpg: marginals needed: 3  completes needed: 1  trust model: pgp
@@ -86,7 +87,7 @@ pub   rsa2048 2018-03-14 [SC] [expires: 2020-03-13]
       564CDA5C132B8CAB54B7BDE65B52696EF083A700
 uid           [ultimate] Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>
 sub   rsa2048 2018-03-14 [E]
-
+```
 
 We'll use two values from the above output in our gitian.yml file:
 - For gpg_key_id we'll use the fingerprint for the 'pub' key.
@@ -105,6 +106,7 @@ using "zcash_gitian_id_rsa".
 
 You can generate a keypair specifically for zcash gitian builds like this:
 
+```
 $ ssh-keygen -t rsa -C "hpotter@hogwarts.wiz" -f ~/.ssh/zcash_gitian_id_rsa -N ''
 Generating public/private rsa key pair.
 Your identification has been saved in /Users/hpotter/.ssh/zcash_gitian_id_rsa.
@@ -133,7 +135,7 @@ Some explanation of the arguments used in the above example:
                                will be saved at ~/.ssh/zcash_gitian_id_rsa.pub
 -N ''                          Passphrase for the generated key. An empty string as shown here means
                                save the private key unencrypted.
-
+```
 
 
 How to get started
