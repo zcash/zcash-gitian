@@ -94,10 +94,10 @@ We'll use two values from the above output in our gitian.yml file:
 - For gpg_key_name we'll use the the part before the @ symbol of the associated email address.
 
 Continuing the above example, we would set the two fields in gitian.yml as follows:
-
+```
 gpg_key_id: 564CDA5C132B8CAB54B7BDE65B52696EF083A700
 gpg_key_name: hpotter
-
+```
 
 ## Decide on an ssh keypair to use for gitian
 
