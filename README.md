@@ -79,7 +79,7 @@ Some explanation of the arguments used in the above example:
 You can check that the key was generated and added to your local gpg key database, and see its
 fingerprint value, like this:
 ```
-$ gpg --list-keys
+$ gpg2 --list-keys
 gpg: checking the trustdb
 gpg: marginals needed: 3  completes needed: 1  trust model: pgp
 gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
