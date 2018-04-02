@@ -126,17 +126,20 @@ The key's randomart image is:
 |        . B .    |
 |        .*oo     |
 +----[SHA256]-----+
-
+```
 
 Some explanation of the arguments used in the above example:
--t rsa                         Use a key type of RSA
--C "hpotter@hogwarts.wiz"      Provide an identity to associate with the key (default is user@host
-                               in the local environment)
--f ~/.ssh/zcash_gitian_id_rsa  Path to the private key to generate. The corresponding public key
-                               will be saved at ~/.ssh/zcash_gitian_id_rsa.pub
--N ''                          Passphrase for the generated key. An empty string as shown here means
-                               save the private key unencrypted.
-```
+
+    -t rsa                         Use a key type of RSA
+
+    -C "hpotter@hogwarts.wiz"      Provide an identity to associate with the key (default is
+                                   user@host in the local environment)
+
+    -f ~/.ssh/zcash_gitian_id_rsa  Path to the private key to generate. The corresponding public key
+                                   will be saved at ~/.ssh/zcash_gitian_id_rsa.pub
+
+    -N ''                          Passphrase for the generated key. An empty string as shown here
+                                   means save the private key unencrypted.
 
 
 How to get started
