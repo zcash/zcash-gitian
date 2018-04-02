@@ -34,14 +34,15 @@ Install prerequisites first: `sudo apt-get install build-essential libssl-dev li
 
     sudo pip install -U ansible
 
-#### GnuPG
+#### GnuPG 2.x
 
 Make sure GNU privacy guard is installed.
 
-    sudo apt-get install gnupg
+    sudo apt-get install gnupg2
 
-Also make sure it is callable using the command 'gpg2' (not just 'gpg'). You may need a workaround
-here, e.g. creating a symlink from gpg2 to gpg.
+If installing via some other method, such as building directly from git source or using a different
+package manager, make sure it is callable using the command 'gpg2'. For instance, if it installs as
+'gpg' you could create a symlink from gpg2 to gpg.
 
 
 ## Decide on a gpg keypair to use for gitian
