@@ -52,7 +52,7 @@ You'll be asked to (optionally) refer to a gpg key in gitian.yml.
 You can generate a keypair specifically for zcash gitian builds with a command like the one below.
 
 ```
-gpg2 --quick-generate-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
+gpg2 --quick-gen-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
 ```
 
 ```
