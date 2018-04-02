@@ -91,7 +91,9 @@ sub   rsa2048 2018-03-14 [E]
 ```
 
 We'll use two values from the above output in our gitian.yml file:
-- For gpg_key_id we'll use the fingerprint for the 'pub' key.
+- For gpg_key_id we'll use the id for the 'pub' key. In the example output shown here, that is a 40
+character value. Other versions of gpg may truncate this value, e.g. to 8 or 16 characters. In those
+cases you should be able to use the truncated value and it should still work.
 - For gpg_key_name we'll use the the part before the @ symbol of the associated email address.
 
 Continuing the above example, we would set the two fields in gitian.yml as follows:
