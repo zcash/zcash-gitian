@@ -53,9 +53,6 @@ You can generate a keypair specifically for zcash gitian builds with a command l
 
 ```
 gpg2 --quick-gen-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
-```
-
-```
 gpg: directory '/Users/hpotter/.gnupg' created
 gpg: keybox '/Users/hpotter/.gnupg/pubring.kbx' created
 gpg: /Users/hpotter/.gnupg/trustdb.gpg: trustdb created
