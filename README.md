@@ -65,13 +65,17 @@ algorithm, key length, usage, and expiration time which should be fine.
 
 
 Some explanation of the arguments used in the above example:
---quick-generate-key --batch   This combination of options allows options to be given on the command
-                               line. Other key generation options use interative prompts.
---passphrase ''                Passphrase for the generated key. An empty string as shown here means
-                               save the private key unencrypted.
-"Name (Comment) <Email>"       The user id (also called uid) to associate with the generated keys.
-                               Concatenating a name, an optional comment, and an email address using
-                               this format is a gpg convention.
+
+    --quick-generate-key --batch   This combination of options allows options to be given on the
+                                   command line. Other key generation options use interative
+                                   prompts.
+
+    --passphrase ''                Passphrase for the generated key. An empty string as shown here
+                                   means save the private key unencrypted.
+
+    "Name (Comment) <Email>"       The user id (also called uid) to associate with the generated
+                                   keys. Concatenating a name, an optional comment, and an email
+                                   address using this format is a gpg convention.
 
 
 You can check that the key was generated and added to your local gpg key database, and see its
