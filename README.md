@@ -82,10 +82,6 @@ You can check that the key was generated and added to your local gpg key databas
 fingerprint value, like this:
 ```
 $ gpg2 --list-keys
-gpg: checking the trustdb
-gpg: marginals needed: 3  completes needed: 1  trust model: pgp
-gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
-gpg: next trustdb check due at 2020-03-13
 /Users/hpotter/.gnupg/pubring.kbx
 -----------------------------------
 pub   rsa2048 2018-03-14 [SC] [expires: 2020-03-13]
