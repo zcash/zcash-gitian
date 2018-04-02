@@ -5,7 +5,7 @@ This is a deterministic build environment for [Zcash](https://github.com/zcash/z
 
 Gitian provides a way to be reasonably certain that the Zcash executables are really built from the exact source on GitHub and have not been tampered with. It also makes sure that the same, tested dependencies are used and statically built into the executable.
 
-Multiple developers build from source code by following a specific descriptor ("recipe"), cryptographically sign the result, and upload the resulting signature. These results are compared and only if they match is the build is accepted.
+Multiple developers build from source code by following a specific descriptor ("recipe"), cryptographically sign the result, and upload the resulting signature. These results are compared and only if they match is the build accepted.
 
 More independent Gitian builders are needed, which is why this guide exists.
 
@@ -33,6 +33,116 @@ Download the latest version of Vagrant from [their website](https://www.vagrantu
 Install prerequisites first: `sudo apt-get install build-essential libssl-dev libffi-dev python python-dev python-pip`. Then run:
 
     sudo pip install -U ansible
+
+#### GnuPG 2.x
+
+Make sure GNU privacy guard is installed.
+
+    sudo apt-get install gnupg2
+
+If installing via some other method, such as building directly from git source or using a different
+package manager, make sure it is callable using the command 'gpg2'. For instance, if it installs as
+'gpg' you could create a symlink from gpg2 to gpg.
+
+
+## Decide on a gpg keypair to use for gitian
+
+You'll be asked to (optionally) refer to a gpg key in gitian.yml.
+
+You can generate a keypair specifically for zcash gitian builds with a command like the one below.
+
+```
+gpg2 --quick-gen-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
+gpg: directory '/Users/hpotter/.gnupg' created
+gpg: keybox '/Users/hpotter/.gnupg/pubring.kbx' created
+gpg: /Users/hpotter/.gnupg/trustdb.gpg: trustdb created
+gpg: key 5B52696EF083A700 marked as ultimately trusted
+gpg: directory '/Users/hpotter/.gnupg/openpgp-revocs.d' created
+gpg: revocation certificate stored as '/Users/hpotter/.gnupg/openpgp-revocs.d/564CDA5C132B8CAB54B7BDE65B52696EF083A700.rev'
+```
+This will generate a primary key and subkey without passphrases, and set default values for
+algorithm, key length, usage, and expiration time which should be fine.
+
+
+Some explanation of the arguments used in the above example:
+
+    --quick-generate-key --batch   This combination of options allows options to be given on the
+                                   command line. Other key generation options use interative
+                                   prompts.
+
+    --passphrase ''                Passphrase for the generated key. An empty string as shown here
+                                   means save the private key unencrypted.
+
+    "Name (Comment) <Email>"       The user id (also called uid) to associate with the generated
+                                   keys. Concatenating a name, an optional comment, and an email
+                                   address using this format is a gpg convention.
+
+
+You can check that the key was generated and added to your local gpg key database, and see its
+fingerprint value, like this:
+```
+$ gpg2 --list-keys
+/Users/hpotter/.gnupg/pubring.kbx
+-----------------------------------
+pub   rsa2048 2018-03-14 [SC] [expires: 2020-03-13]
+      564CDA5C132B8CAB54B7BDE65B52696EF083A700
+uid           [ultimate] Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>
+sub   rsa2048 2018-03-14 [E]
+```
+
+We'll use two values from the above output in our gitian.yml file:
+- For gpg_key_id we'll use the id for the 'pub' key. In the example output shown here, that is a 40
+character value. Other versions of gpg may truncate this value, e.g. to 8 or 16 characters. In those
+cases you should be able to use the truncated value and it should still work.
+- For gpg_key_name we'll use the the part before the @ symbol of the associated email address.
+
+Continuing the above example, we would set the two fields in gitian.yml as follows:
+```
+gpg_key_id: 564CDA5C132B8CAB54B7BDE65B52696EF083A700
+gpg_key_name: hpotter
+```
+
+## Decide on an ssh keypair to use for gitian
+
+You'll be asked to (optionally) provide an ssh key's filename in gitian.yml. In this example I'm
+using "zcash_gitian_id_rsa".
+
+You can generate a keypair specifically for zcash gitian builds like this:
+
+```
+$ ssh-keygen -t rsa -C "hpotter@hogwarts.wiz" -f ~/.ssh/zcash_gitian_id_rsa -N ''
+Generating public/private rsa key pair.
+Your identification has been saved in /Users/hpotter/.ssh/zcash_gitian_id_rsa.
+Your public key has been saved in /Users/hpotter/.ssh/zcash_gitian_id_rsa.pub.
+The key fingerprint is:
+SHA256:w1ZAgf+Ge+R662PU18ASqx8sZYfg9OxKhE/ZFf9zwvE hpotter@hogwarts.wiz
+The key's randomart image is:
++---[RSA 2048]----+
+|       o+.    .. |
+|      .  .o . .. |
+|       . +.* *. .|
+|       .o.= X.+o.|
+|        S* B oo+E|
+|       ...X = ..+|
+|         B + o   |
+|        . B .    |
+|        .*oo     |
++----[SHA256]-----+
+```
+
+Some explanation of the arguments used in the above example:
+
+    -t rsa                         Use a key type of RSA
+
+    -C "hpotter@hogwarts.wiz"      Provide an identity to associate with the key (default is
+                                   user@host in the local environment)
+
+    -f ~/.ssh/zcash_gitian_id_rsa  Path to the private key to generate. The corresponding public key
+                                   will be saved at ~/.ssh/zcash_gitian_id_rsa.pub
+
+    -N ''                          Passphrase for the generated key. An empty string as shown here
+                                   means save the private key unencrypted.
+
 
 How to get started
 ------------------
