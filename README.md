@@ -20,9 +20,7 @@ It relies upon [Vagrant](https://www.vagrantup.com/) and [VirtualBox](https://ww
 
 If you use Linux, we recommend obtaining VirtualBox through your package manager instead of the Oracle website.
 
-    sudo apt-get install linux-headers-amd64 virtualbox
-
-Linux kernel headers are required to setup the `/dev/vboxdrv` device and VirtualBox kernel module via `virtualbox-dkms`.
+    sudo apt-get install virtualbox
 
 #### Vagrant
 
