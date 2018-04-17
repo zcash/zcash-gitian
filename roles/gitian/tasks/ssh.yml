@@ -1,6 +1,7 @@
 ---
 - name: Check that the SSH key exists locally.
   local_action: "stat path={{ lookup('env', 'HOME') }}/.ssh/{{ ssh_key_name }}"
+  become: no
   register: ssh_key
 
 - name: Make SSH home directory.

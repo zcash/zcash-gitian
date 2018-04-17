@@ -1,6 +1,7 @@
 ---
 - name: Check that the secret key exists.
   local_action: "shell gpg2 --list-secret-keys --with-colons | grep {{ gpg_key_id }}"
+  become: no
   ignore_errors: true
   register: gpg_list_keys_result
   environment:
@@ -8,6 +9,7 @@
 
 - name: Export the GPG private key from the local keyring.
   local_action: "command gpg2 --armor --export-secret-key {{ gpg_key_id }}"
+  become: no
   register: gpg_private_key
   changed_when: false
   environment:
