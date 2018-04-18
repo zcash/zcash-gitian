@@ -12,7 +12,8 @@ More independent Gitian builders are needed, which is why this guide exists.
 Requirements
 ------------
 
-4GB of RAM, at least two cores
+4GB of RAM, at least two cores. Four cores are recommended, as this has been seen to resolve a
+deadlock condition in the VM provisioning step.
 
 It relies upon [Vagrant](https://www.vagrantup.com/) and [VirtualBox](https://www.virtualbox.org/) plus [Ansible](https://www.ansible.com/).
 
@@ -169,8 +170,6 @@ gpg_key_id: ''
 # OPTIONAL set to import your SSH key into the VM. Example: id_rsa, id_ed25519. Assumed to reside in ~/.ssh
 ssh_key_name: ''
 ```
-
-Make sure VirtualBox, Vagrant and Ansible are installed.
 
 Include this vagrant plugin to support resize of the start up disk:
 
