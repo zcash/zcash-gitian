@@ -116,7 +116,22 @@ pip 9.0.1 from /usr/lib/python2.7/dist-packages (python 2.7)
 # Install ansible 2.4.x or higher
 
 ```
-sudo pip install -U ansible
+pip install --user -U ansible
+```
+
+This will place an `ansible` executable in `~/.local/bin`, so add the following to `~/.profile`:
+
+```
+# set PATH so it includes user's private .local/bin if it exists
+if [ -d "$HOME/.local/bin" ] ; then
+    PATH="$HOME/.local/bin:$PATH"
+fi
+```
+
+Then source .profile in your shell session:
+
+```
+$ source .profile
 ```
 
 Most recently tested 2018-04-23 with the following ansible release:
