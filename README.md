@@ -35,7 +35,7 @@ Install prerequisites first: `sudo apt-get install build-essential libssl-dev li
 
     sudo pip install -U ansible
 
-#### GnuPG 2.x
+#### GnuPG 2.x (2.1.18 or greater)
 
 Make sure GNU privacy guard is installed.
 
