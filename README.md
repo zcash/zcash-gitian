@@ -15,55 +15,167 @@ Requirements
 4GB of RAM, at least two cores. Four cores are recommended, as this has been seen to resolve a
 deadlock condition in the VM provisioning step.
 
-It relies upon [Vagrant](https://www.vagrantup.com/) and [VirtualBox](https://www.virtualbox.org/) plus [Ansible](https://www.ansible.com/).
+Install Dependencies
+--------------------
 
-#### VirtualBox
+Install the following software:
 
-If you use Linux, we recommend obtaining VirtualBox through your package manager instead of the Oracle website.
+- [Git](https://git-scm.com/)
+- [VirtualBox](https://www.virtualbox.org/)
+- [Vagrant](https://www.vagrantup.com/)
+- [Ansible](https://www.ansible.com/) 2.4.x or higher
+- [GnuPG](https://www.gnupg.org/) 2.x (2.11.18 or greater) and make sure it is callable via `gpg2`
 
-    sudo apt-get install linux-headers-amd64 virtualbox
+For more detailed recommendations on steps to install these dependencies on some platforms we have
+used, see the following documents:
 
-Linux kernel headers are required to setup the `/dev/vboxdrv` device and VirtualBox kernel module via `virtualbox-dkms`.
+- [Debian 9.x](dependency_install_steps_by_platform/Debian_9.x.md)
+- [macOS 10.13.x](dependency_install_steps_by_platform/macOS_10.13.x.md)
 
-#### Vagrant
 
-Download the latest version of Vagrant from [their website](https://www.vagrantup.com/downloads.html).
 
-#### Ansible
+## Install the `vagrant-disksize` plugin to support resize of the start up disk:
 
-Install prerequisites first: `sudo apt-get install build-essential libssl-dev libffi-dev python python-dev python-pip`. Then run:
+```
+$ vagrant plugin install vagrant-disksize
+```
 
-    sudo pip install -U ansible
+Most recently tested 2018-04-23 with the following vagrant-disksize release:
 
-#### GnuPG 2.x (2.1.18 or greater)
+```
+$ vagrant plugin list
+vagrant-disksize (0.1.2)
+```
 
-Make sure GNU privacy guard is installed.
 
-    sudo apt-get install gnupg2
 
-If installing via some other method, such as building directly from git source or using a different
-package manager, make sure it is callable using the command 'gpg2'. For instance, if it installs as
-'gpg' you could create a symlink from gpg2 to gpg.
+Configuration
+-------------
+
+## Configure git
+
+We want a configuration file in the home directory of the account you'll be working in. This will
+determine how you are identified on the projects you contribute to. These settings can be overridden
+on a per-project basis.
+
+Git provides some convenient command options for setting this up:
+
+```
+$ git config --global user.name "Harry Potter"
+$ git config --global user.email "hpotter@hogwarts.wiz"
+```
+
+Checking that this worked:
+
+```
+$ git config user.name
+Harry Potter
+$ git config user.email
+hpotter@hogwarts.wiz
+```
+
+This is all the configuration needed for the steps below, but here is a good reference for further
+reading on configuring git:
+
+https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration
+
+
+
+## Decide on an ssh keypair for gitian to use when connecting to github
+
+You can generate a keypair specifically for connecting to github like this:
+
+```
+$ ssh-keygen -t rsa -C "hpotter@hogwarts.wiz" -f ~/.ssh/github_id_rsa -N ''
+Generating public/private rsa key pair.
+Your identification has been saved in /Users/hpotter/.ssh/github_id_rsa.
+Your public key has been saved in /Users/hpotter/.ssh/github_id_rsa.pub.
+The key fingerprint is:
+SHA256:w1ZAgf+Ge+R662PU18ASqx8sZYfg9OxKhE/ZFf9zwvE hpotter@hogwarts.wiz
+The key's randomart image is:
++---[RSA 2048]----+
+|       o+.    .. |
+|      .  .o . .. |
+|       . +.* *. .|
+|       .o.= X.+o.|
+|        S* B oo+E|
+|       ...X = ..+|
+|         B + o   |
+|        . B .    |
+|        .*oo     |
++----[SHA256]-----+
+```
+
+Some explanation of the arguments used in the above example:
+
+```
+    -t rsa                         Use a key type of RSA
+
+    -C "hpotter@hogwarts.wiz"      Provide an identity to associate with the key (default is
+                                   user@host in the local environment)
+
+    -f ~/.ssh/github_id_rsa        Path to the private key to generate. The corresponding public key
+                                   will be saved at ~/.ssh/github_id_rsa.pub
+
+    -N ''                          Passphrase for the generated key. An empty string as shown here
+                                   means save the private key unencrypted.
+```
+
+
+
+# Set up your ssh keypair for use with github
+
+[Add the new key to your github account.](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/)
+
+Add an entry to ~/.ssh/config (create this file if necessary) telling ssh to use the keypair you
+generated above when connecting to github.com:
+
+For instance:
+
+```
+Host github.com
+  User harrypotter
+  PreferredAuthentications publickey
+  IdentityFile /home/hpotter/.ssh/github_id_rsa
+  AddKeysToAgent yes
+```
+
+The 'User' entry should match your github username.
+
+[Test that ssh will successfully use your new key to connect to github.](https://help.github.com/articles/testing-your-ssh-connection/)
+
+
+
+## Clone this git project on your machine
+
+```
+$ git clone git@github.com:zcash/zcash-gitian.git
+```
+
+
+
+## Add git and ssh config values to gitian.yml
+
+The `gitian.yml` file in the root of the project has some blank values that need to be filled in:
+
+- `git_name`: You probably want the output from `git config user.name`
+- `git_email`: You probably want the output from `git config user.email`
+- `ssh_key_name`: The filename of your private key. In the steps above we used the name
+`github_id_rsa`.
+
 
 
 ## Decide on a gpg keypair to use for gitian
 
-You'll be asked to (optionally) refer to a gpg key in gitian.yml.
-
 You can generate a keypair specifically for zcash gitian builds with a command like the one below.
 
-```
-gpg2 --quick-gen-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
-gpg: directory '/Users/hpotter/.gnupg' created
-gpg: keybox '/Users/hpotter/.gnupg/pubring.kbx' created
-gpg: /Users/hpotter/.gnupg/trustdb.gpg: trustdb created
-gpg: key 5B52696EF083A700 marked as ultimately trusted
-gpg: directory '/Users/hpotter/.gnupg/openpgp-revocs.d' created
-gpg: revocation certificate stored as '/Users/hpotter/.gnupg/openpgp-revocs.d/564CDA5C132B8CAB54B7BDE65B52696EF083A700.rev'
-```
-This will generate a primary key and subkey without passphrases, and set default values for
-algorithm, key length, usage, and expiration time which should be fine.
 
+```
+$ gpg2 --quick-gen-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
+gpg: key 3F0C2117D53A4A49 marked as ultimately trusted
+gpg: directory '/home/hpotter/.gnupg/openpgp-revocs.d' created
+gpg: revocation certificate stored as '/home/hpotter/.gnupg/openpgp-revocs.d/3F14A629C06FA31D59C64FE93F0C2117D53A4A49.rev'
+```
 
 Some explanation of the arguments used in the above example:
 
@@ -83,111 +195,50 @@ You can check that the key was generated and added to your local gpg key databas
 fingerprint value, like this:
 ```
 $ gpg2 --list-keys
-/Users/hpotter/.gnupg/pubring.kbx
------------------------------------
-pub   rsa2048 2018-03-14 [SC] [expires: 2020-03-13]
-      564CDA5C132B8CAB54B7BDE65B52696EF083A700
+/home/hpotter/.gnupg/pubring.kbx
+----------------------------------
+pub   rsa2048 2018-04-23 [SC] [expires: 2020-04-22]
+      3F14A629C06FA31D59C64FE93F0C2117D53A4A49
 uid           [ultimate] Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>
-sub   rsa2048 2018-03-14 [E]
+sub   rsa2048 2018-04-23 [E]
 ```
 
-We'll use two values from the above output in our gitian.yml file:
-- For gpg_key_id we'll use the id for the 'pub' key. In the example output shown here, that is a 40
-character value. Other versions of gpg may truncate this value, e.g. to 8 or 16 characters. In those
-cases you should be able to use the truncated value and it should still work.
-- For gpg_key_name we'll use the the part before the @ symbol of the associated email address.
+Update the `gpg_key_id` and `gpg_key_name` entries in `gitian.yml` as follows:
 
-Continuing the above example, we would set the two fields in gitian.yml as follows:
-```
-gpg_key_id: 564CDA5C132B8CAB54B7BDE65B52696EF083A700
-gpg_key_name: hpotter
-```
+- `gpg_key_id`: In the example output shown here, this is the 40 character string
+`3F14A629C06FA31D59C64FE93F0C2117D53A4A49`. Some versions of gpg may truncate this value, e.g. to 8
+or 16 characters. You should be able to use the truncated value.
 
-## Decide on an ssh keypair to use for gitian
+- `gpg_key_name`: the the part before the @ symbol of the associated email address. In our example
+this is `hpotter`.
 
-You'll be asked to (optionally) provide an ssh key's filename in gitian.yml. In this example I'm
-using "zcash_gitian_id_rsa".
 
-You can generate a keypair specifically for zcash gitian builds like this:
+
+## Provision a virtual machine
+
+From the project root directory, run:
 
 ```
-$ ssh-keygen -t rsa -C "hpotter@hogwarts.wiz" -f ~/.ssh/zcash_gitian_id_rsa -N ''
-Generating public/private rsa key pair.
-Your identification has been saved in /Users/hpotter/.ssh/zcash_gitian_id_rsa.
-Your public key has been saved in /Users/hpotter/.ssh/zcash_gitian_id_rsa.pub.
-The key fingerprint is:
-SHA256:w1ZAgf+Ge+R662PU18ASqx8sZYfg9OxKhE/ZFf9zwvE hpotter@hogwarts.wiz
-The key's randomart image is:
-+---[RSA 2048]----+
-|       o+.    .. |
-|      .  .o . .. |
-|       . +.* *. .|
-|       .o.= X.+o.|
-|        S* B oo+E|
-|       ...X = ..+|
-|         B + o   |
-|        . B .    |
-|        .*oo     |
-+----[SHA256]-----+
+$ vagrant up --provision zcash-build
 ```
 
-Some explanation of the arguments used in the above example:
-
-    -t rsa                         Use a key type of RSA
-
-    -C "hpotter@hogwarts.wiz"      Provide an identity to associate with the key (default is
-                                   user@host in the local environment)
-
-    -f ~/.ssh/zcash_gitian_id_rsa  Path to the private key to generate. The corresponding public key
-                                   will be saved at ~/.ssh/zcash_gitian_id_rsa.pub
-
-    -N ''                          Passphrase for the generated key. An empty string as shown here
-                                   means save the private key unencrypted.
-
-
-How to get started
-------------------
-
-### Edit settings in gitian.yml
-
-```yaml
-# URL of repository containing Zcash source code.
-zcash_git_repo_url: 'https://github.com/zcash/zcash'
-
-# Specific tag or branch you want to build.
-zcash_version: 'master'
-
-# The name@ in the e-mail address of your GPG key, alternatively a key ID.
-gpg_key_name: ''
-
-# Equivalent to git --config user.name & user.email
-git_name: ''
-git_email: ''
-
-# OPTIONAL set to import your GPG key into the VM.
-gpg_key_id: ''
-
-# OPTIONAL set to import your SSH key into the VM. Example: id_rsa, id_ed25519. Assumed to reside in ~/.ssh
-ssh_key_name: ''
-```
-
-Include this vagrant plugin to support resize of the start up disk:
-
-    vagrant plugin install vagrant-disksize
-
-Then run:
-
-    vagrant up --provision zcash-build
-
-This will provision a Gitian host virtual machine that uses a Linux container (LXC) guest to perform the actual builds.
+This will provision a Gitian host virtual machine that uses a Linux container (LXC) guest to perform
+the actual builds.
 
 Use `git stash` to save one's local customizations to `gitian.yml`.
+
+
 
 Building Zcash
 --------------
 
-    vagrant ssh zcash-build
-    ./gitian-build.sh
+```
+# on your host machine
+$ vagrant ssh zcash-build
+[...]
+# on the virtualbox vm
+$ ./gitian-build.sh
+```
 
 The output from `gbuild` is informative. There are some common warnings which can be ignored, e.g. if you get an intermittent privileges error related to LXC then just execute the script again. The most important thing is that one reaches the step which says `Running build script (log in var/build.log)`. If not, then something else is wrong and you should let us know.
 
@@ -237,5 +288,3 @@ Other notes
 Port 2200 on the host machine should be forwarded to port 22 on the guest virtual machine.
 
 The automation and configuration management assumes that VirtualBox will assign the IP address `10.0.2.15` to the Gitian host Vagrant VM.
-
-Tested with Ansible 2.1.2 and Vagrant 1.8.6 on Debian GNU/Linux (jessie).
