@@ -22,7 +22,7 @@ Install the following software:
 
 - [Git](https://git-scm.com/)
 - [VirtualBox](https://www.virtualbox.org/)
-- [Vagrant](https://www.vagrantup.com/)
+- [Vagrant](https://www.vagrantup.com/) 2.0.3 or higher
 - [Ansible](https://www.ansible.com/) 2.4.x or higher
 - [GnuPG](https://www.gnupg.org/) 2.x (2.11.18 or greater) and make sure it is callable via `gpg2`
 
