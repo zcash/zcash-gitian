@@ -70,20 +70,14 @@ git version 2.11.0
 
 
 
-# Install Vagrant
+# Install Vagrant 2.0.3 or higher
 
-The vagrant version that Debian uses in its "stretch" release (i.e. the one you'd get if you ran
-`sudo apt-get install vagrant`) is 1.9.x. We want 2.x. Therefore our recommended method is to
-download the package from the vagrant website:
-
-https://www.vagrantup.com/downloads.html
-
-Download the 64-bit Debian option on that page.
-
-Use apt to install the downloaded package:
+As of this writing, the Vagrant version that Debian uses in its "stretch" release is 1.9.x so we
+suggest getting a package from Vagrant's web site:
 
 ```
-sudo apt install ~/Downloads/vagrant_<version_number>_x86_64.deb
+wget -c https://releases.hashicorp.com/vagrant/2.0.3/vagrant_2.0.4_x86_64.deb
+sudo dpkg -i vagrant_2.0.4_x86_64.deb
 ```
 
 Most recently tested 2018-04-23 with the following vagrant release:
