@@ -20,6 +20,7 @@ Install Dependencies
 If you're using one of the following platforms, see the linked instructions for that platform:
 
 - [Debian 9.x](dependency_install_steps_by_platform/Debian_9.x.md)
+- [Ubuntu 18.04.x](dependency_install_steps_by_platform/Ubuntu_18.04.x.md)
 - [macOS 10.13.x](dependency_install_steps_by_platform/macOS_10.13.x.md)
 
 
