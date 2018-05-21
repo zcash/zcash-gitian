@@ -143,7 +143,17 @@ Host github.com
 
 The 'User' entry should match your github username.
 
-[Test that ssh will successfully use your new key to connect to github.](https://help.github.com/articles/testing-your-ssh-connection/)
+Test that ssh will successfully use your new key to connect to github.
+
+```
+$ ssh -T git@github.com
+The authenticity of host 'github.com (192.30.253.112)' can't be established.
+RSA key fingerprint is SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'github.com,192.30.253.112' (RSA) to the list of known hosts.
+Hi harrypotter! You've successfully authenticated, but GitHub does not provide shell access.
+$
+```
 
 
 
