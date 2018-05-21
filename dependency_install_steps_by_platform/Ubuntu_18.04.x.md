@@ -14,7 +14,7 @@ Description:	Ubuntu 18.04 LTS
 ## Install Git, VirtualBox, Ansible, and GnuPG
 
 ```
-$ sudo apt-get install git virtualbox ansible gnupg2
+$ sudo apt install git virtualbox ansible gnupg2
 ```
 
 
