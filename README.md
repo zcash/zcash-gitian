@@ -184,7 +184,7 @@ You can generate a keypair specifically for zcash gitian builds with a command l
 
 
 ```
-$ gpg2 --quick-gen-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
+$ gpg2 --quick-generate-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
 gpg: key 3F0C2117D53A4A49 marked as ultimately trusted
 gpg: directory '/home/hpotter/.gnupg/openpgp-revocs.d' created
 gpg: revocation certificate stored as '/home/hpotter/.gnupg/openpgp-revocs.d/3F14A629C06FA31D59C64FE93F0C2117D53A4A49.rev'
