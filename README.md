@@ -226,6 +226,12 @@ or 16 characters. You should be able to use the truncated value.
 this is `hpotter`.
 
 
+## Specify the tag from the zcash repository you want to build
+
+Update the `zcash_version` entry in gitian.yml with the value of the tag you wish to build.
+
+For instance, `v1.1.1-rc1`
+
 
 ## Provision a virtual machine
 
