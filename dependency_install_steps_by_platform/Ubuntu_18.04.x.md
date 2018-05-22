@@ -11,10 +11,10 @@ Description:	Ubuntu 18.04 LTS
 
 
 
-## Install Git, VirtualBox, Ansible, and GnuPG
+## Install Git, VirtualBox, Ansible, GnuPG, and rng-tools
 
 ```
-$ sudo apt install git virtualbox ansible gnupg2
+$ sudo apt install git virtualbox ansible gnupg2 rng-tools
 ```
 
 
