@@ -2,7 +2,7 @@
 
 This document assumes you are starting from a fresh install of Ubuntu in the 18.04.x series.
 
-Most recently tested 2018-04-28 with the following ubuntu release:
+Most recently tested 2018-05-21 with the following ubuntu release:
 
 ```
 $ lsb_release --description
@@ -41,7 +41,7 @@ $ rm ./vagrant_2.0.4_x86_64.deb
 
 ## Versions
 
-Most recently tested 2018-04-28 with the following versions:
+Most recently tested 2018-05-21 with the following versions:
 
 
 ### Ubuntu
