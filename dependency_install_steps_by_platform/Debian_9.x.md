@@ -76,7 +76,7 @@ As of this writing, the Vagrant version that Debian uses in its "stretch" releas
 suggest getting a package from Vagrant's web site:
 
 ```
-wget -c https://releases.hashicorp.com/vagrant/2.0.3/vagrant_2.0.4_x86_64.deb
+wget -c https://releases.hashicorp.com/vagrant/2.0.4/vagrant_2.0.4_x86_64.deb
 sudo dpkg -i vagrant_2.0.4_x86_64.deb
 ```
 
