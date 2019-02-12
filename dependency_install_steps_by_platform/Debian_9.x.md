@@ -32,7 +32,7 @@ echo "deb http://ftp.us.debian.org/debian stretch-backports main contrib" | sudo
 Update your local package index
 
 ```
-sudo apt-get update
+sudo apt update
 ```
 
 Source: https://backports.debian.org/Instructions/
@@ -58,7 +58,7 @@ Oracle VM VirtualBox Manager 5.1.30_Debian
 ## Install git
 
 ```
-$ sudo apt-get install git
+$ sudo apt install git
 ```
 
 Most recently tested 2018-04-23 with the following git release:
@@ -95,7 +95,7 @@ We'll use this to install ansible, so we can be on a more current version of ans
 Debian provides with its 'stretch' distribution.
 
 ```
-sudo apt-get install python-pip
+sudo apt install python-pip
 ```
 
 Most recently tested 2018-04-23 with the following pip release:
@@ -155,7 +155,7 @@ symlinks from gpg2 to gpg.”
 https://packages.debian.org/stretch/gnupg2
 
 ```
-$ sudo apt-get install gnupg2
+$ sudo apt install gnupg2
 ```
 
 Most recently tested 2018-04-23 with the following GnuPG release:
