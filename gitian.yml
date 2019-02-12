@@ -4,12 +4,12 @@
   hosts: localhost:zcash-build
   vars:
     zcash_git_repo_url: https://github.com/zcash/zcash
-    zcash_version: v1.0.8-1
-    gpg_key_name: ''
-    git_name: ''
-    git_email: ''
-    gpg_key_id: '' # optional
-    ssh_key_name: '' # optional
+    zcash_version: v2.0.3
+    gpg_key_name: 'naimed'
+    git_name: 'ianamunoz'
+    git_email: 'naimed@z.cash'
+    gpg_key_id: '73DE7067BA256794'
+    ssh_key_name: 'naimed' # optional
   roles:
     - role: common
       tags: common
