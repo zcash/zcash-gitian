@@ -212,14 +212,12 @@ or 16 characters. You should be able to use the truncated value.
 - `gpg_key_name`: the the part before the @ symbol of the associated email address. In our example
 this is `hpotter`.
 
-
-
 ## Provision a virtual machine
 
 From the project root directory, run:
 
 ```
-$ vagrant up --provision zcash-build
+$ sudo vagrant up --provider=kvm --provision zcash-build 
 ```
 
 This will provision a Gitian host virtual machine that uses a Linux container (LXC) guest to perform
