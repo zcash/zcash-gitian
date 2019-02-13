@@ -138,7 +138,7 @@ ansible 2.5.1
 
 
 
-# Install GnuPG 2.x (2.11.18 or greater)
+# Install GnuPG 2.x (2.1.18 or greater)
 
 This is likely already installed and runnable via 'gpg'
 
