@@ -113,7 +113,7 @@ pip 9.0.1 from /usr/lib/python2.7/dist-packages (python 2.7)
 pip install --user -U ansible
 ```
 
-This will place an `ansible` executable in `~/.local/bin`, so add the following to `~/.profile`:
+This will place an `ansible` executable in `~/.local/bin`, so add the following to `~/.bashrc`:
 
 ```
 # set PATH so it includes user's private .local/bin if it exists
@@ -122,10 +122,10 @@ if [ -d "$HOME/.local/bin" ] ; then
 fi
 ```
 
-Then source .profile in your shell session:
+Then restart your shell or source .bashrc in your shell session:
 
 ```
-$ source .profile
+$ source .bashrc
 ```
 
 Most recently tested 2018-04-23 with the following ansible release:
