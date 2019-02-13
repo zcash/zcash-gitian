@@ -128,7 +128,7 @@ Some explanation of the arguments used in the above example:
 [Add the new key to your github account.](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/)
 
 Add an entry to ~/.ssh/config (create this file if necessary) telling ssh to use the keypair you
-generated above when connecting to github.com:
+generated above when connecting to github.com.
 
 For instance:
 
@@ -156,8 +156,10 @@ $ git clone git@github.com:zcash/zcash-gitian.git
 
 ## Add git and ssh config values to gitian.yml
 
-The `gitian.yml` file in the root of the project has some blank values that need to be filled in:
+The `gitian.yml` file in the root of the project has some blank values that need to be updated or
+filled in:
 
+- `zcash_version`: The git tag name of the version of zcash you want to build
 - `git_name`: You probably want the output from `git config user.name`
 - `git_email`: You probably want the output from `git config user.email`
 - `ssh_key_name`: The filename of your private key. In the steps above we used the name
