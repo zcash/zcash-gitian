@@ -2,11 +2,11 @@
 
 This document assumes you are starting from a fresh install of Debian in the 9.x series.
 
-Most recently tested 2018-04-23 with the following debian release:
+Most recently tested 2019-02-13 with the following debian release:
 
 ```
 $ lsb_release --description
-Description:	Debian GNU/Linux 9.4 (stretch)
+Description:	Debian GNU/Linux 9.7 (stretch)
 ```
 
 
@@ -45,11 +45,11 @@ Source: https://backports.debian.org/Instructions/
 sudo apt install virtualbox
 ```
 
-Most recently tested 2018-04-23 with the following virtualbox release:
+Most recently tested 2019-02-13 with the following virtualbox release:
 
 ```
 $ virtualbox --help
-Oracle VM VirtualBox Manager 5.1.30_Debian
+Oracle VM VirtualBox Manager 5.2.24_Debian
 ...
 ```
 
@@ -61,7 +61,7 @@ Oracle VM VirtualBox Manager 5.1.30_Debian
 $ sudo apt install git
 ```
 
-Most recently tested 2018-04-23 with the following git release:
+Most recently tested 2019-02-13 with the following git release:
 
 ```
 $ git --version
@@ -76,15 +76,16 @@ As of this writing, the Vagrant version that Debian uses in its "stretch" releas
 suggest getting a package from Vagrant's web site:
 
 ```
-wget -c https://releases.hashicorp.com/vagrant/2.0.4/vagrant_2.0.4_x86_64.deb
-sudo dpkg -i vagrant_2.0.4_x86_64.deb
+wget -c https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.deb
+sudo dpkg -i vagrant_2.2.3_x86_64.deb
+rm vagrant_2.2.3_x86_64.deb
 ```
 
-Most recently tested 2018-04-23 with the following vagrant release:
+Most recently tested 2019-02-13 with the following vagrant release:
 
 ```
 $ vagrant --version
-Vagrant 2.0.4
+Vagrant 2.2.3
 ```
 
 
@@ -98,7 +99,7 @@ Debian provides with its 'stretch' distribution.
 sudo apt install python-pip
 ```
 
-Most recently tested 2018-04-23 with the following pip release:
+Most recently tested 2019-02-13 with the following pip release:
 
 ```
 $ pip --version
@@ -128,11 +129,11 @@ Then restart your shell or source .bashrc in your shell session:
 $ source .bashrc
 ```
 
-Most recently tested 2018-04-23 with the following ansible release:
+Most recently tested 2019-02-13 with the following ansible release:
 
 ```
 $ ansible --version
-ansible 2.5.1
+ansible 2.7.7
 ...
 ```
 
@@ -158,7 +159,7 @@ https://packages.debian.org/stretch/gnupg2
 $ sudo apt install gnupg2
 ```
 
-Most recently tested 2018-04-23 with the following GnuPG release:
+Most recently tested 2019-02-13 with the following GnuPG release:
 
 ```
 $ gpg2 --version
