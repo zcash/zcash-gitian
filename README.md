@@ -82,7 +82,7 @@ https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration
 
 
 
-## Decide on an ssh keypair for gitian to use when connecting to github
+## Decide on an ssh keypair to use when uploading build signatures to github
 
 You can generate a keypair specifically for connecting to github like this:
 
