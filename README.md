@@ -17,20 +17,21 @@ Requirements
 Install Dependencies
 --------------------
 
-Install the following software:
+If you're using one of the following platforms, see the linked instructions for that platform:
+
+- [Debian 9.x](dependency_install_steps_by_platform/Debian_9.x.md)
+- [macOS 10.13.x](dependency_install_steps_by_platform/macOS_10.13.x.md)
+
+
+If you're not using one of the platforms that we have specific instructions for, this is the list of
+dependencies we want. Please document the steps involved and we can add another platform to the list
+above!
 
 - [Git](https://git-scm.com/)
 - [VirtualBox](https://www.virtualbox.org/)
 - [Vagrant](https://www.vagrantup.com/) 2.0.3 or higher
 - [Ansible](https://www.ansible.com/) 2.4.x or higher
 - [GnuPG](https://www.gnupg.org/) 2.x (2.11.18 or greater) and make sure it is callable via `gpg2`
-
-For more detailed recommendations on steps to install these dependencies on some platforms we have
-used, see the following documents:
-
-- [Debian 9.x](dependency_install_steps_by_platform/Debian_9.x.md)
-- [macOS 10.13.x](dependency_install_steps_by_platform/macOS_10.13.x.md)
-
 
 
 ## Install the `vagrant-disksize` plugin to support resize of the start up disk:
