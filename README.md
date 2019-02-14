@@ -12,8 +12,7 @@ More independent Gitian builders are needed, which is why this guide exists.
 Requirements
 ------------
 
-6GB of RAM, at least two cores. Four cores are recommended, as this has been seen to resolve a
-deadlock condition in the VM provisioning step.
+6GB of RAM, four cores.
 
 Install Dependencies
 --------------------
