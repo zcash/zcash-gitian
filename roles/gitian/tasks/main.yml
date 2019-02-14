@@ -172,7 +172,7 @@
     seconds: 10
 
 - name: Set Git username.
-  command: "git config --global user.name '{{ git_name }}'"
+  command: "git config --global user.name \"{{ git_name }}\""
   become_user: "{{ gitian_user }}"
 
 - name: Set Git email address.
