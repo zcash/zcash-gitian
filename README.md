@@ -128,7 +128,7 @@ Some explanation of the arguments used in the above example:
 
 [Add the new key to your github account.](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/)
 
-Add an entry to ~/.ssh/config (create this file if necessary) telling ssh to use the keypair you
+Add an entry to `~/.ssh/config` (create this file if necessary) telling ssh to use the keypair you
 generated above when connecting to github.com.
 
 For instance:
