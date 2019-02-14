@@ -20,6 +20,7 @@ Install Dependencies
 If you're using one of the following platforms, see the linked instructions for that platform:
 
 - [Debian 9.x](dependency_install_steps_by_platform/Debian_9.x.md)
+- [Ubuntu 18.04.x](dependency_install_steps_by_platform/Ubuntu_18.04.x.md)
 - [macOS 10.13.x](dependency_install_steps_by_platform/macOS_10.13.x.md)
 
 
@@ -142,7 +143,17 @@ Host github.com
 
 The 'User' entry should match your github username.
 
-[Test that ssh will successfully use your new key to connect to github.](https://help.github.com/articles/testing-your-ssh-connection/)
+Test that ssh will successfully use your new key to connect to github.
+
+```
+$ ssh -T git@github.com
+The authenticity of host 'github.com (192.30.253.112)' can't be established.
+RSA key fingerprint is SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'github.com,192.30.253.112' (RSA) to the list of known hosts.
+Hi harrypotter! You've successfully authenticated, but GitHub does not provide shell access.
+$
+```
 
 
 
@@ -173,7 +184,7 @@ You can generate a keypair specifically for zcash gitian builds with a command l
 
 
 ```
-$ gpg2 --quick-gen-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
+$ gpg2 --quick-generate-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
 gpg: key 3F0C2117D53A4A49 marked as ultimately trusted
 gpg: directory '/home/hpotter/.gnupg/openpgp-revocs.d' created
 gpg: revocation certificate stored as '/home/hpotter/.gnupg/openpgp-revocs.d/3F14A629C06FA31D59C64FE93F0C2117D53A4A49.rev'
@@ -211,9 +222,15 @@ Update the `gpg_key_id` and `gpg_key_name` entries in `gitian.yml` as follows:
 `3F14A629C06FA31D59C64FE93F0C2117D53A4A49`. Some versions of gpg may truncate this value, e.g. to 8
 or 16 characters. You should be able to use the truncated value.
 
-- `gpg_key_name`: the the part before the @ symbol of the associated email address. In our example
+- `gpg_key_name`: the part before the @ symbol of the associated email address. In our example
 this is `hpotter`.
 
+
+## Specify the tag from the zcash repository you want to build
+
+Update the `zcash_version` entry in gitian.yml with the value of the tag you wish to build.
+
+For instance, `v1.1.1-rc1`
 
 
 ## Provision a virtual machine
