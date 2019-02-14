@@ -240,14 +240,67 @@ the actual builds.
 Use `git stash` to save one's local customizations to `gitian.yml`.
 
 
+Load your ssh key into ssh-agent
+--------------------------------
+
+Load your ssh key (for pushing signatures to github) into ssh-agent. The approach here is to allow
+programs in the zcash-build VM to connect to ssh-agent to perform operations with the private key.
+This way, we don't need to copy ssh keys into the VM. You can verify that the key is loaded by
+running `ssh-add -l`.
+
+```
+$ ssh-add -l
+The agent has no identities.
+
+$ ssh-add ~/.ssh/github_id_rsa
+Identity added: /home/hpotter/.ssh/github_id_rsa (/home/hpotter/.ssh/github_id_rsa)
+
+$ ssh-add -l
+4096 SHA256:4fFdwJ71VIpF5cW0dqrsU7jxjctaFcAKmdQZPEqR0Y4 /home/hpotter/.ssh/github_id_rsa (RSA)
+```
+
+
+SSH into the VM
+---------------
+
+Vagrant should now show that the new VM is in the 'running' state:
+
+```
+$ vagrant status
+Current machine states:
+
+zcash-build               running (virtualbox)
+
+The VM is running. To stop this VM, you can run `vagrant halt` to
+shut it down forcefully, or you can run `vagrant suspend` to simply
+suspend the virtual machine. In either case, to restart it again,
+simply run `vagrant up`.
+```
+
+Use the `vagrant ssh` command to start a shell session in the VM. Once in that session, you can use
+ssh-add again to see that your forwarded key is available, and check that you can use that key to
+authenticate to github.
+
+```
+$ vagrant ssh zcash-build
+[...]
+
+# on the virtualbox vm
+$ ssh-add -l
+4096 d1:43:75:a7:95:65:9e:d4:8e:57:d8:98:58:7d:92:4c /home/hpotter/.ssh/github_id_rsa (RSA)
+
+$ ssh -T git@github.com
+Warning: Permanently added the RSA host key for IP address '192.30.253.112' to the list of known hosts.
+Hi harrypotter! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
 
 Building Zcash
 --------------
 
+Once in a shell session in the VM, we're ready to run the gitian build.
+
 ```
-# on your host machine
-$ vagrant ssh zcash-build
-[...]
 # on the virtualbox vm
 $ ./gitian-build.sh
 ```
