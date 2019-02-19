@@ -211,11 +211,6 @@
   become: no
   when: gpg_key_id is defined and gpg_key_id != ''
 
-- include_tasks: ssh.yml
-  tags: ssh
-  become: no
-  when: ssh_key_name is defined and ssh_key_name != ''
-
 - name: Display help message.
   debug:
     msg: >-
