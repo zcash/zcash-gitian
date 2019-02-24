@@ -11,46 +11,82 @@ Description:	Debian GNU/Linux 9.7 (stretch)
 
 
 
-## Set up Debian backports
-
-This will aid in the installation of VirtualBox.
-
-Add stretch-backports to your system's apt sources with 'main' and 'contrib' entries.
-
-```
-echo "deb http://ftp.debian.org/debian stretch-backports main contrib" | sudo tee /etc/apt/sources.list.d/stretch-backports.list
-```
-
-You may also select a different mirror site from Debian's list at https://www.debian.org/mirror/list
-
-For instance, to instead use Debian's primary United States mirror:
-
-```
-echo "deb http://ftp.us.debian.org/debian stretch-backports main contrib" | sudo tee /etc/apt/sources.list.d/stretch-backports.list
-```
-
-Update your local package index
-
-```
-sudo apt update
-```
-
-Source: https://backports.debian.org/Instructions/
-
-
-
 # Install VirtualBox
 
+Virtualbox is the configured VM provider in this project's Vagrantfile.
+
+Add Oracle's VirtualBox apt repository to your system's apt sources:
+
 ```
-sudo apt install virtualbox
+sudo apt-add-repository "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -sc) contrib"
 ```
 
-Most recently tested 2019-02-13 with the following virtualbox release:
+Verify that the source was added:
+
+```
+$ grep -iR virtualbox /etc/apt/sources.list*
+/etc/apt/sources.list:deb http://download.virtualbox.org/virtualbox/debian stretch contrib
+/etc/apt/sources.list:# deb-src http://download.virtualbox.org/virtualbox/debian stretch contrib
+```
+
+Download and register the public gpg key used by Oracle to secure the above
+repository:
+
+```
+$ wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+OK
+```
+
+Verify that the key was added
+
+```
+$ apt-key list "B9F8 D658 297A F3EF C18D  5CDF A2F6 83C5 2980 AECF"
+pub   rsa4096 2016-04-22 [SC]
+      B9F8 D658 297A F3EF C18D  5CDF A2F6 83C5 2980 AECF
+uid           [ unknown] Oracle Corporation (VirtualBox archive signing key) <info@virtualbox.org>
+sub   rsa4096 2016-04-22 [E]
+```
+
+Update your local apt package metadata
+
+```
+$ sudo apt update
+[...]
+```
+
+This command will show the available versions of virtualbox from the apt
+repository:
+
+```
+$ sudo apt install virtualbox
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+Package virtualbox is a virtual package provided by:
+  virtualbox-6.0 6.0.4-128413~Debian~stretch
+  virtualbox-5.2 5.2.26-128414~Debian~stretch
+  virtualbox-5.1 5.1.38-122592~Debian~stretch
+  virtualbox-5.0 5.0.40-115130~Debian~stretch
+You should explicitly select one to install.
+
+E: Package 'virtualbox' has no installation candidate
+```
+
+Decide on the version you want and specify the version number to install it:
+
+```
+$ sudo apt install virtualbox-6.0 -y
+[...]
+```
+
+Source: https://www.virtualbox.org/wiki/Linux_Downloads#Debian-basedLinuxdistributions
+
+Most recently tested 2019-02-24 with the following virtualbox release:
 
 ```
 $ virtualbox --help
-Oracle VM VirtualBox Manager 5.2.24_Debian
-...
+Oracle VM VirtualBox VM Selector v6.0.4
+[...]
 ```
 
 
