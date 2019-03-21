@@ -153,3 +153,43 @@ $ gpg2 --version
 gpg (GnuPG) 2.1.18
 ...
 ```
+
+
+
+# Install direnv (Optional/Recommended)
+
+This tool sets and unsets environment variables as you change directories in a shell session,
+providing a convenient facility for setting up project-specific environment variables as an
+alternative to the common practice of adding project-specific configuration values to places like
+dotfiles in $HOME.
+
+```
+sudo apt install direnv
+```
+
+To activate direnv when starting bash (the default shell on Debian 9), add the following line to the
+end of `~/.bashrc`:
+
+```
+eval "$(direnv hook bash)"
+```
+
+direnv works by incorporating a call to `_direnv_hook` in the `PROMPT_COMMAND` shell variable. You
+can check that this was done by starting a new bash session and checking whether that value is
+present:
+
+```
+$ echo $PROMPT_COMMAND
+_direnv_hook;
+```
+
+direnv also supports several other shells -- zsh, fish, tcsh, and elvish as of this writing. Its
+website includes instructions for enabling each of the shells it supports.
+
+Most recently tested 2019-03-21 with the following direnv release:
+
+```
+$ direnv --help
+direnv v2.10.0
+[...]
+```
