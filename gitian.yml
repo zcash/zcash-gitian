@@ -5,10 +5,10 @@
   vars:
     zcash_git_repo_url: "{{ lookup('env','ZCASH_GIT_REPO_URL') }}"
     zcash_version: "{{ lookup('env','ZCASH_VERSION') }}"
-    gpg_key_name: ''
+    gpg_key_name: "{{ lookup('env','GPG_KEY_NAME') }}"
     git_name: "{{ lookup('env','GIT_NAME') }}"
     git_email: "{{ lookup('env','GIT_EMAIL') }}"
-    gpg_key_id: ''
+    gpg_key_id: "{{ lookup('env','GPG_KEY_ID') }}"
   roles:
     - role: common
       tags: common
