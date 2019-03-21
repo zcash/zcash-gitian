@@ -174,6 +174,27 @@ zcash-gitian
 ```
 
 
+## Copy example environment configuration files
+
+The files `.env.example` and `.envrc.example` are tracked in the repo as example configurations you
+should be able to use to get started. The filenames `.env` and `.envrc` are `.gitignore`'d to allow
+you to easily make local customizations that don't show up as untracked changes.
+
+Note that `.envrc` is probably only useful if you are using `direnv`. If you're not, you can ignore
+that file and the places below that talk about it, and use your preferred way of managing
+environment variables instead.
+
+```
+zcash-gitian$ cp .env.example .env
+zcash-gitian$ cp .envrc.example .envrc
+direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
+zcash-gitian$
+```
+
+More on that above message in the following section...
+
+
+
 
 ## Add git config values to gitian.yml
 
