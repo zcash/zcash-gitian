@@ -126,24 +126,6 @@ Vagrant 2.2.4
 
 
 
-# Install pip (python package manager)
-
-We'll use this to install ansible, so we can be on a more current version of ansible than the one
-Debian provides with its 'stretch' distribution.
-
-```
-sudo apt install python-pip
-```
-
-Most recently tested 2019-02-13 with the following pip release:
-
-```
-$ pip --version
-pip 9.0.1 from /usr/lib/python2.7/dist-packages (python 2.7)
-```
-
-
-
 # Install ansible 2.4.x or higher
 
 ```
