@@ -400,13 +400,13 @@ uid           [ultimate] Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>
 sub   rsa2048 2018-04-23 [E]
 ```
 
-Update the `gpg_key_id` and `gpg_key_name` entries in `gitian.yml` as follows:
+Update your `GPG_KEY_ID` and `GPG_KEY_NAME` variables in `.env` as follows:
 
-- `gpg_key_id`: In the example output shown here, this is the 40 character string
+- `GPG_KEY_ID`: In the example output shown here, this is the 40 character string
 `3F14A629C06FA31D59C64FE93F0C2117D53A4A49`. Some versions of gpg may truncate this value, e.g. to 8
 or 16 characters. You should be able to use the truncated value.
 
-- `gpg_key_name`: the part before the @ symbol of the associated email address. In our example
+- `GPG_KEY_NAME`: the part before the @ symbol of the associated email address. In our example
 this is `hpotter`.
 
 
