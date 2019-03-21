@@ -267,15 +267,6 @@ zcash-gitian$
 ```
 
 
-## Add git config values to gitian.yml
-
-The `gitian.yml` file in the root of the project has some blank values that need to be updated or
-filled in:
-
-- `zcash_version`: The git tag name of the version of zcash you want to build
-- `git_name`: You probably want the output from `git config user.name`
-- `git_email`: You probably want the output from `git config user.email`
-
 
 
 ## Decide on a gpg keypair to use for gitian
