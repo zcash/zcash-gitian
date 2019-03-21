@@ -447,6 +447,14 @@ directory for your signatures in our `gitian.sigs` repository. We suggest using 
 of the email address associated with your GPG key. In our example this is `hpotter`.
 
 
+
+## Configure the version of zcash you want to build and sign
+
+Set the value of the `ZCASH_VERSION` variable in `.env` to point to the zcash commit you want to
+create a signature for. Likely you want the name of a git tag, such as `v2.0.4`.
+
+
+
 ## Provision a virtual machine
 
 From the project root directory, run:
