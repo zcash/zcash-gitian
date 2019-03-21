@@ -126,37 +126,6 @@ Vagrant 2.2.4
 
 
 
-# Install ansible 2.4.x or higher
-
-```
-pip install --user -U ansible
-```
-
-This will place an `ansible` executable in `~/.local/bin`, so add the following to `~/.bashrc`:
-
-```
-# set PATH so it includes user's private .local/bin if it exists
-if [ -d "$HOME/.local/bin" ] ; then
-    PATH="$HOME/.local/bin:$PATH"
-fi
-```
-
-Then restart your shell or source .bashrc in your shell session:
-
-```
-$ source .bashrc
-```
-
-Most recently tested 2019-02-13 with the following ansible release:
-
-```
-$ ansible --version
-ansible 2.7.7
-...
-```
-
-
-
 # Install GnuPG 2.x (2.1.18 or greater)
 
 This is likely already installed and runnable via 'gpg'
