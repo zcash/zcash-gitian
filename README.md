@@ -195,6 +195,77 @@ More on that above message in the following section...
 
 
 
+## Enable auto-execution of .envrc
+
+If you installed and activated `direnv`, it will detect when `.envrc` is created in your current
+directory, as shown above. As a security precaution, it won't automatically run it without your
+approval (to prevent untrusted code from doing something malicious). Let's take a look at what's in
+the file:
+
+```
+zcash-gitian$ cat .envrc
+source_up
+dotenv
+
+export GIT_NAME=`git config user.name`
+export GIT_EMAIL=`git config user.email`
+direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
+zcash-gitian$
+```
+
+Some explanation of the lines in the above `.envrc` file:
+
+```
+`source_up`                        Load any .envrc higher up in the folder structure. So if for
+                                   example you place an `.envrc` in your home directory, variables
+                                   set there will still be available within this project, rather
+                                   than being overridden by this project's `.envrc`.
+
+`dotenv`                           Set the environment variables defined in `.env`. Think of
+                                   `.envrc` as code (it runs in a bash interpreter with some extra
+                                   functions added) and `.env` as data (you can basically just set
+                                   literal values, and each update to it doesn't require approval).
+
+
+export GIT_NAME=`git config user.name`
+export GIT_EMAIL=`git config user.email`
+
+                                   Use your local git configuration values for the name and email
+                                   that will be used to add build signatures inside the virtual
+                                   environment.
+```
+
+
+If you're ok with running `.envrc`, follow the directions in the prompt to allow it.
+
+```
+zcash-gitian$ echo $ZCASH_GIT_REPO_URL
+
+direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
+zcash-gitian$ direnv allow
+direnv: loading .envrc
+direnv: export +GIT_EMAIL +GIT_NAME +ZCASH_GIT_REPO_URL +ZCASH_VERSION
+zcash-gitian$ echo $ZCASH_GIT_REPO_URL
+https://github.com/zcash/zcash
+zcash-gitian$
+```
+
+A variable defined in `.env` is now active in our environment. If we leave this project, it is
+unloaded. When we return, it is reloaded:
+
+```
+zcash-gitian$ cd ..
+direnv: unloading
+$ echo $ZCASH_GIT_REPO_URL
+
+$ cd zcash-gitian/
+direnv: loading .envrc
+direnv: export +GIT_EMAIL +GIT_NAME +ZCASH_GIT_REPO_URL +ZCASH_VERSION
+zcash-gitian$ echo $ZCASH_GIT_REPO_URL
+https://github.com/zcash/zcash
+zcash-gitian$
+```
+
 
 ## Add git config values to gitian.yml
 
