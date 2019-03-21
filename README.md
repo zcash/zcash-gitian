@@ -76,8 +76,8 @@ $ git config user.email
 hpotter@hogwarts.wiz
 ```
 
-This is all the configuration needed for the steps below, but here is a good reference for further
-reading on configuring git:
+This is all the git configuration needed for the steps below, but here is a good reference for
+further reading on configuring git:
 
 https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration
 
