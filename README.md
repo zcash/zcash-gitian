@@ -33,6 +33,7 @@ above!
 - [Vagrant](https://www.vagrantup.com/) 2.0.3 or higher
 - [GnuPG](https://www.gnupg.org/) 2.x (2.11.18 or greater) and make sure it is callable via `gpg2`
 - [Python](https://python.org/) Preferably 3.x
+- [direnv](https://direnv.net/) (Optional/Recommended)
 
 
 ## Install the `vagrant-disksize` plugin to support resize of the start up disk:
