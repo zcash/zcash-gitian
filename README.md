@@ -244,7 +244,7 @@ zcash-gitian$ echo $ZCASH_GIT_REPO_URL
 direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
 zcash-gitian$ direnv allow
 direnv: loading .envrc
-direnv: export +GIT_EMAIL +GIT_NAME +ZCASH_GIT_REPO_URL +ZCASH_VERSION
+direnv: export +GIT_EMAIL +GIT_NAME +GPG_KEY_ID +GPG_KEY_NAME +ZCASH_GIT_REPO_URL +ZCASH_VERSION
 zcash-gitian$ echo $ZCASH_GIT_REPO_URL
 https://github.com/zcash/zcash
 zcash-gitian$
@@ -260,7 +260,7 @@ $ echo $ZCASH_GIT_REPO_URL
 
 $ cd zcash-gitian/
 direnv: loading .envrc
-direnv: export +GIT_EMAIL +GIT_NAME +ZCASH_GIT_REPO_URL +ZCASH_VERSION
+direnv: export +GIT_EMAIL +GIT_NAME +GPG_KEY_ID +GPG_KEY_NAME +ZCASH_GIT_REPO_URL +ZCASH_VERSION
 zcash-gitian$ echo $ZCASH_GIT_REPO_URL
 https://github.com/zcash/zcash
 zcash-gitian$
@@ -338,7 +338,7 @@ zcash-gitian$ echo "load_prefix local/python_v3.7.2_venv" >> .envrc
 direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
 zcash-gitian$ direnv allow
 direnv: loading .envrc
-direnv: export +CPATH +GIT_EMAIL +GIT_NAME +LD_LIBRARY_PATH +LIBRARY_PATH +MANPATH +PKG_CONFIG_PATH +ZCASH_GIT_REPO_URL +ZCASH_VERSION ~PATH
+direnv: export +CPATH +GIT_EMAIL +GIT_NAME +GPG_KEY_ID +GPG_KEY_NAME +LD_LIBRARY_PATH +LIBRARY_PATH +MANPATH +PKG_CONFIG_PATH +ZCASH_GIT_REPO_URL +ZCASH_VERSION ~PATH
 zcash-gitian$
 ```
 
