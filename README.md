@@ -266,6 +266,95 @@ https://github.com/zcash/zcash
 zcash-gitian$
 ```
 
+Project-specific environment settings will come in handy in the next step, when we'll create an
+isolated python virtual environment specifically for use with this project.
+
+
+
+## Create a python virtual environment for this project
+
+When creating a virtual environment, call the python executable you want the virtual environment to
+use. The location and version will depend on your specific setup -- your OS may provide a suitably
+current python interpreter, or you may have built and installed one yourself. If it's in your PATH,
+a command like `type python3` should tell you where it is installed on your system. For example:
+
+```
+zcash-gitian$ type python3
+python3 is /usr/local/bin/python3
+zcash-gitian$ /usr/local/python3 --version
+Python 3.7.2
+```
+
+We can use python's built-in `venv` module to create a virtual environment:
+
+```
+zcash-gitian$ /usr/local/bin/python3 -m venv local/python_v3.7.2_venv
+```
+
+Translation: "Create a virtual environment at ./local/python_v3.7.2_venv".
+
+The project subdirectory `local` is `.gitignored` to provide a convenient location for files we
+don't want to commit and track in version control.
+
+You should now have a tree of directories and files in `local/python_v3.7.2_venv`:
+
+```
+zcash-gitian$ ls -F local/python_v3.7.2_venv/
+bin/    include/  lib/    pyvenv.cfg
+```
+
+Inside the `bin` directory, among other things, are the entries `python` and `python3`, which are
+symlinks that point back to the `python3` executable we used to create this environment:
+
+```
+zcash-gitian$ ls -F local/python_v3.7.2_venv/bin/
+activate        activate.fish   easy_install-3.7*  pip3*       python@
+activate.csh    easy_install*   pip*               pip3.7*     python3@
+```
+
+A python virtual environment is 'active' if the python interpreter being executed is run from its
+path inside the environment's `bin` directory. Even though the file being executed is the same
+whether run directly or via a symlink, it pays attention to the path of the command that was used to
+run it.
+
+An `activate` script is provided, and you can use that, but if you're using `direnv` you can set up
+a simple automatic activation for the project directory by adding the following line to `.envrc`:
+
+```
+load_prefix local/python_v3.7.2_venv
+```
+
+The command `load_prefix` is provided by `direnv` to modify a whole set of common "path" variables
+(including PATH) according to a common unix pattern.
+
+Let's add that line now:
+
+```
+zcash-gitian$ echo "load_prefix local/python_v3.7.2_venv" >> .envrc
+direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
+zcash-gitian$ direnv allow
+direnv: loading .envrc
+direnv: export +CPATH +GIT_EMAIL +GIT_NAME +LD_LIBRARY_PATH +LIBRARY_PATH +MANPATH +PKG_CONFIG_PATH +ZCASH_GIT_REPO_URL +ZCASH_VERSION ~PATH
+zcash-gitian$
+```
+
+When the content of `.envrc` is changed, it needs to be approved again (another security
+precaution). Then, several variables were set or updated to add paths within our virtual environment
+directory at the front (left side) of the list. Let's look at PATH and its effect on which `python`
+locations we default to:
+
+```
+zcash-gitian$ echo $PATH
+/Users/harrypotter/Projects/zcash-gitian/local/python_v3.7.2_venv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+zcash-gitian$ type python
+python is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.7.2_venv/bin/python
+zcash-gitian$ type python3
+python3 is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.7.2_venv/bin/python3
+```
+
+Since the `python` and `python3` commands will now run from the locations we've installed into our
+project's virtual environment while we are in the project directory, we can consider the virtual
+environment active when using a shell at (or below) that location.
 
 
 
