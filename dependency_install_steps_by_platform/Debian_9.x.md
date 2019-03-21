@@ -146,7 +146,7 @@ https://packages.debian.org/stretch/gnupg2
 $ sudo apt install gnupg2
 ```
 
-Most recently tested 2019-02-13 with the following GnuPG release:
+Most recently tested 2019-03-21 with the following GnuPG release:
 
 ```
 $ gpg2 --version
