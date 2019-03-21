@@ -362,6 +362,21 @@ environment active when using a shell at (or below) that location.
 
 
 
+## Upgrade pip
+
+`pip` has a command to upgrade itself. Let's go ahead and run that:
+
+```
+zcash-gitian$ pip --version
+pip 18.1 from /Users/harrypotter/Projects/zcash-gitian/local/python_v3.7.2_venv/lib/python3.7/site-packages/pip (python 3.7)
+zcash-gitian$ pip install --upgrade pip
+Collecting pip
+[...]
+Successfully installed pip-19.0.3
+```
+
+
+
 ## Decide on a gpg keypair to use for gitian
 
 You can generate a keypair specifically for zcash gitian builds with a command like the one below.
