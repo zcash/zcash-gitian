@@ -1,3 +1,5 @@
+.env
+.envrc
 .vagrant/*
 *.swp
 gitian.sigs/*

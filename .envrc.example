@@ -1,0 +1,5 @@
+source_up
+dotenv
+
+export GIT_NAME=`git config user.name`
+export GIT_EMAIL=`git config user.email`
