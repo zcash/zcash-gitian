@@ -42,11 +42,11 @@ above!
 $ vagrant plugin install vagrant-disksize
 ```
 
-Most recently tested 2019-02-13 with the following vagrant-disksize release:
+Most recently tested 2019-03-21 with the following vagrant-disksize release:
 
 ```
 $ vagrant plugin list
-vagrant-disksize (0.1.3)
+vagrant-disksize (0.1.3, global)
 ```
 
 
