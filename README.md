@@ -377,6 +377,27 @@ Successfully installed pip-19.0.3
 
 
 
+## Install pip packages
+
+We have some dependencies to install as python packages, using the pip package manager installed
+above. The set we need, with version numbers managed via git, is in `requirements-pip.lock`; we can
+run `pip install` with that file as input:
+
+```
+zcash-gitian$ pip install --requirement requirements-pip.lock
+```
+
+Check that you can run `ansible` from the command line:
+
+```
+zcash-gitian$ ansible --version
+ansible 2.7.9
+[...]
+zcash-gitian$
+```
+
+
+
 ## Decide on a gpg keypair to use for gitian
 
 You can generate a keypair specifically for zcash gitian builds with a command like the one below.
