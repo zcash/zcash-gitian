@@ -160,8 +160,17 @@ $
 
 ## Clone this git project on your machine
 
+From a location where you want to place your local clone of this repository (e.g. `~/Projects`)
+
 ```
 $ git clone git@github.com:zcash/zcash-gitian.git
+```
+
+cd into the project repo
+
+```
+$ cd zcash-gitian
+zcash-gitian
 ```
 
 
