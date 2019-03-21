@@ -156,6 +156,27 @@ gpg (GnuPG) 2.1.18
 
 
 
+# Install venv support
+
+`venv` is a python module used to create isolated project-specific environments, so that projects on
+the same computer can each use their own version of the python executable and their own set of
+installed python modules.
+
+`python3-venv` is an `apt` package that includes support for using the `venv` python module.
+
+```
+sudo apt install python3-venv
+```
+
+Most recently tested 2019-03-05 with the following python3-venv release:
+
+```
+$ dpkg --status python3-venv | grep Version
+Version: 3.5.3-1
+```
+
+
+
 # Install direnv (Optional/Recommended)
 
 This tool sets and unsets environment variables as you change directories in a shell session,
