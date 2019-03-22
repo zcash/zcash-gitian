@@ -466,8 +466,6 @@ zcash-gitian$ vagrant up --provision zcash-build
 This will provision a Gitian host virtual machine that uses a Linux container (LXC) guest to perform
 the actual builds.
 
-Use `git stash` to save one's local customizations to `gitian.yml`.
-
 
 Load your ssh key into ssh-agent
 --------------------------------
