@@ -460,7 +460,7 @@ create a signature for. Likely you want the name of a git tag, such as `v2.0.4`.
 From the project root directory, run:
 
 ```
-$ vagrant up --provision zcash-build
+zcash-gitian$ vagrant up --provision zcash-build
 ```
 
 This will provision a Gitian host virtual machine that uses a Linux container (LXC) guest to perform
@@ -478,13 +478,13 @@ This way, we don't need to copy ssh keys into the VM. You can verify that the ke
 running `ssh-add -l`.
 
 ```
-$ ssh-add -l
+zcash-gitian$ ssh-add -l
 The agent has no identities.
 
-$ ssh-add ~/.ssh/github_id_rsa
+zcash-gitian$ ssh-add ~/.ssh/github_id_rsa
 Identity added: /home/hpotter/.ssh/github_id_rsa (/home/hpotter/.ssh/github_id_rsa)
 
-$ ssh-add -l
+zcash-gitian$ ssh-add -l
 4096 SHA256:4fFdwJ71VIpF5cW0dqrsU7jxjctaFcAKmdQZPEqR0Y4 /home/hpotter/.ssh/github_id_rsa (RSA)
 ```
 
@@ -495,7 +495,7 @@ SSH into the VM
 Vagrant should now show that the new VM is in the 'running' state:
 
 ```
-$ vagrant status
+zcash-gitian$ vagrant status
 Current machine states:
 
 zcash-build               running (virtualbox)
@@ -511,14 +511,14 @@ ssh-add again to see that your forwarded key is available, and check that you ca
 authenticate to github.
 
 ```
-$ vagrant ssh zcash-build
+zcash-gitian$ vagrant ssh zcash-build
 [...]
 
 # on the virtualbox vm
-$ ssh-add -l
+vagrant@zcash-build:~$ ssh-add -l
 4096 d1:43:75:a7:95:65:9e:d4:8e:57:d8:98:58:7d:92:4c /home/hpotter/.ssh/github_id_rsa (RSA)
 
-$ ssh -T git@github.com
+vagrant@zcash-build:~$ ssh -T git@github.com
 Warning: Permanently added the RSA host key for IP address '192.30.253.112' to the list of known hosts.
 Hi harrypotter! You've successfully authenticated, but GitHub does not provide shell access.
 ```
@@ -531,7 +531,7 @@ Once in a shell session in the VM, we're ready to run the gitian build.
 
 ```
 # on the virtualbox vm
-$ ./gitian-build.sh
+vagrant@zcash-build:~$ ./gitian-build.sh
 ```
 
 The output from `gbuild` is informative. There are some common warnings which can be ignored, e.g. if you get an intermittent privileges error related to LXC then just execute the script again. The most important thing is that one reaches the step which says `Running build script (log in var/build.log)`. If not, then something else is wrong and you should let us know.
