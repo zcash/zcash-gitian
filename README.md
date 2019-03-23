@@ -36,20 +36,6 @@ above!
 - [direnv](https://direnv.net/) (Optional/Recommended)
 
 
-## Install the `vagrant-disksize` plugin to support resize of the start up disk:
-
-```
-$ vagrant plugin install vagrant-disksize
-```
-
-Most recently tested 2019-03-21 with the following vagrant-disksize release:
-
-```
-$ vagrant plugin list
-vagrant-disksize (0.1.3, global)
-```
-
-
 
 Configuration
 -------------
@@ -445,6 +431,21 @@ or 16 characters. You should be able to use the truncated value.
 - `GPG_KEY_NAME`: This is passed as the '--signer' argument to Gitian, and used as the name of a
 directory for your signatures in our `gitian.sigs` repository. We suggest using the username portion
 of the email address associated with your GPG key. In our example this is `hpotter`.
+
+
+
+## Install the `vagrant-disksize` plugin to support resize of the start up disk:
+
+```
+zcash-gitian$ vagrant plugin install vagrant-disksize
+```
+
+Most recently tested 2019-03-21 with the following vagrant-disksize release:
+
+```
+zcash-gitian$ vagrant plugin list
+vagrant-disksize (0.1.3, global)
+```
 
 
 
