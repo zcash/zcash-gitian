@@ -107,16 +107,16 @@
     group: root
     mode: "0644"
 
-- name: Set up jessie-backports.
+- name: Set up stretch-backports.
   apt_repository:
-    repo: 'deb http://httpredir.debian.org/debian/ jessie-backports main'
+    repo: 'deb http://httpredir.debian.org/debian/ stretch-backports main'
     state: present
 
 - name: Install updated version of LXC.
   apt:
     name: lxc
     state: latest
-    default_release: jessie-backports
+    default_release: stretch-backports
     update_cache: yes
     cache_valid_time: 3600
 
@@ -190,11 +190,11 @@
 
 - name: Check for presence of Gitian LXC image.
   stat:
-    path: "/home/{{ gitian_user }}/gitian-builder/base-jessie-amd64"
+    path: "/home/{{ gitian_user }}/gitian-builder/base-stretch-amd64"
   register: gitian_lxc_image
 
 - name: Set up the Gitian LXC image.
-  shell: "source ~/.profile && /home/{{ gitian_user }}/gitian-builder/bin/make-base-vm --lxc --arch amd64 --distro debian --suite jessie"
+  shell: "source ~/.profile && /home/{{ gitian_user }}/gitian-builder/bin/make-base-vm --lxc --arch amd64 --distro debian --suite stretch"
   when: gitian_lxc_image.stat.exists == false
   become: yes
   become_user: "{{ gitian_user }}"

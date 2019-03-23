@@ -23,7 +23,7 @@ fi
 
 alias gpg='gpg2'
 export DISTRO=debian
-export SUITE=jessie
+export SUITE=stretch
 export ARCH=amd64
 export USE_LXC=1
 export LXC_BRIDGE=lxcbr0
