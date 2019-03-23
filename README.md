@@ -406,8 +406,9 @@ Update your `GPG_KEY_ID` and `GPG_KEY_NAME` variables in `.env` as follows:
 `3F14A629C06FA31D59C64FE93F0C2117D53A4A49`. Some versions of gpg may truncate this value, e.g. to 8
 or 16 characters. You should be able to use the truncated value.
 
-- `GPG_KEY_NAME`: the part before the @ symbol of the associated email address. In our example
-this is `hpotter`.
+- `GPG_KEY_NAME`: This is passed as the '--signer' argument to Gitian, and used as the name of a
+directory for your signatures in our `gitian.sigs` repository. We suggest using the username portion
+of the email address associated with your GPG key. In our example this is `hpotter`.
 
 
 ## Provision a virtual machine
