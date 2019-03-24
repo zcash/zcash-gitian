@@ -2,6 +2,8 @@
 # vi: set ft=ruby :
 Vagrant.configure(2) do |config|
 
+  config.vagrant.plugins = {"vagrant-disksize" => {"version" => "0.1.3"}}
+
   config.ssh.forward_agent = true
   config.disksize.size = '16GB'
   config.vm.define 'zcash-build', autostart: false do |gitian|
