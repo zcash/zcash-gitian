@@ -2,7 +2,10 @@
 # vi: set ft=ruby :
 Vagrant.configure(2) do |config|
 
-  config.vagrant.plugins = {"vagrant-disksize" => {"version" => "0.1.3"}}
+  config.vagrant.plugins = {
+    "vagrant-disksize" => {"version" => "0.1.3"},
+    "vagrant-scp" => {"version" => "0.5.7"}
+  }
 
   config.ssh.forward_agent = true
   config.disksize.size = '16GB'
