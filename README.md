@@ -434,17 +434,13 @@ of the email address associated with your GPG key. In our example this is `hpott
 
 
 
-## Install the `vagrant-disksize` plugin to support resize of the start up disk:
+## Install Vagrant plugins
+
+This project uses some 3rd party Vagrant plugins. These dependencies are specified in `Vagrantfile`.
+We can install them locally in the `.vagrant` directory with the following command:
 
 ```
-zcash-gitian$ vagrant plugin install --local vagrant-disksize
-```
-
-Most recently tested 2019-03-23 with the following vagrant-disksize release:
-
-```
-zcash-gitian$ vagrant plugin list --local
-vagrant-disksize (0.1.3, local)
+zcash-gitian$ vagrant plugin install --local
 ```
 
 
