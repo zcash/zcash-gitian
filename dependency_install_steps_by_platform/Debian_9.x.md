@@ -2,11 +2,11 @@
 
 This document assumes you are starting from a fresh install of Debian in the 9.x series.
 
-Most recently tested 2019-02-13 with the following debian release:
+Most recently tested 2019-03-21 with the following debian release:
 
 ```
 $ lsb_release --description
-Description:	Debian GNU/Linux 9.7 (stretch)
+Description:	Debian GNU/Linux 9.8 (stretch)
 ```
 
 
@@ -81,7 +81,7 @@ $ sudo apt install virtualbox-6.0 -y
 
 Source: https://www.virtualbox.org/wiki/Linux_Downloads#Debian-basedLinuxdistributions
 
-Most recently tested 2019-02-24 with the following virtualbox release:
+Most recently tested 2019-03-21 with the following virtualbox release:
 
 ```
 $ virtualbox --help
@@ -97,7 +97,7 @@ Oracle VM VirtualBox VM Selector v6.0.4
 $ sudo apt install git
 ```
 
-Most recently tested 2019-02-13 with the following git release:
+Most recently tested 2019-03-21 with the following git release:
 
 ```
 $ git --version
@@ -112,16 +112,16 @@ As of this writing, the Vagrant version that Debian uses in its "stretch" releas
 suggest getting a package from Vagrant's web site:
 
 ```
-wget -c https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.deb
-sudo dpkg -i vagrant_2.2.3_x86_64.deb
-rm vagrant_2.2.3_x86_64.deb
+wget -c https://releases.hashicorp.com/vagrant/2.2.4/vagrant_2.2.4_x86_64.deb
+sudo dpkg -i vagrant_2.2.4_x86_64.deb
+rm vagrant_2.2.4_x86_64.deb
 ```
 
-Most recently tested 2019-02-13 with the following vagrant release:
+Most recently tested 2019-03-21 with the following vagrant release:
 
 ```
 $ vagrant --version
-Vagrant 2.2.3
+Vagrant 2.2.4
 ```
 
 
