@@ -273,6 +273,10 @@ isolated python virtual environment specifically for use with this project.
 
 ## Create a python virtual environment for this project
 
+Note: The main purpose of this part is to get a current version of ansible, and keep it locally
+within this project. If you already installed ansible (e.g. from an OS package manager like apt),
+you can skip this part and the following parts about pip and pip packages.
+
 When creating a virtual environment, call the python executable you want the virtual environment to
 use. The location and version will depend on your specific setup -- your OS may provide a suitably
 current python interpreter, or you may have built and installed one yourself. If it's in your PATH,
