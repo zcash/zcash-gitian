@@ -38,6 +38,28 @@ $ rm ./vagrant_2.0.4_x86_64.deb
 
 
 
+## Choice: Install Ansible via apt now or pip later
+
+You can install apt to a system-wide location using Ubuntu's apt tool, which will be a less current
+version, with infrequent updates, or choose another method described later to install it via a
+python package in a project-local virtual environment. The apt method is a bit easier, while the
+python method is ansible's native distribution channel and will be more current and more frequently
+updated.
+
+If you choose the apt option, run this command:
+
+```
+$ sudo apt install ansible
+```
+
+If you choose the python/pip option, run this command:
+
+```
+$ sudo apt install python3-venv
+```
+
+
+
 
 ## Versions
 
@@ -83,4 +105,13 @@ gpg (GnuPG) 2.2.4
 ```
 $ vagrant --version
 Vagrant 2.0.4
+```
+
+
+### Ansible
+
+```
+$ ansible --version
+ansible 2.5.1
+[...]
 ```
