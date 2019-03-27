@@ -126,36 +126,6 @@ Vagrant 2.2.4
 
 
 
-# Install GnuPG 2.x (2.1.18 or greater)
-
-This is likely already installed and runnable via 'gpg'
-
-```
-$ gpg --version
-gpg (GnuPG) 2.1.18
-
-```
-
-We want to be able to run it using the command 'gpg2'. For that we can install the gnupg2 package.
-
-According to the description of that package, “This is a dummy transitional package that provides
-symlinks from gpg2 to gpg.”
-https://packages.debian.org/stretch/gnupg2
-
-```
-$ sudo apt install gnupg2
-```
-
-Most recently tested 2019-03-21 with the following GnuPG release:
-
-```
-$ gpg2 --version
-gpg (GnuPG) 2.1.18
-...
-```
-
-
-
 # Install venv support
 
 `venv` is a python module used to create isolated project-specific environments, so that projects on

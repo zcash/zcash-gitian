@@ -1,12 +1,12 @@
 ---
 - name: Check that the secret key exists.
-  local_action: "shell gpg2 --list-secret-keys --with-colons | grep {{ gpg_key_id }}"
+  local_action: "shell gpg --list-secret-keys --with-colons | grep {{ gpg_key_id }}"
   become: no
   ignore_errors: true
   register: gpg_list_keys_result
 
 - name: Export the GPG private key from the local keyring.
-  local_action: "command gpg2 --armor --export-secret-key {{ gpg_key_id }}"
+  local_action: "command gpg --armor --export-secret-key {{ gpg_key_id }}"
   become: no
   register: gpg_private_key
   changed_when: false
@@ -40,7 +40,7 @@
     group: "{{ gitian_user }}"
 
 - name: Import the GPG private key to the Vagrant user.
-  command: "gpg2 --import /tmp/{{ gpg_key_id }}.sec"
+  command: "gpg --import /tmp/{{ gpg_key_id }}.sec"
   become_user: "{{ gitian_user }}"
   when: gpg_list_keys_result.stdout != '' and gpg_private_key.stdout is defined
   no_log: True

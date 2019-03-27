@@ -11,10 +11,10 @@ Description:	Ubuntu 18.04.2 LTS
 
 
 
-## Install Git, VirtualBox, GnuPG, and rng-tools
+## Install Git, VirtualBox, and rng-tools
 
 ```
-$ sudo apt install git virtualbox gnupg2 rng-tools
+$ sudo apt install git virtualbox rng-tools
 ```
 
 
@@ -87,15 +87,6 @@ git version 2.17.0
 ```
 $ virtualbox --help
 Oracle VM VirtualBox Manager 5.2.10_Ubuntu
-...
-```
-
-
-### GnuPG
-
-```
-$ gpg2 --version
-gpg (GnuPG) 2.2.4
 ...
 ```
 

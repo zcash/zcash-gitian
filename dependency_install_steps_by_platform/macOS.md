@@ -114,32 +114,6 @@ libgcrypt 1.8.4
 
 
 
-## Make sure 'gpg2' can be called
-
-As of this writing, we have ansible tasks that make calls to 'gpg2' while the gnupg homebrew formula
-installs the executable 'gpg'.
-
-```
-$ type gpg
-gpg is /usr/local/bin/gpg
-$ type gpg2
--bash: type: gpg2: not found
-```
-
-If this is still the case, a simple workaround option is to create a symlink from gpg2 to gpg:
-
-```
-$ ln -s /usr/local/bin/gpg /usr/local/bin/gpg2
-$ gpg2 --version
-gpg (GnuPG) 2.2.14
-[...]
-$
-```
-
-If you find that this issue has been resolved, please remove this step :)
-
-
-
 ## Install Python 3.x
 
 Python 2.x is installed by default in macOS, but we want to be more current. Installing the 'python'
