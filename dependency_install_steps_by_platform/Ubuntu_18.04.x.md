@@ -11,10 +11,10 @@ Description:	Ubuntu 18.04.2 LTS
 
 
 
-## Install Git, VirtualBox, Ansible, GnuPG, and rng-tools
+## Install Git, VirtualBox, GnuPG, and rng-tools
 
 ```
-$ sudo apt install git virtualbox ansible gnupg2 rng-tools
+$ sudo apt install git virtualbox gnupg2 rng-tools
 ```
 
 
@@ -66,14 +66,6 @@ git version 2.17.0
 $ virtualbox --help
 Oracle VM VirtualBox Manager 5.2.10_Ubuntu
 ...
-```
-
-
-### Ansible
-
-```
-$ ansible --version
-ansible 2.5.1
 ```
 
 
