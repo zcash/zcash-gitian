@@ -2,11 +2,11 @@
 
 This document assumes you are starting from a fresh install of Ubuntu in the 18.04.x series.
 
-Most recently tested 2018-05-21 with the following ubuntu release:
+Most recently tested 2019-03-26 with the following ubuntu release:
 
 ```
 $ lsb_release --description
-Description:	Ubuntu 18.04 LTS
+Description:	Ubuntu 18.04.2 LTS
 ```
 
 
