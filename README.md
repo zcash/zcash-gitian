@@ -540,13 +540,13 @@ Generating and uploading signatures
 
 After the build successfully completes, the gitian command `gsign` will be called, which will
 generate signatures, and a commit will be added. You can cd into the gitian.sigs directory, set the
-repository to point to your fork of [zcash/gitian.sigs](https://github.com/zcash/gitian.sigs), and
-push your updates to a branch:
+repository to point to your fork of [zcash/gitian.sigs](https://github.com/zcash/gitian.sigs), push
+your updates to a branch, and then make a pull request on github.
 
 ```
 cd gitian.sigs
 git remote rename origin upstream
-git remote add origin git@github.com:harrrypotter/zcash-gitian.git
+git remote add origin git@github.com:harrypotter/zcash-gitian.git
 git checkout -b v2.0.4
 git push origin v2.0.4
 ```
