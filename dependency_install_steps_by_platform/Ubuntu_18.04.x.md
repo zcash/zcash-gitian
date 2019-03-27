@@ -11,21 +11,22 @@ $ sudo apt install git virtualbox rng-tools
 
 
 
-## Install Vagrant 2.0.3 or higher
+# Install Vagrant 2.0.3 or higher
 
 As of this writing, the vagrant version that Ubuntu 18.04 uses is 2.0.2 so we suggest a later
 release in the 2.0.x series.
 
 ```
-$ wget https://releases.hashicorp.com/vagrant/2.0.4/vagrant_2.0.4_x86_64.deb
-...
-$ sudo apt install ./vagrant_2.0.4_x86_64.deb
-...
-$ dpkg --status vagrant
-Package: vagrant
-Status: install ok installed
-...
-$ rm ./vagrant_2.0.4_x86_64.deb
+wget -c https://releases.hashicorp.com/vagrant/2.2.4/vagrant_2.2.4_x86_64.deb
+sudo dpkg -i vagrant_2.2.4_x86_64.deb
+rm vagrant_2.2.4_x86_64.deb
+```
+
+Most recently tested 2019-03-26 with the following vagrant release:
+
+```
+$ vagrant --version
+Vagrant 2.2.4
 ```
 
 
@@ -55,7 +56,7 @@ $ sudo apt install python3-venv
 
 ## Versions
 
-Most recently tested 2018-05-21 with the following versions:
+Most recently tested 2018-03-26 with the following versions:
 
 
 ### Ubuntu
@@ -70,7 +71,7 @@ Description:	Ubuntu 18.04 LTS
 
 ```
 $ git --version
-git version 2.17.0
+git version 2.17.1
 ```
 
 
@@ -78,16 +79,8 @@ git version 2.17.0
 
 ```
 $ virtualbox --help
-Oracle VM VirtualBox Manager 5.2.10_Ubuntu
+Oracle VM VirtualBox Manager 5.2.18_Ubuntu
 ...
-```
-
-
-### Vagrant
-
-```
-$ vagrant --version
-Vagrant 2.0.4
 ```
 
 
