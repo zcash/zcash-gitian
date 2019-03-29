@@ -572,10 +572,6 @@ Vagrant synced folders may also work natively with `vboxfs` if you install Virtu
 Copying files
 -------------
 
-The easiest way to do it is with a plugin.
-
-    vagrant plugin install vagrant-scp
-
 To copy files to the VM: `vagrant scp file_on_host.txt :file_on_vm.txt`
 
 To copy files from the VM: `vagrant scp :file_on_vm.txt file_on_host.txt`
