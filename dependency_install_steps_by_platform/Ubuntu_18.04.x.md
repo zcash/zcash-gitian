@@ -62,8 +62,8 @@ providing a convenient facility for setting up project-specific configuration.
 sudo apt install direnv
 ```
 
-To activate direnv when starting bash (the default shell on Debian 9), add the following line to the
-end of `~/.bashrc`:
+To activate direnv when starting bash (the default shell on Ubuntu 18.04), add the following line to
+the end of `~/.bashrc`:
 
 ```
 eval "$(direnv hook bash)"
