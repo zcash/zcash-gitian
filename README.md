@@ -69,9 +69,9 @@ https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration
 
 
 
-## Decide on an ssh keypair to use when uploading build signatures to github
+## Decide on an ssh keypair to use when uploading build signatures to GitHub
 
-You can generate a keypair specifically for connecting to github like this:
+You can generate a keypair specifically for connecting to GitHub like this:
 
 ```
 $ ssh-keygen -t rsa -b 4096 -C "hpotter@hogwarts.wiz" -f ~/.ssh/github_id_rsa -N ''
@@ -111,9 +111,9 @@ Some explanation of the arguments used in the above example:
 
 
 
-# Set up your ssh keypair for use with github
+# Set up your ssh keypair for use with GitHub
 
-[Add the new key to your github account.](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/)
+[Add the new key to your GitHub account.](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/)
 
 Add an entry to `~/.ssh/config` (create this file if necessary) telling ssh to use the keypair you
 generated above when connecting to github.com.
@@ -130,7 +130,7 @@ Host github.com
 
 The 'User' entry should match your github username.
 
-Test that ssh will successfully use your new key to connect to github.
+Test that ssh will successfully use your new key to connect to GitHub.
 
 ```
 $ ssh -T git@github.com
@@ -384,9 +384,9 @@ zcash-gitian$
 
 
 
-## Decide on a gpg keypair to use for gitian
+## Decide on a gpg keypair to use for Gitian
 
-You can generate a keypair specifically for zcash gitian builds with a command like the one below.
+You can generate a keypair specifically for Zcash Gitian builds with a command like the one below.
 
 
 ```
@@ -399,7 +399,7 @@ gpg: revocation certificate stored as '/home/hpotter/.gnupg/openpgp-revocs.d/3F1
 Some explanation of the arguments used in the above example:
 
     --quick-generate-key --batch   This combination of options allows options to be given on the
-                                   command line. Other key generation options use interative
+                                   command line. Other key generation options use interactive
                                    prompts.
 
     --passphrase ''                Passphrase for the generated key. An empty string as shown here
