@@ -21,7 +21,6 @@ if [ -d "$HOME/bin" ] ; then
     PATH="$HOME/bin:$PATH"
 fi
 
-alias gpg='gpg2'
 export DISTRO=debian
 export SUITE=jessie
 export ARCH=amd64

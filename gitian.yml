@@ -3,12 +3,12 @@
   become: yes
   hosts: localhost:zcash-build
   vars:
-    zcash_git_repo_url: https://github.com/zcash/zcash
-    zcash_version: v1.0.8-1
-    gpg_key_name: ''
-    git_name: ''
-    git_email: ''
-    gpg_key_id: ''
+    zcash_git_repo_url: "{{ lookup('env','ZCASH_GIT_REPO_URL') }}"
+    zcash_version: "{{ lookup('env','ZCASH_VERSION') }}"
+    git_name: "{{ lookup('env','GIT_NAME') }}"
+    git_email: "{{ lookup('env','GIT_EMAIL') }}"
+    gpg_key_name: "{{ lookup('env','GPG_KEY_NAME') }}"
+    gpg_key_id: "{{ lookup('env','GPG_KEY_ID') }}"
   roles:
     - role: common
       tags: common
