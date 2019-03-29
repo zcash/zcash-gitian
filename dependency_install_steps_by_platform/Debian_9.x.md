@@ -150,9 +150,7 @@ Version: 3.5.3-1
 # Install direnv (Optional/Recommended)
 
 This tool sets and unsets environment variables as you change directories in a shell session,
-providing a convenient facility for setting up project-specific environment variables as an
-alternative to the common practice of adding project-specific configuration values to places like
-dotfiles in $HOME.
+providing a convenient facility for setting up project-specific configuration.
 
 ```
 sudo apt install direnv
