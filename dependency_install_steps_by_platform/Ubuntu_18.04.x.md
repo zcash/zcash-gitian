@@ -33,9 +33,9 @@ Vagrant 2.2.4
 
 ## Choice: Install Ansible via apt now or pip later
 
-You can install apt to a system-wide location using Ubuntu's apt tool, which will be a less current
-version, with infrequent updates, or choose another method described later to install it via a
-python package in a project-local virtual environment. The apt method is a bit easier, while the
+You can install ansible to a system-wide location using Ubuntu's apt tool, which will be a less
+current version, with infrequent updates, or choose another method described later to install it via
+a python package in a project-local virtual environment. The apt method is a bit easier, while the
 python method is ansible's native distribution channel and will be more current and more frequently
 updated.
 
