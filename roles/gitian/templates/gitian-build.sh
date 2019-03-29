@@ -19,7 +19,7 @@ proc=2
 mem=3584
 lxc=true
 scriptName=$(basename -- "$0")
-signProg="gpg2 --detach-sign"
+signProg="gpg --detach-sign"
 commitFiles=true
 
 # Help Message

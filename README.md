@@ -21,7 +21,7 @@ If you're using one of the following platforms, see the linked instructions for 
 
 - [Debian 9.x](dependency_install_steps_by_platform/Debian_9.x.md)
 - [Ubuntu 18.04.x](dependency_install_steps_by_platform/Ubuntu_18.04.x.md)
-- [macOS 10.13.x](dependency_install_steps_by_platform/macOS_10.13.x.md)
+- [macOS](dependency_install_steps_by_platform/macOS.md)
 
 
 If you're not using one of the platforms that we have specific instructions for, this is the list of
@@ -31,22 +31,9 @@ above!
 - [Git](https://git-scm.com/)
 - [VirtualBox](https://www.virtualbox.org/)
 - [Vagrant](https://www.vagrantup.com/) 2.0.3 or higher
-- [Ansible](https://www.ansible.com/) 2.4.x or higher
-- [GnuPG](https://www.gnupg.org/) 2.x (2.11.18 or greater) and make sure it is callable via `gpg2`
-
-
-## Install the `vagrant-disksize` plugin to support resize of the startup disk:
-
-```
-$ vagrant plugin install vagrant-disksize
-```
-
-Most recently tested 2019-02-13 with the following vagrant-disksize release:
-
-```
-$ vagrant plugin list
-vagrant-disksize (0.1.3)
-```
+- [GnuPG](https://www.gnupg.org/) 2.x (2.11.18 or greater)
+- [Python](https://www.python.org/) 3.x (with `venv` support in case that is packaged separately)
+- [direnv](https://direnv.net/) (Optional/Recommended)
 
 
 
@@ -75,8 +62,8 @@ $ git config user.email
 hpotter@hogwarts.wiz
 ```
 
-This is all the configuration needed for the steps below, but here is a good reference for further
-reading on configuring git:
+This is all the git configuration needed for the steps below, but here is a good reference for
+further reading on configuring git:
 
 https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration
 
@@ -87,7 +74,7 @@ https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration
 You can generate a keypair specifically for connecting to GitHub like this:
 
 ```
-$ ssh-keygen -t rsa -C "hpotter@hogwarts.wiz" -f ~/.ssh/github_id_rsa -N ''
+$ ssh-keygen -t rsa -b 4096 -C "hpotter@hogwarts.wiz" -f ~/.ssh/github_id_rsa -N ''
 Generating public/private rsa key pair.
 Your identification has been saved in /Users/hpotter/.ssh/github_id_rsa.
 Your public key has been saved in /Users/hpotter/.ssh/github_id_rsa.pub.
@@ -159,20 +146,241 @@ $
 
 ## Clone this git project on your machine
 
+From a location where you want to place your local clone of this repository (e.g. `~/Projects`)
+
 ```
 $ git clone git@github.com:zcash/zcash-gitian.git
 ```
 
+cd into the project repo
+
+```
+$ cd zcash-gitian
+zcash-gitian
+```
 
 
-## Add git config values to gitian.yml
+## Copy example environment configuration files
 
-The `gitian.yml` file in the root of the project has some blank values that need to be updated or
-filled in:
+The files `.env.example` and `.envrc.example` are tracked in the repo as example configurations you
+should be able to use to get started. The filenames `.env` and `.envrc` are `.gitignore`'d to allow
+you to easily make local customizations that don't show up as untracked changes.
 
-- `zcash_version`: The git tag name of the version of zcash you want to build
-- `git_name`: You probably want the output from `git config user.name`
-- `git_email`: You probably want the output from `git config user.email`
+Note that `.envrc` is probably only useful if you are using `direnv`. If you're not, you can ignore
+that file and the places below that talk about it, and use your preferred way of managing
+environment variables instead.
+
+```
+zcash-gitian$ cp .env.example .env
+zcash-gitian$ cp .envrc.example .envrc
+direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
+zcash-gitian$
+```
+
+More on that above message in the following section...
+
+
+
+## Enable auto-execution of .envrc
+
+If you installed and activated `direnv`, it will detect when `.envrc` is created in your current
+directory, as shown above. As a security precaution, it won't automatically run it without your
+approval (to prevent untrusted code from doing something malicious). Let's take a look at what's in
+the file:
+
+```
+zcash-gitian$ cat .envrc
+source_up
+dotenv
+
+export GIT_NAME=`git config user.name`
+export GIT_EMAIL=`git config user.email`
+direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
+zcash-gitian$
+```
+
+Some explanation of the lines in the above `.envrc` file:
+
+```
+`source_up`                        Load any .envrc higher up in the folder structure. So if for
+                                   example you place an `.envrc` in your home directory, variables
+                                   set there will still be available within this project, rather
+                                   than being overridden by this project's `.envrc`.
+
+`dotenv`                           Set the environment variables defined in `.env`. Think of
+                                   `.envrc` as code (it runs in a bash interpreter with some extra
+                                   functions added) and `.env` as data (you can basically just set
+                                   literal values, and each update to it doesn't require approval).
+
+
+export GIT_NAME=`git config user.name`
+export GIT_EMAIL=`git config user.email`
+
+                                   Use your local git configuration values for the name and email
+                                   that will be used to add build signatures inside the virtual
+                                   environment.
+```
+
+
+If you're ok with running `.envrc`, follow the directions in the prompt to allow it.
+
+```
+zcash-gitian$ echo $ZCASH_GIT_REPO_URL
+
+direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
+zcash-gitian$ direnv allow
+direnv: loading .envrc
+direnv: export +GIT_EMAIL +GIT_NAME +GPG_KEY_ID +GPG_KEY_NAME +ZCASH_GIT_REPO_URL +ZCASH_VERSION
+zcash-gitian$ echo $ZCASH_GIT_REPO_URL
+https://github.com/zcash/zcash
+zcash-gitian$
+```
+
+A variable defined in `.env` is now active in our environment. If we leave this project, it is
+unloaded. When we return, it is reloaded:
+
+```
+zcash-gitian$ cd ..
+direnv: unloading
+$ echo $ZCASH_GIT_REPO_URL
+
+$ cd zcash-gitian/
+direnv: loading .envrc
+direnv: export +GIT_EMAIL +GIT_NAME +GPG_KEY_ID +GPG_KEY_NAME +ZCASH_GIT_REPO_URL +ZCASH_VERSION
+zcash-gitian$ echo $ZCASH_GIT_REPO_URL
+https://github.com/zcash/zcash
+zcash-gitian$
+```
+
+Project-specific environment settings will come in handy in the next step, when we'll create an
+isolated python virtual environment specifically for use with this project.
+
+
+
+## Create a python virtual environment for this project
+
+Note: The main purpose of this part is to get a current version of ansible, and keep it locally
+within this project. If you already installed ansible (e.g. from an OS package manager like apt),
+you can skip this part and the following parts about pip and pip packages.
+
+When creating a virtual environment, call the python executable you want the virtual environment to
+use. The location and version will depend on your specific setup -- your OS may provide a suitably
+current python interpreter, or you may have built and installed one yourself. If it's in your PATH,
+a command like `type python3` should tell you where it is installed on your system. For example:
+
+```
+zcash-gitian$ type python3
+python3 is /usr/local/bin/python3
+zcash-gitian$ /usr/local/python3 --version
+Python 3.7.2
+```
+
+We can use python's built-in `venv` module to create a virtual environment:
+
+```
+zcash-gitian$ /usr/local/bin/python3 -m venv local/python_v3.7.2_venv
+```
+
+Translation: "Create a virtual environment at ./local/python_v3.7.2_venv".
+
+The project subdirectory `local` is `.gitignored` to provide a convenient location for files we
+don't want to commit and track in version control.
+
+You should now have a tree of directories and files in `local/python_v3.7.2_venv`:
+
+```
+zcash-gitian$ ls -F local/python_v3.7.2_venv/
+bin/    include/  lib/    pyvenv.cfg
+```
+
+Inside the `bin` directory, among other things, are the entries `python` and `python3`, which are
+symlinks that point back to the `python3` executable we used to create this environment:
+
+```
+zcash-gitian$ ls -F local/python_v3.7.2_venv/bin/
+activate        activate.fish   easy_install-3.7*  pip3*       python@
+activate.csh    easy_install*   pip*               pip3.7*     python3@
+```
+
+A python virtual environment is 'active' if the python interpreter being executed is run from its
+path inside the environment's `bin` directory. Even though the file being executed is the same
+whether run directly or via a symlink, it pays attention to the path of the command that was used to
+run it.
+
+An `activate` script is provided, and you can use that, but if you're using `direnv` you can set up
+a simple automatic activation for the project directory by adding the following line to `.envrc`:
+
+```
+load_prefix local/python_v3.7.2_venv
+```
+
+The command `load_prefix` is provided by `direnv` to modify a whole set of common "path" variables
+(including PATH) according to a common unix pattern.
+
+Let's add that line now:
+
+```
+zcash-gitian$ echo "load_prefix local/python_v3.7.2_venv" >> .envrc
+direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
+zcash-gitian$ direnv allow
+direnv: loading .envrc
+direnv: export +CPATH +GIT_EMAIL +GIT_NAME +GPG_KEY_ID +GPG_KEY_NAME +LD_LIBRARY_PATH +LIBRARY_PATH +MANPATH +PKG_CONFIG_PATH +ZCASH_GIT_REPO_URL +ZCASH_VERSION ~PATH
+zcash-gitian$
+```
+
+When the content of `.envrc` is changed, it needs to be approved again (another security
+precaution). Then, several variables were set or updated to add paths within our virtual environment
+directory at the front (left side) of the list. Let's look at PATH and its effect on which `python`
+locations we default to:
+
+```
+zcash-gitian$ echo $PATH
+/Users/harrypotter/Projects/zcash-gitian/local/python_v3.7.2_venv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+zcash-gitian$ type python
+python is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.7.2_venv/bin/python
+zcash-gitian$ type python3
+python3 is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.7.2_venv/bin/python3
+```
+
+Since the `python` and `python3` commands will now run from the locations we've installed into our
+project's virtual environment while we are in the project directory, we can consider the virtual
+environment active when using a shell at (or below) that location.
+
+
+
+## Upgrade pip
+
+`pip` has a command to upgrade itself. Let's go ahead and run that:
+
+```
+zcash-gitian$ pip --version
+pip 18.1 from /Users/harrypotter/Projects/zcash-gitian/local/python_v3.7.2_venv/lib/python3.7/site-packages/pip (python 3.7)
+zcash-gitian$ pip install --upgrade pip
+Collecting pip
+[...]
+Successfully installed pip-19.0.3
+```
+
+
+
+## Install pip packages
+
+We have some dependencies to install as python packages, using the pip package manager installed
+above. The set we need, with version numbers managed via git, is in `requirements-pip.lock`; we can
+run `pip install` with that file as input:
+
+```
+zcash-gitian$ pip install --requirement requirements-pip.lock
+```
+
+Check that you can run `ansible` from the command line:
+
+```
+zcash-gitian$ ansible --version
+ansible 2.7.9
+[...]
+zcash-gitian$
+```
 
 
 
@@ -182,7 +390,7 @@ You can generate a keypair specifically for Zcash Gitian builds with a command l
 
 
 ```
-$ gpg2 --quick-generate-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
+zcash-gitian$ gpg --quick-generate-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
 gpg: key 3F0C2117D53A4A49 marked as ultimately trusted
 gpg: directory '/home/hpotter/.gnupg/openpgp-revocs.d' created
 gpg: revocation certificate stored as '/home/hpotter/.gnupg/openpgp-revocs.d/3F14A629C06FA31D59C64FE93F0C2117D53A4A49.rev'
@@ -205,7 +413,7 @@ Some explanation of the arguments used in the above example:
 You can check that the key was generated and added to your local gpg key database, and see its
 fingerprint value, like this:
 ```
-$ gpg2 --list-keys
+zcash-gitian$ gpg --list-keys
 /home/hpotter/.gnupg/pubring.kbx
 ----------------------------------
 pub   rsa2048 2018-04-23 [SC] [expires: 2020-04-22]
@@ -214,14 +422,34 @@ uid           [ultimate] Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>
 sub   rsa2048 2018-04-23 [E]
 ```
 
-Update the `gpg_key_id` and `gpg_key_name` entries in `gitian.yml` as follows:
+Update your `GPG_KEY_ID` and `GPG_KEY_NAME` variables in `.env` as follows:
 
-- `gpg_key_id`: In the example output shown here, this is the 40 character string
+- `GPG_KEY_ID`: In the example output shown here, this is the 40 character string
 `3F14A629C06FA31D59C64FE93F0C2117D53A4A49`. Some versions of gpg may truncate this value, e.g. to 8
 or 16 characters. You should be able to use the truncated value.
 
-- `gpg_key_name`: the part before the @ symbol of the associated email address. In our example
-this is `hpotter`.
+- `GPG_KEY_NAME`: This is passed as the '--signer' argument to Gitian, and used as the name of a
+directory for your signatures in our `gitian.sigs` repository. We suggest using the username portion
+of the email address associated with your GPG key. In our example this is `hpotter`.
+
+
+
+## Install Vagrant plugins
+
+This project uses some 3rd party Vagrant plugins. These dependencies are specified in `Vagrantfile`.
+We can install them locally in the `.vagrant` directory with the following command:
+
+```
+zcash-gitian$ vagrant plugin install --local
+```
+
+
+
+## Configure the version of zcash you want to build and sign
+
+Set the value of the `ZCASH_VERSION` variable in `.env` to point to the zcash commit you want to
+create a signature for. Likely you want the name of a git tag, such as `v2.0.4`.
+
 
 
 ## Provision a virtual machine
@@ -229,13 +457,11 @@ this is `hpotter`.
 From the project root directory, run:
 
 ```
-$ vagrant up --provision zcash-build
+zcash-gitian$ vagrant up --provision zcash-build
 ```
 
 This will provision a Gitian host virtual machine that uses a Linux container (LXC) guest to perform
 the actual builds.
-
-Use `git stash` to save one's local customizations to `gitian.yml`.
 
 
 Load your ssh key into ssh-agent
@@ -247,13 +473,13 @@ This way, we don't need to copy ssh keys into the VM. You can verify that the ke
 running `ssh-add -l`.
 
 ```
-$ ssh-add -l
+zcash-gitian$ ssh-add -l
 The agent has no identities.
 
-$ ssh-add ~/.ssh/github_id_rsa
+zcash-gitian$ ssh-add ~/.ssh/github_id_rsa
 Identity added: /home/hpotter/.ssh/github_id_rsa (/home/hpotter/.ssh/github_id_rsa)
 
-$ ssh-add -l
+zcash-gitian$ ssh-add -l
 4096 SHA256:4fFdwJ71VIpF5cW0dqrsU7jxjctaFcAKmdQZPEqR0Y4 /home/hpotter/.ssh/github_id_rsa (RSA)
 ```
 
@@ -264,7 +490,7 @@ SSH into the VM
 Vagrant should now show that the new VM is in the 'running' state:
 
 ```
-$ vagrant status
+zcash-gitian$ vagrant status
 Current machine states:
 
 zcash-build               running (virtualbox)
@@ -280,14 +506,14 @@ ssh-add again to see that your forwarded key is available, and check that you ca
 authenticate to github.
 
 ```
-$ vagrant ssh zcash-build
+zcash-gitian$ vagrant ssh zcash-build
 [...]
 
 # on the virtualbox vm
-$ ssh-add -l
+vagrant@zcash-build:~$ ssh-add -l
 4096 d1:43:75:a7:95:65:9e:d4:8e:57:d8:98:58:7d:92:4c /home/hpotter/.ssh/github_id_rsa (RSA)
 
-$ ssh -T git@github.com
+vagrant@zcash-build:~$ ssh -T git@github.com
 Warning: Permanently added the RSA host key for IP address '192.30.253.112' to the list of known hosts.
 Hi harrypotter! You've successfully authenticated, but GitHub does not provide shell access.
 ```
@@ -300,7 +526,7 @@ Once in a shell session in the VM, we're ready to run the gitian build.
 
 ```
 # on the virtualbox vm
-$ ./gitian-build.sh
+vagrant@zcash-build:~$ ./gitian-build.sh
 ```
 
 The output from `gbuild` is informative. There are some common warnings which can be ignored, e.g. if you get an intermittent privileges error related to LXC then just execute the script again. The most important thing is that one reaches the step which says `Running build script (log in var/build.log)`. If not, then something else is wrong and you should let us know.
@@ -312,7 +538,18 @@ It's also a good idea to regularly `git pull` on this repository to obtain updat
 Generating and uploading signatures
 -----------------------------------
 
-After the build successfully completes, the gitian command `gsign` will be called. Commit and push your signatures (both the .assert and .assert.sig files) to the [zcash/gitian.sigs](https://github.com/zcash/gitian.sigs) repository, or if that's not possible then create a pull request.
+After the build successfully completes, the gitian command `gsign` will be called, which will
+generate signatures, and a commit will be added. You can cd into the gitian.sigs directory, set the
+repository to point to your fork of [zcash/gitian.sigs](https://github.com/zcash/gitian.sigs), push
+your updates to a branch, and then make a pull request on github.
+
+```
+cd gitian.sigs
+git remote rename origin upstream
+git remote add origin git@github.com:harrypotter/zcash-gitian.git
+git checkout -b v2.0.4
+git push origin v2.0.4
+```
 
 Signatures can be verified by running `gitian-build.sh --verify`, but set `build=false` in the script to skip building. Run a `git pull` beforehand on `gitian.sigs` so you have the latest. The provisioning includes a task which imports Zcash developer public keys to the Vagrant user's keyring and sets them to ultimately trusted, but they can also be found at `contrib/gitian-downloader` within the Zcash source repository.
 
@@ -334,10 +571,6 @@ Vagrant synced folders may also work natively with `vboxfs` if you install Virtu
 
 Copying files
 -------------
-
-The easiest way to do it is with a plugin.
-
-    vagrant plugin install vagrant-scp
 
 To copy files to the VM: `vagrant scp file_on_host.txt :file_on_vm.txt`
 
