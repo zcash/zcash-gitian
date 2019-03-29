@@ -74,7 +74,7 @@ https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration
 You can generate a keypair specifically for connecting to github like this:
 
 ```
-$ ssh-keygen -t rsa -C "hpotter@hogwarts.wiz" -f ~/.ssh/github_id_rsa -N ''
+$ ssh-keygen -t rsa -b 4096 -C "hpotter@hogwarts.wiz" -f ~/.ssh/github_id_rsa -N ''
 Generating public/private rsa key pair.
 Your identification has been saved in /Users/hpotter/.ssh/github_id_rsa.
 Your public key has been saved in /Users/hpotter/.ssh/github_id_rsa.pub.
