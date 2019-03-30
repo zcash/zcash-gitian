@@ -273,10 +273,20 @@ zcash-gitian$ /usr/local/python3 --version
 Python 3.7.3
 ```
 
+You may also want to check if the `python3` in `PATH` is a symlink to a versioned location, if you
+are using a system (like `brew`) that can manage multiple installed versions. This way, our virtual
+environment will remain pinned to a specific python version even after a newer python version is
+installed later.
+
+```
+$ ls -n /usr/local/bin/python3
+lrwxr-xr-x  1 501  20  34 Mar 30 09:35 /usr/local/bin/python3 -> ../Cellar/python/3.7.3/bin/python3
+```
+
 We can use python's built-in `venv` module to create a virtual environment:
 
 ```
-zcash-gitian$ /usr/local/bin/python3 -m venv local/python_v3.7.3_venv
+zcash-gitian$ /usr/local/Cellar/python/3.7.3/bin/python3 -m venv local/python_v3.7.3_venv
 ```
 
 Translation: "Create a virtual environment at ./local/python_v3.7.3_venv".
