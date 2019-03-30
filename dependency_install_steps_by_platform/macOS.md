@@ -2,13 +2,13 @@
 
 This document assumes you are starting from a fresh install of macOS.
 
-Most recently tested 2019-03-22 with the following macOS release:
+Most recently tested 2019-03-30 with the following macOS release:
 
 ```
 $ sw_vers
 ProductName:	Mac OS X
-ProductVersion:	10.14.3
-BuildVersion:	18D109
+ProductVersion:	10.14.4
+BuildVersion:	18E226
 ```
 
 
@@ -18,11 +18,11 @@ BuildVersion:	18D109
 macOS includes git, so you should already have that. It may prompt you to set up developer tools if
 you're using it for the first time.
 
-Most recently tested 2019-03-22 with the following git release:
+Most recently tested 2019-03-30 with the following git release:
 
 ```
 $ git --version
-git version 2.17.2 (Apple Git-113)
+git version 2.20.1 (Apple Git-117)
 ```
 
 
@@ -50,9 +50,9 @@ Most recently tested 2019-03-22 with the following Homebrew release:
 
 ```
 $ brew --version
-Homebrew 2.0.5
-Homebrew/homebrew-core (git revision b26ddf; last commit 2019-03-21)
-Homebrew/homebrew-cask (git revision 8a0f5; last commit 2019-03-21)
+Homebrew 2.0.6
+Homebrew/homebrew-core (git revision 6abd1; last commit 2019-03-30)
+Homebrew/homebrew-cask (git revision 7c038; last commit 2019-03-30)
 ```
 
 That last line about "homebrew-cask" refers to a component that started as a separate plugin and now
@@ -73,7 +73,7 @@ that, the second attempt should succeed.
 $ brew cask install virtualbox
 ```
 
-Most recently tested 2019-03-22 with the following Virtualbox release:
+Most recently tested 2019-03-30 with the following Virtualbox release:
 
 ```
 $ virtualbox --help
@@ -103,11 +103,11 @@ Vagrant 2.2.4
 $ brew install gnupg
 ```
 
-Most recently tested 2019-03-22 with the following GnuPG release:
+Most recently tested 2019-03-30 with the following GnuPG release:
 
 ```
 $ gpg --version
-gpg (GnuPG) 2.2.14
+gpg (GnuPG) 2.2.15
 libgcrypt 1.8.4
 [...]
 ```
@@ -134,11 +134,11 @@ $ type python3
 python3 is /usr/local/bin/python3
 ```
 
-Most recently tested 2019-03-22 with the following Python release:
+Most recently tested 2019-03-30 with the following Python release:
 
 ```
 $ python3 --version
-Python 3.7.2
+Python 3.7.3
 ```
 
 
@@ -165,13 +165,13 @@ present:
 
 ```
 $ echo $PROMPT_COMMAND
-_direnv_hook;
+_direnv_hook;[...]
 ```
 
 direnv also supports several other shells -- zsh, fish, tcsh, and elvish as of this writing. Its
 website includes instructions for enabling each of the shells it supports.
 
-Most recently tested 2019-03-22 with the following direnv release:
+Most recently tested 2019-03-30 with the following direnv release:
 
 ```
 $ direnv --version
