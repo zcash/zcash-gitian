@@ -146,11 +146,9 @@ $
 
 ## Clone this git project on your machine
 
-From a location where you want to place your local clone of this repository (e.g. `~/Projects`)
-
-```
-$ git clone git@github.com:zcash/zcash-gitian.git
-```
+From a location where you want to place your local clone of this repository (e.g. `~/Projects`). If
+there's a possibility you'll want to make and contribute changes, consider forking the repository
+and cloning from your fork.
 
 cd into the project repo
 
