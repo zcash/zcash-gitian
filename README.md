@@ -14,6 +14,11 @@ Requirements
 
 6GB of RAM, four cores.
 
+Note: This project uses VirtualBox to run a virtual machine. If you are running this inside a
+virtual machine, you'll likely need to enable a feature such as “nested virtualization”, “VT-x”, or
+similar in your virtualization software's settings for that virtual machine.
+
+
 Install Dependencies
 --------------------
 
