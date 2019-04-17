@@ -12,24 +12,23 @@
 
 - name: Install Gitian dependencies.
   apt:
-    name: "{{ item }}"
+    name:
+      - apt-cacher-ng
+      - bridge-utils
+      - curl
+      - debootstrap
+      - git-core
+      - gnupg2
+      - kpartx
+      - lintian
+      - lxc
+      - make
+      - python-cheetah
+      - qemu-utils
+      - ruby
+      - sudo
     state: present
     update_cache: yes
-  with_items:
-    - apt-cacher-ng
-    - bridge-utils
-    - curl
-    - debootstrap
-    - git-core
-    - gnupg2
-    - kpartx
-    - lintian
-    - lxc
-    - make
-    - python-cheetah
-    - qemu-utils
-    - ruby
-    - sudo
 
 - name: Set up the Gitian build user with sudo.
   user:

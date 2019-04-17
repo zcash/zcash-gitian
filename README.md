@@ -468,7 +468,7 @@ create a signature for. Likely you want the name of a git tag, such as `v2.0.4`.
 From the project root directory, run:
 
 ```
-zcash-gitian$ vagrant up --provision zcash-build
+zcash-gitian$ vagrant up zcash-build
 ```
 
 This will provision a Gitian host virtual machine that uses a Linux container (LXC) guest to perform
