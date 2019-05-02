@@ -2,7 +2,7 @@
 
 This document assumes you are starting from a fresh install of macOS.
 
-Most recently tested 2019-03-30 with the following macOS release:
+Most recently tested 2019-05-02 with the following macOS release:
 
 ```
 $ sw_vers
@@ -18,7 +18,7 @@ BuildVersion:	18E226
 macOS includes git, so you should already have that. It may prompt you to set up developer tools if
 you're using it for the first time.
 
-Most recently tested 2019-03-30 with the following git release:
+Most recently tested 2019-05-02 with the following git release:
 
 ```
 $ git --version
@@ -46,19 +46,18 @@ $ brew upgrade <formula name>
 
 Homebrew has a search page you can use to look up formula names: http://formulae.brew.sh/
 
-Most recently tested 2019-03-22 with the following Homebrew release:
+Most recently tested 2019-05-02 with the following Homebrew release:
 
 ```
 $ brew --version
-Homebrew 2.0.6
-Homebrew/homebrew-core (git revision 6abd1; last commit 2019-03-30)
-Homebrew/homebrew-cask (git revision 7c038; last commit 2019-03-30)
+Homebrew 2.1.1
+Homebrew/homebrew-core (git revision 69068; last commit 2019-05-03)
+Homebrew/homebrew-cask (git revision bd446; last commit 2019-05-02)
 ```
 
-That last line about "homebrew-cask" refers to a component that started as a separate plugin and now
-comes with homebrew by default. The subcommand 'cask' can be used to manage the types of installs
-mac users ordinarily do manually - the "drag to the applications folder" type and the "run an
-installer" type.
+That last line about "homebrew-cask" refers to a subcommand 'cask' that can manage the types of
+installs mac users ordinarily do manually - the "drag to the applications folder" type and the "run
+an installer" type.
 
 We'll use both "brew" and "brew cask" install methods in the steps below.
 
@@ -73,11 +72,11 @@ that, the second attempt should succeed.
 $ brew cask install virtualbox
 ```
 
-Most recently tested 2019-03-30 with the following Virtualbox release:
+Most recently tested 2019-05-02 with the following Virtualbox release:
 
 ```
 $ virtualbox --help
-Oracle VM VirtualBox VM Selector v6.0.4
+Oracle VM VirtualBox VM Selector v6.0.6
 ```
 
 
@@ -88,7 +87,7 @@ Oracle VM VirtualBox VM Selector v6.0.4
 $ brew cask install vagrant
 ```
 
-Most recently tested 2019-03-22 with the following Vagrant release:
+Most recently tested 2019-05-02 with the following Vagrant release:
 
 ```
 $ vagrant --version
@@ -103,7 +102,7 @@ Vagrant 2.2.4
 $ brew install gnupg
 ```
 
-Most recently tested 2019-03-30 with the following GnuPG release:
+Most recently tested 2019-05-02 with the following GnuPG release:
 
 ```
 $ gpg --version
@@ -134,7 +133,7 @@ $ type python3
 python3 is /usr/local/bin/python3
 ```
 
-Most recently tested 2019-03-30 with the following Python release:
+Most recently tested 2019-05-02 with the following Python release:
 
 ```
 $ python3 --version
@@ -171,9 +170,9 @@ _direnv_hook;[...]
 direnv also supports several other shells -- zsh, fish, tcsh, and elvish as of this writing. Its
 website includes instructions for enabling each of the shells it supports.
 
-Most recently tested 2019-03-30 with the following direnv release:
+Most recently tested 2019-05-02 with the following direnv release:
 
 ```
 $ direnv --version
-2.19.2
+2.20.1
 ```
