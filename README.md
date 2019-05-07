@@ -557,7 +557,7 @@ your updates to a branch, and then make a pull request on github.
 ```
 cd gitian.sigs
 git remote rename origin upstream
-git remote add origin git@github.com:harrypotter/zcash-gitian.git
+git remote add origin git@github.com:harrypotter/gitian.sigs.git
 git checkout -b v2.0.4
 git push origin v2.0.4
 ```
