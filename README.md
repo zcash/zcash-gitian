@@ -369,7 +369,7 @@ environment active when using a shell at (or below) that location.
 zcash-gitian$ pip install --upgrade pip
 Collecting pip
 [...]
-Successfully installed pip-19.0.3
+Successfully installed pip-19.1.1
 ```
 
 
@@ -459,7 +459,7 @@ zcash-gitian$ vagrant plugin install --local
 ## Configure the version of zcash you want to build and sign
 
 Set the value of the `ZCASH_VERSION` variable in `.env` to point to the zcash commit you want to
-create a signature for. Likely you want the name of a git tag, such as `v2.0.4`.
+create a signature for. Likely you want the name of a git tag, such as `v2.0.5-2`.
 
 
 
