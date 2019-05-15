@@ -11,6 +11,7 @@ Vagrant.configure(2) do |config|
   config.disksize.size = '16GB'
   config.vm.define 'zcash-build', autostart: false do |gitian|
     gitian.vm.box = "debian/stretch64"
+    gitian.vm.box_version = "9.9.0"
     gitian.vm.network "forwarded_port", guest: 22, host: 2200, auto_correct: true
     gitian.vm.provision "ansible" do |ansible|
       ansible.playbook = "gitian.yml"
