@@ -15,6 +15,19 @@ Description:	Debian GNU/Linux 9.8 (stretch)
 
 Virtualbox is the configured VM provider in this project's Vagrantfile.
 
+First, check whether virtualbox is installed. Some systems may have it already:
+
+```
+$ virtualbox --help
+Oracle VM VirtualBox VM Selector v6.0.4
+[...]
+```
+
+(If it is installed, you can probably skip this step. Note that virtualbox installs linux kernel
+modules which need to be kept in sync with the virtualbox apt package, so if you decide to change to
+a different version, be sure to uninstall completely (including the kernel modules) before
+reinstalling.)
+
 Add Oracle's VirtualBox apt repository to your system's apt sources:
 
 ```
