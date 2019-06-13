@@ -195,7 +195,6 @@
 
 - include_tasks: gpg.yml
   tags: gpg
-  become: no
   when: gpg_key_id is defined and gpg_key_id != ''
 
 - name: Display help message.
