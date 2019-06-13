@@ -2,13 +2,13 @@
 
 This document assumes you are starting from a fresh install of macOS.
 
-Most recently tested 2019-05-15 with the following macOS release:
+Most recently tested 2019-06-12 with the following macOS release:
 
 ```
 $ sw_vers
 ProductName:	Mac OS X
-ProductVersion:	10.14.4
-BuildVersion:	18E226
+ProductVersion:	10.14.5
+BuildVersion:	18F132
 ```
 
 
@@ -18,11 +18,11 @@ BuildVersion:	18E226
 macOS includes git, so you should already have that. It may prompt you to set up developer tools if
 you're using it for the first time.
 
-Most recently tested 2019-05-15 with the following git release:
+Most recently tested 2019-06-12 with the following git release:
 
 ```
 $ git --version
-git version 2.20.1 (Apple Git-117)
+git version 2.21.0 (Apple Git-120)
 ```
 
 
@@ -46,13 +46,13 @@ $ brew upgrade <formula name>
 
 Homebrew has a search page you can use to look up formula names: http://formulae.brew.sh/
 
-Most recently tested 2019-05-08 with the following Homebrew release:
+Most recently tested 2019-06-12 with the following Homebrew release:
 
 ```
 $ brew --version
-Homebrew 2.1.2
-Homebrew/homebrew-core (git revision 193c6; last commit 2019-05-15)
-Homebrew/homebrew-cask (git revision d5a13e; last commit 2019-05-15)
+Homebrew 2.1.5
+Homebrew/homebrew-core (git revision f5887; last commit 2019-06-12)
+Homebrew/homebrew-cask (git revision 1a5b8; last commit 2019-06-12)
 ```
 
 That last line about "homebrew-cask" refers to a subcommand 'cask' that can manage the types of
@@ -72,7 +72,7 @@ that, the second attempt should succeed.
 $ brew cask install virtualbox
 ```
 
-Most recently tested 2019-05-15 with the following Virtualbox release:
+Most recently tested 2019-06-12 with the following Virtualbox release:
 
 ```
 $ virtualbox --help
@@ -87,7 +87,7 @@ Oracle VM VirtualBox VM Selector v6.0.8
 $ brew cask install vagrant
 ```
 
-Most recently tested 2019-05-15 with the following Vagrant release:
+Most recently tested 2019-06-12 with the following Vagrant release:
 
 ```
 $ vagrant --version
@@ -102,11 +102,11 @@ Vagrant 2.2.4
 $ brew install gnupg
 ```
 
-Most recently tested 2019-05-15 with the following GnuPG release:
+Most recently tested 2019-06-12 with the following GnuPG release:
 
 ```
 $ gpg --version
-gpg (GnuPG) 2.2.15
+gpg (GnuPG) 2.2.16
 libgcrypt 1.8.4
 [...]
 ```
@@ -133,7 +133,7 @@ $ type python3
 python3 is /usr/local/bin/python3
 ```
 
-Most recently tested 2019-05-15 with the following Python release:
+Most recently tested 2019-06-12 with the following Python release:
 
 ```
 $ python3 --version
