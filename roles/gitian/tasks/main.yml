@@ -175,14 +175,28 @@
     mode: "0755"
   tags: script
 
-- name: Check for presence of Gitian LXC image.
+- name: Check for presence of Gitian LXC jessie image.
   stat:
     path: "/home/{{ gitian_user }}/gitian-builder/base-jessie-amd64"
-  register: gitian_lxc_image
+  register: gitian_lxc_jessie_image
 
-- name: Set up the Gitian LXC image.
+- name: Set up the Gitian LXC jessie image.
   shell: "source ~/.profile && /home/{{ gitian_user }}/gitian-builder/bin/make-base-vm --lxc --arch amd64 --distro debian --suite jessie"
-  when: gitian_lxc_image.stat.exists == false
+  when: gitian_lxc_jessie_image.stat.exists == false
+  become: yes
+  become_user: "{{ gitian_user }}"
+  args:
+    chdir: "/home/{{ gitian_user }}/gitian-builder"
+    executable: /bin/bash
+
+- name: Check for presence of Gitian LXC stretch image.
+  stat:
+    path: "/home/{{ gitian_user }}/gitian-builder/base-stretch-amd64"
+  register: gitian_lxc_stretch_image
+
+- name: Set up the Gitian LXC stretch image.
+  shell: "source ~/.profile && /home/{{ gitian_user }}/gitian-builder/bin/make-base-vm --lxc --arch amd64 --distro debian --suite stretch"
+  when: gitian_lxc_stretch_image.stat.exists == false
   become: yes
   become_user: "{{ gitian_user }}"
   args:
