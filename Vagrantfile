@@ -15,7 +15,7 @@ Vagrant.configure(2) do |config|
     gitian.vm.network "forwarded_port", guest: 22, host: 2200, auto_correct: true
     gitian.vm.provision "ansible" do |ansible|
       ansible.playbook = "gitian.yml"
-      ansible.verbose = 'v'
+      ansible.verbose = 'vvv'
       ansible.raw_arguments = Shellwords.shellsplit(ENV['ANSIBLE_ARGS']) if ENV['ANSIBLE_ARGS']
     end
     gitian.vm.provider "virtualbox" do |v|
