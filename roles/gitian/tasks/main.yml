@@ -111,7 +111,7 @@
   git:
     repo: "{{ gitian_builder_url }}"
     dest: "/home/{{ gitian_user }}/gitian-builder"
-    version: "gitian_builder_version"
+    version: "{{ gitian_builder_version }}"
     force: yes
   become_user: "{{ gitian_user }}"
 
