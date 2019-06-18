@@ -194,7 +194,7 @@ then
 	# Linux
 	if [[ $linux = true ]]
 	then
-            echo ""
+        echo ""
 	    echo "Compiling ${VERSION} Linux"
 	    echo ""
 	    ./bin/gbuild -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ../zcash/contrib/gitian-descriptors/gitian-linux.yml
