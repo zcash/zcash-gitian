@@ -27,6 +27,8 @@ gitian_sigs_repo_path=${HOME}/gitian.sigs
 zcash_repo_dir_path=${HOME}/zcash
 zcash_binaries_dir_path=${HOME}/zcash-binaries
 
+build_dir_path=${gitian_builder_repo_path}/build
+
 # Help Message
 read -d '' usage <<- EOF
 Usage: $scriptName [-c|u|v|b|s|B|o|h|j|m|] signer version
@@ -204,7 +206,7 @@ then
 	    echo ""
 	    ./bin/gbuild -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
 	    ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION} --destination ${gitian_sigs_repo_path}/ ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
-	    mv build/out/zcash-*.tar.gz build/out/src/zcash-*.tar.gz ${zcash_binaries_dir_path}/${VERSION}
+	    mv ${build_dir_path}/out/zcash-*.tar.gz ${build_dir_path}/out/src/zcash-*.tar.gz ${zcash_binaries_dir_path}/${VERSION}
 	fi
 	popd
 
