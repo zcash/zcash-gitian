@@ -22,6 +22,8 @@ scriptName=$(basename -- "$0")
 signProg="gpg --detach-sign"
 commitFiles=true
 
+zcash_repo_dir_path=${HOME}/zcash
+
 # Help Message
 read -d '' usage <<- EOF
 Usage: $scriptName [-c|u|v|b|s|B|o|h|j|m|] signer version
@@ -172,7 +174,7 @@ fi
 echo ${COMMIT}
 
 # Set up build
-pushd ./zcash
+pushd ${zcash_repo_dir_path}
 git fetch
 git checkout ${COMMIT}
 popd
@@ -189,7 +191,7 @@ then
 	echo ""
 	pushd ./gitian-builder
 	mkdir -p inputs
-	make -C ../zcash/depends download SOURCES_PATH=`pwd`/cache/common
+	make -C ${zcash_repo_dir_path}/depends download SOURCES_PATH=`pwd`/cache/common
 
 	# Linux
 	if [[ $linux = true ]]
@@ -197,8 +199,8 @@ then
         echo ""
 	    echo "Compiling ${VERSION} Linux"
 	    echo ""
-	    ./bin/gbuild -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ../zcash/contrib/gitian-descriptors/gitian-linux.yml
-	    ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION} --destination ../gitian.sigs/ ../zcash/contrib/gitian-descriptors/gitian-linux.yml
+	    ./bin/gbuild -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
+	    ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION} --destination ../gitian.sigs/ ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
 	    mv build/out/zcash-*.tar.gz build/out/src/zcash-*.tar.gz ../zcash-binaries/${VERSION}
 	fi
 	popd
@@ -224,7 +226,7 @@ then
 	echo ""
 	echo "Verifying ${VERSION} Linux"
 	echo ""
-	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION} ../zcash/contrib/gitian-descriptors/gitian-linux.yml
+	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION} ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
 	popd
 fi
 
