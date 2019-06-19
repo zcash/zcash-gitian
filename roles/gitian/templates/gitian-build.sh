@@ -28,6 +28,7 @@ zcash_repo_dir_path=${HOME}/zcash
 zcash_binaries_dir_path=${HOME}/zcash-binaries
 
 build_dir_path=${gitian_builder_repo_path}/build
+suite_descriptors_dir_path=${gitian_builder_repo_path}/suites
 
 # Help Message
 read -d '' usage <<- EOF
@@ -184,6 +185,9 @@ git fetch
 git checkout ${COMMIT}
 popd
 
+explode_yaml_file.py ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml suites ${suite_descriptors_dir_path}
+suites=$(ls ${suite_descriptors_dir_path})
+
 # Build
 if [[ $build = true ]]
 then
@@ -201,12 +205,33 @@ then
 	# Linux
 	if [[ $linux = true ]]
 	then
-        echo ""
-	    echo "Compiling ${VERSION} Linux"
-	    echo ""
-	    ./bin/gbuild -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
-	    ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION} --destination ${gitian_sigs_repo_path}/ ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
-	    mv ${build_dir_path}/out/zcash-*.tar.gz ${build_dir_path}/out/src/zcash-*.tar.gz ${zcash_binaries_dir_path}/${VERSION}
+        for suite in ${suites} ; do
+            echo "processing suite ${suite}"
+
+            suite_dir_path=${suite_descriptors_dir_path}/${suite}
+            echo "suite_dir_path: ${suite_dir_path}"
+
+            suite_image_path=${gitian_builder_repo_path}/base-${suite}-amd64
+            echo "suite_image_path: ${suite_image_path}"
+
+            if [ ! -f ${suite_image_path} ]; then
+                echo "Image not found for suite ${suite}; calling make-base-vm to build it"
+                ./bin/make-base-vm --lxc --arch amd64 --distro debian --suite ${suite}
+            fi
+
+            echo ""
+	        echo "Compiling ${VERSION} Linux"
+	        echo ""
+
+            ./bin/gbuild -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${suite_dir_path}/gitian-linux.yml
+            ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION} --destination ${gitian_sigs_repo_path}/ ${suite_dir_path}/gitian-linux.yml
+
+            suite_binaries_dir_path=${zcash_binaries_dir_path}/${VERSION}/${suite}
+            mkdir ${suite_binaries_dir_path}
+
+            mv ${build_dir_path}/out/zcash-*.tar.gz ${build_dir_path}/out/src/zcash-*.tar.gz ${suite_binaries_dir_path}
+        done
+
 	fi
 	popd
 
