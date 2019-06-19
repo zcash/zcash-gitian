@@ -30,6 +30,10 @@
     state: present
     update_cache: yes
 
+- name: Install ruamel.yaml
+  pip:
+    name: "ruamel.yaml"
+
 - name: Set up the Gitian build user with sudo.
   user:
     name: "{{ gitian_user }}"
