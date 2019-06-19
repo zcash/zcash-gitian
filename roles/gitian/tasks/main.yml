@@ -170,6 +170,20 @@
   command: "git config --global user.email '{{ git_email }}'"
   become_user: "{{ gitian_user }}"
 
+- name: Create bin directory under gitian_user home directory
+  file:
+    state: directory
+    dest: "/home/{{ gitian_user }}/bin"
+    mode: "0755"
+
+- name: Copy explode_yaml_file.py
+  copy:
+    src: explode_yaml_file.py
+    dest: "/home/{{ gitian_user }}/bin/explode_yaml_file.py"
+    owner: "{{ gitian_user }}"
+    group: "{{ gitian_user }}"
+    mode: "0755"
+
 - name: Copy Gitian build script.
   template:
     src: gitian-build.sh
