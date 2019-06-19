@@ -23,6 +23,7 @@ signProg="gpg --detach-sign"
 commitFiles=true
 
 zcash_repo_dir_path=${HOME}/zcash
+zcash_binaries_dir_path=${HOME}/zcash-binaries
 
 # Help Message
 read -d '' usage <<- EOF
@@ -183,7 +184,7 @@ popd
 if [[ $build = true ]]
 then
 	# Make output folder
-	mkdir -p ./zcash-binaries/${VERSION}
+	mkdir -p ${zcash_binaries_dir_path}/${VERSION}
 
 	# Build Dependencies
 	echo ""
@@ -201,7 +202,7 @@ then
 	    echo ""
 	    ./bin/gbuild -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
 	    ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION} --destination ../gitian.sigs/ ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
-	    mv build/out/zcash-*.tar.gz build/out/src/zcash-*.tar.gz ../zcash-binaries/${VERSION}
+	    mv build/out/zcash-*.tar.gz build/out/src/zcash-*.tar.gz ${zcash_binaries_dir_path}/${VERSION}
 	fi
 	popd
 
