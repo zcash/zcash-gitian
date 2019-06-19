@@ -224,7 +224,7 @@ then
 	        echo ""
 
             ./bin/gbuild -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${suite_dir_path}/gitian-linux.yml
-            ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION} --destination ${gitian_sigs_repo_path}/ ${suite_dir_path}/gitian-linux.yml
+            ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION}_${suite} --destination ${gitian_sigs_repo_path}/ ${suite_dir_path}/gitian-linux.yml
 
             suite_binaries_dir_path=${zcash_binaries_dir_path}/${VERSION}/${suite}
             mkdir ${suite_binaries_dir_path}
@@ -251,30 +251,40 @@ fi
 # Verify the build
 if [[ $verify = true ]]
 then
-	# Linux
-	pushd ${gitian_builder_repo_path}
-	echo ""
-	echo "Verifying ${VERSION} Linux"
-	echo ""
-	./bin/gverify -v -d ${gitian_sigs_repo_path}/ -r ${VERSION} ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
-	popd
+    # Linux
+    pushd ${gitian_builder_repo_path}
+
+    for suite in ${suites} ; do
+        echo "processing suite ${suite}"
+
+        suite_dir_path=${suite_descriptors_dir_path}/${suite}
+        echo "suite_dir_path: ${suite_dir_path}"
+
+        echo ""
+        echo "Verifying ${VERSION}_${suite} Linux"
+        echo ""
+
+        ./bin/gverify -v -d ${gitian_sigs_repo_path}/ -r ${VERSION}_${suite} ${suite_dir_path}/gitian-linux.yml
+    done
+
+    popd
 fi
 
 # Sign binaries
 if [[ $sign = true ]]
 then
 
-        pushd ${gitian_builder_repo_path}
+    pushd ${gitian_builder_repo_path}
 	popd
 
-        if [[ $commitFiles = true ]]
-        then
-            # Commit Sigs
-            pushd ${gitian_sigs_repo_path}
-            echo ""
-            echo "Committing ${VERSION} Signed Binary Signatures"
-            echo ""
-            git commit -a -m "Add ${VERSION} signed binary signatures for ${SIGNER}"
-            popd
-        fi
+    if [[ $commitFiles = true ]]
+    then
+        # Commit Sigs
+        pushd ${gitian_sigs_repo_path}
+        echo ""
+        echo "Committing ${VERSION} Signed Binary Signatures"
+        echo ""
+        git commit -a -m "Add ${VERSION} signed binary signatures for ${SIGNER}"
+        popd
+    fi
 fi
