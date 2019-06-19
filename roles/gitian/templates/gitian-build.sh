@@ -23,6 +23,7 @@ signProg="gpg --detach-sign"
 commitFiles=true
 
 gitian_builder_repo_path=${HOME}/gitian-builder
+gitian_sigs_repo_path=${HOME}/gitian.sigs
 zcash_repo_dir_path=${HOME}/zcash
 zcash_binaries_dir_path=${HOME}/zcash-binaries
 
@@ -202,7 +203,7 @@ then
 	    echo "Compiling ${VERSION} Linux"
 	    echo ""
 	    ./bin/gbuild -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
-	    ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION} --destination ../gitian.sigs/ ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
+	    ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION} --destination ${gitian_sigs_repo_path}/ ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
 	    mv build/out/zcash-*.tar.gz build/out/src/zcash-*.tar.gz ${zcash_binaries_dir_path}/${VERSION}
 	fi
 	popd
@@ -213,7 +214,7 @@ then
             echo ""
             echo "Committing ${VERSION} Signatures"
             echo ""
-            pushd gitian.sigs
+            pushd ${gitian_sigs_repo_path}
             git add ${VERSION}/${SIGNER}
             git commit -a -m "Add ${VERSION} signatures for ${SIGNER}"
             popd
@@ -228,7 +229,7 @@ then
 	echo ""
 	echo "Verifying ${VERSION} Linux"
 	echo ""
-	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION} ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
+	./bin/gverify -v -d ${gitian_sigs_repo_path}/ -r ${VERSION} ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
 	popd
 fi
 
@@ -242,7 +243,7 @@ then
         if [[ $commitFiles = true ]]
         then
             # Commit Sigs
-            pushd gitian.sigs
+            pushd ${gitian_sigs_repo_path}
             echo ""
             echo "Committing ${VERSION} Signed Binary Signatures"
             echo ""
