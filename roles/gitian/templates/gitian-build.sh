@@ -22,6 +22,7 @@ scriptName=$(basename -- "$0")
 signProg="gpg --detach-sign"
 commitFiles=true
 
+gitian_builder_repo_path=${HOME}/gitian-builder
 zcash_repo_dir_path=${HOME}/zcash
 zcash_binaries_dir_path=${HOME}/zcash-binaries
 
@@ -190,9 +191,9 @@ then
 	echo ""
 	echo "Building Dependencies"
 	echo ""
-	pushd ./gitian-builder
+	pushd ${gitian_builder_repo_path}
 	mkdir -p inputs
-	make -C ${zcash_repo_dir_path}/depends download SOURCES_PATH=`pwd`/cache/common
+	make -C ${zcash_repo_dir_path}/depends download SOURCES_PATH=${gitian_builder_repo_path}/cache/common
 
 	# Linux
 	if [[ $linux = true ]]
@@ -223,7 +224,7 @@ fi
 if [[ $verify = true ]]
 then
 	# Linux
-	pushd ./gitian-builder
+	pushd ${gitian_builder_repo_path}
 	echo ""
 	echo "Verifying ${VERSION} Linux"
 	echo ""
@@ -235,7 +236,7 @@ fi
 if [[ $sign = true ]]
 then
 
-        pushd ./gitian-builder
+        pushd ${gitian_builder_repo_path}
 	popd
 
         if [[ $commitFiles = true ]]
