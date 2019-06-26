@@ -24,7 +24,10 @@ commitFiles=true
 
 gitian_builder_repo_path=${HOME}/gitian-builder
 gitian_sigs_repo_path=${HOME}/gitian.sigs
+
 zcash_repo_dir_path=${HOME}/zcash
+gitian_descriptor_path=${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
+
 zcash_binaries_dir_path=${HOME}/zcash-binaries
 
 build_dir_path=${gitian_builder_repo_path}/build
@@ -185,7 +188,8 @@ git fetch
 git checkout ${COMMIT}
 popd
 
-explode_yaml_file.py ${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml suites ${suite_descriptors_dir_path}
+
+explode_yaml_file.py ${gitian_descriptor_path} suites ${suite_descriptors_dir_path}
 suites=$(ls ${suite_descriptors_dir_path})
 
 # Build
