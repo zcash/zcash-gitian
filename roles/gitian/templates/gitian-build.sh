@@ -189,8 +189,7 @@ git checkout ${COMMIT}
 popd
 
 
-explode_yaml_file.py ${gitian_descriptor_path} suites ${suite_descriptors_dir_path}
-suites=$(ls ${suite_descriptors_dir_path})
+suites=$(explode_yaml_file.py ${gitian_descriptor_path} suites ${suite_descriptors_dir_path})
 
 # Build
 if [[ $build = true ]]
