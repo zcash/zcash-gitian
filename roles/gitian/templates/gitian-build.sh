@@ -197,14 +197,6 @@ then
 	# Make output folder
 	mkdir -p ${zcash_binaries_dir_path}/${VERSION}
 
-	# Build Dependencies
-	echo ""
-	echo "Building Dependencies"
-	echo ""
-	pushd ${gitian_builder_repo_path}
-	mkdir -p inputs
-	make -C ${zcash_repo_dir_path}/depends download SOURCES_PATH=${gitian_builder_repo_path}/cache/common
-
 	# Linux
 	if [[ $linux = true ]]
 	then
@@ -213,6 +205,14 @@ then
 
             suite_dir_path=${suite_descriptors_dir_path}/${suite}
             echo "suite_dir_path: ${suite_dir_path}"
+
+            # Build Dependencies
+            echo ""
+            echo "Building Dependencies"
+            echo ""
+            pushd ${gitian_builder_repo_path}
+            mkdir -p inputs
+            make -C ${zcash_repo_dir_path}/depends download SOURCES_PATH=${gitian_builder_repo_path}/cache/common
 
             suite_image_path=${gitian_builder_repo_path}/base-${suite}-amd64
             echo "suite_image_path: ${suite_image_path}"
@@ -233,10 +233,11 @@ then
             mkdir ${suite_binaries_dir_path}
 
             mv ${build_dir_path}/out/zcash-*.tar.gz ${build_dir_path}/out/src/zcash-*.tar.gz ${suite_binaries_dir_path}
+
+            popd  # pushd ${gitian_builder_repo_path}
         done
 
 	fi
-	popd
 
         if [[ $commitFiles = true ]]
         then
