@@ -248,8 +248,8 @@ then
             echo "Committing ${VERSION} Signatures"
             echo ""
             pushd ${gitian_sigs_repo_path}
-            git add ${VERSION}/${SIGNER}
-            git commit -a -m "Add ${VERSION} signatures for ${SIGNER}"
+            git add ${VERSION}_${suite}/${SIGNER}
+            git commit -a -m "Add ${VERSION}_${suite} signatures for ${SIGNER}"
             popd
         fi
 fi
