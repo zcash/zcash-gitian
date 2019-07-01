@@ -212,6 +212,8 @@ then
             echo ""
             pushd ${gitian_builder_repo_path}
             mkdir -p inputs
+            rm -rf ${gitian_builder_repo_path}/cache/* # Clear cache directory before each build
+
             make -C ${zcash_repo_dir_path}/depends download SOURCES_PATH=${gitian_builder_repo_path}/cache/common
 
             suite_image_path=${gitian_builder_repo_path}/base-${suite}-amd64
