@@ -22,6 +22,17 @@ scriptName=$(basename -- "$0")
 signProg="gpg --detach-sign"
 commitFiles=true
 
+gitian_builder_repo_path=${HOME}/gitian-builder
+gitian_sigs_repo_path=${HOME}/gitian.sigs
+
+zcash_repo_dir_path=${HOME}/zcash
+gitian_descriptor_path=${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
+
+zcash_binaries_dir_path=${HOME}/zcash-binaries
+
+build_dir_path=${gitian_builder_repo_path}/build
+suite_descriptors_dir_path=${gitian_builder_repo_path}/suites
+
 # Help Message
 read -d '' usage <<- EOF
 Usage: $scriptName [-c|u|v|b|s|B|o|h|j|m|] signer version
@@ -172,77 +183,114 @@ fi
 echo ${COMMIT}
 
 # Set up build
-pushd ./zcash
+pushd ${zcash_repo_dir_path}
 git fetch
 git checkout ${COMMIT}
 popd
+
+
+suites=$(explode_yaml_file.py ${gitian_descriptor_path} suites ${suite_descriptors_dir_path})
 
 # Build
 if [[ $build = true ]]
 then
 	# Make output folder
-	mkdir -p ./zcash-binaries/${VERSION}
-
-	# Build Dependencies
-	echo ""
-	echo "Building Dependencies"
-	echo ""
-	pushd ./gitian-builder
-	mkdir -p inputs
-	make -C ../zcash/depends download SOURCES_PATH=`pwd`/cache/common
+	mkdir -p ${zcash_binaries_dir_path}/${VERSION}
 
 	# Linux
 	if [[ $linux = true ]]
 	then
-            echo ""
-	    echo "Compiling ${VERSION} Linux"
-	    echo ""
-	    ./bin/gbuild -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ../zcash/contrib/gitian-descriptors/gitian-linux.yml
-	    ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION} --destination ../gitian.sigs/ ../zcash/contrib/gitian-descriptors/gitian-linux.yml
-	    mv build/out/zcash-*.tar.gz build/out/src/zcash-*.tar.gz ../zcash-binaries/${VERSION}
-	fi
-	popd
+        for suite in ${suites} ; do
+            echo "processing suite ${suite}"
 
-        if [[ $commitFiles = true ]]
-        then
-	    # Commit to gitian.sigs repo
+            suite_dir_path=${suite_descriptors_dir_path}/${suite}
+            echo "suite_dir_path: ${suite_dir_path}"
+
+            # Build Dependencies
             echo ""
-            echo "Committing ${VERSION} Signatures"
+            echo "Building Dependencies"
             echo ""
-            pushd gitian.sigs
-            git add ${VERSION}/${SIGNER}
-            git commit -a -m "Add ${VERSION} signatures for ${SIGNER}"
-            popd
-        fi
+            pushd ${gitian_builder_repo_path}
+            mkdir -p inputs
+            rm -rf ${gitian_builder_repo_path}/cache/* # Clear cache directory before each build
+
+            make -C ${zcash_repo_dir_path}/depends download SOURCES_PATH=${gitian_builder_repo_path}/cache/common
+
+            suite_image_path=${gitian_builder_repo_path}/base-${suite}-amd64
+            echo "suite_image_path: ${suite_image_path}"
+
+            if [ ! -f ${suite_image_path} ]; then
+                echo "Image not found for suite ${suite}; calling make-base-vm to build it"
+                ./bin/make-base-vm --lxc --arch amd64 --distro debian --suite ${suite}
+            fi
+
+            echo ""
+            echo "Compiling variant: ${VERSION}_${suite}"
+            echo ""
+
+            ./bin/gbuild -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${suite_dir_path}/gitian-linux.yml
+            ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION}_${suite} --destination ${gitian_sigs_repo_path}/ ${suite_dir_path}/gitian-linux.yml
+
+            suite_binaries_dir_path=${zcash_binaries_dir_path}/${VERSION}/${suite}
+            mkdir ${suite_binaries_dir_path}
+
+            mv ${build_dir_path}/out/zcash-*.tar.gz ${build_dir_path}/out/src/zcash-*.tar.gz ${suite_binaries_dir_path}
+
+            popd  # pushd ${gitian_builder_repo_path}
+
+
+            if [[ $commitFiles = true ]]
+            then
+	            # Commit to gitian.sigs repo
+                echo ""
+                echo "Committing ${VERSION}_${suite} Signatures"
+                echo ""
+                pushd ${gitian_sigs_repo_path}
+                git add ${VERSION}_${suite}/${SIGNER}
+                git commit -a -m "Add ${VERSION}_${suite} signatures for ${SIGNER}"
+                popd
+            fi
+        done
+	fi
 fi
 
 # Verify the build
 if [[ $verify = true ]]
 then
-	# Linux
-	pushd ./gitian-builder
-	echo ""
-	echo "Verifying ${VERSION} Linux"
-	echo ""
-	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION} ../zcash/contrib/gitian-descriptors/gitian-linux.yml
-	popd
+    # Linux
+    pushd ${gitian_builder_repo_path}
+
+    for suite in ${suites} ; do
+        echo "processing suite ${suite}"
+
+        suite_dir_path=${suite_descriptors_dir_path}/${suite}
+        echo "suite_dir_path: ${suite_dir_path}"
+
+        echo ""
+        echo "Verifying ${VERSION}_${suite} Linux"
+        echo ""
+
+        ./bin/gverify -v -d ${gitian_sigs_repo_path}/ -r ${VERSION}_${suite} ${suite_dir_path}/gitian-linux.yml
+    done
+
+    popd
 fi
 
 # Sign binaries
 if [[ $sign = true ]]
 then
 
-        pushd ./gitian-builder
+    pushd ${gitian_builder_repo_path}
 	popd
 
-        if [[ $commitFiles = true ]]
-        then
-            # Commit Sigs
-            pushd gitian.sigs
-            echo ""
-            echo "Committing ${VERSION} Signed Binary Signatures"
-            echo ""
-            git commit -a -m "Add ${VERSION} signed binary signatures for ${SIGNER}"
-            popd
-        fi
+    if [[ $commitFiles = true ]]
+    then
+        # Commit Sigs
+        pushd ${gitian_sigs_repo_path}
+        echo ""
+        echo "Committing ${VERSION} Signed Binary Signatures"
+        echo ""
+        git commit -a -m "Add ${VERSION} signed binary signatures for ${SIGNER}"
+        popd
+    fi
 fi

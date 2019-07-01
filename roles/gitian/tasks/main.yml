@@ -30,6 +30,10 @@
     state: present
     update_cache: yes
 
+- name: Install ruamel.yaml
+  pip:
+    name: "ruamel.yaml"
+
 - name: Set up the Gitian build user with sudo.
   user:
     name: "{{ gitian_user }}"
@@ -166,6 +170,20 @@
   command: "git config --global user.email '{{ git_email }}'"
   become_user: "{{ gitian_user }}"
 
+- name: Create bin directory under gitian_user home directory
+  file:
+    state: directory
+    dest: "/home/{{ gitian_user }}/bin"
+    mode: "0755"
+
+- name: Copy explode_yaml_file.py
+  copy:
+    src: explode_yaml_file.py
+    dest: "/home/{{ gitian_user }}/bin/explode_yaml_file.py"
+    owner: "{{ gitian_user }}"
+    group: "{{ gitian_user }}"
+    mode: "0755"
+
 - name: Copy Gitian build script.
   template:
     src: gitian-build.sh
@@ -174,20 +192,6 @@
     group: "{{ gitian_user }}"
     mode: "0755"
   tags: script
-
-- name: Check for presence of Gitian LXC image.
-  stat:
-    path: "/home/{{ gitian_user }}/gitian-builder/base-jessie-amd64"
-  register: gitian_lxc_image
-
-- name: Set up the Gitian LXC image.
-  shell: "source ~/.profile && /home/{{ gitian_user }}/gitian-builder/bin/make-base-vm --lxc --arch amd64 --distro debian --suite jessie"
-  when: gitian_lxc_image.stat.exists == false
-  become: yes
-  become_user: "{{ gitian_user }}"
-  args:
-    chdir: "/home/{{ gitian_user }}/gitian-builder"
-    executable: /bin/bash
 
 - name: Clean the apt cache to free up space.
   apt:
