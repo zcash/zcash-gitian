@@ -243,7 +243,7 @@ then
             then
 	            # Commit to gitian.sigs repo
                 echo ""
-                echo "Committing ${VERSION} Signatures"
+                echo "Committing ${VERSION}_${suite} Signatures"
                 echo ""
                 pushd ${gitian_sigs_repo_path}
                 git add ${VERSION}_${suite}/${SIGNER}
