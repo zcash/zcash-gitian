@@ -237,21 +237,21 @@ then
             mv ${build_dir_path}/out/zcash-*.tar.gz ${build_dir_path}/out/src/zcash-*.tar.gz ${suite_binaries_dir_path}
 
             popd  # pushd ${gitian_builder_repo_path}
+
+
+            if [[ $commitFiles = true ]]
+            then
+	            # Commit to gitian.sigs repo
+                echo ""
+                echo "Committing ${VERSION} Signatures"
+                echo ""
+                pushd ${gitian_sigs_repo_path}
+                git add ${VERSION}_${suite}/${SIGNER}
+                git commit -a -m "Add ${VERSION}_${suite} signatures for ${SIGNER}"
+                popd
+            fi
         done
-
 	fi
-
-        if [[ $commitFiles = true ]]
-        then
-	    # Commit to gitian.sigs repo
-            echo ""
-            echo "Committing ${VERSION} Signatures"
-            echo ""
-            pushd ${gitian_sigs_repo_path}
-            git add ${VERSION}_${suite}/${SIGNER}
-            git commit -a -m "Add ${VERSION}_${suite} signatures for ${SIGNER}"
-            popd
-        fi
 fi
 
 # Verify the build
