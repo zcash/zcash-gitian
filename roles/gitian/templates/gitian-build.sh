@@ -225,8 +225,8 @@ then
             fi
 
             echo ""
-	        echo "Compiling ${VERSION} Linux"
-	        echo ""
+            echo "Compiling variant: ${VERSION}_${suite}"
+            echo ""
 
             ./bin/gbuild -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${suite_dir_path}/gitian-linux.yml
             ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION}_${suite} --destination ${gitian_sigs_repo_path}/ ${suite_dir_path}/gitian-linux.yml
