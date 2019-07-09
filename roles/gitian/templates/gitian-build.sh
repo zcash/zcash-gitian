@@ -3,7 +3,6 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 # What to do
-sign=false
 verify=false
 build=true
 
@@ -35,7 +34,7 @@ suite_descriptors_dir_path=${gitian_builder_repo_path}/suites
 
 # Help Message
 read -d '' usage <<- EOF
-Usage: $scriptName [-c|u|v|b|s|B|o|h|j|m|] signer version
+Usage: $scriptName [-c|u|v|b|o|h|j|m|] signer version
 
 Run this script from the directory containing the zcash, gitian-builder, and gitian.sigs repositories.
 
@@ -48,8 +47,6 @@ Options:
 -u|--url	Specify the URL of the repository. Default is {{ zcash_git_repo_url }}
 -v|--verify 	Verify the gitian build
 -b|--build	Do a gitian build
--s|--sign	Make signed binaries
--B|--buildsign	Build both signed and unsigned binaries
 -j		Number of processes to use. Default 2
 -m		Memory to allocate in MiB. Default 3584
 --detach-sign   Create the assert file for detached signing. Will not commit anything.
@@ -66,15 +63,6 @@ while :; do
             ;;
         # Build
         -b|--build)
-	    build=true
-            ;;
-        # Sign binaries
-        -s|--sign)
-	    sign=true
-            ;;
-        # Build then Sign
-        -B|--buildsign)
-	    sign=true
 	    build=true
             ;;
         # PGP Signer
@@ -274,23 +262,4 @@ then
     done
 
     popd
-fi
-
-# Sign binaries
-if [[ $sign = true ]]
-then
-
-    pushd ${gitian_builder_repo_path}
-	popd
-
-    if [[ $commitFiles = true ]]
-    then
-        # Commit Sigs
-        pushd ${gitian_sigs_repo_path}
-        echo ""
-        echo "Committing ${VERSION} Signed Binary Signatures"
-        echo ""
-        git commit -a -m "Add ${VERSION} signed binary signatures for ${SIGNER}"
-        popd
-    fi
 fi
