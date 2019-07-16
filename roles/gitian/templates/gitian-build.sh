@@ -223,6 +223,7 @@ then
             mkdir ${suite_binaries_dir_path}
 
             mv ${build_dir_path}/out/zcash-*.tar.gz ${build_dir_path}/out/src/zcash-*.tar.gz ${suite_binaries_dir_path}
+            mv ${build_dir_path}/out/zcash-*.deb ${suite_binaries_dir_path}
 
             popd  # pushd ${gitian_builder_repo_path}
 
