@@ -79,30 +79,30 @@ https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration
 You can generate a keypair specifically for connecting to github like this:
 
 ```
-$ ssh-keygen -t rsa -b 4096 -C "hpotter@hogwarts.wiz" -f ~/.ssh/github_id_rsa -N ''
-Generating public/private rsa key pair.
+$ ssh-keygen -t ed25519 -C "hpotter@hogwarts.wiz" -f ~/.ssh/github_id_rsa -N ''
+Generating public/private ed25519 key pair.
 Your identification has been saved in /Users/hpotter/.ssh/github_id_rsa.
 Your public key has been saved in /Users/hpotter/.ssh/github_id_rsa.pub.
 The key fingerprint is:
-SHA256:w1ZAgf+Ge+R662PU18ASqx8sZYfg9OxKhE/ZFf9zwvE hpotter@hogwarts.wiz
+SHA256:qBCOybcJkgs1xdNoocYlsZz3jNQhGgOymreQAQRyh0c hpotter@hogwarts.wiz
 The key's randomart image is:
-+---[RSA 2048]----+
-|       o+.    .. |
-|      .  .o . .. |
-|       . +.* *. .|
-|       .o.= X.+o.|
-|        S* B oo+E|
-|       ...X = ..+|
-|         B + o   |
-|        . B .    |
-|        .*oo     |
++--[ED25519 256]--+
+|Oo*=E+.          |
+|+=.%*o..         |
+|o %oo..          |
+|o@ = + .         |
+|@o+.. + S        |
+|o+ooo.           |
+|. .o.            |
+|                 |
+|                 |
 +----[SHA256]-----+
 ```
 
 Some explanation of the arguments used in the above example:
 
 ```
-    -t rsa                         Use a key type of RSA
+    -t ed25519                     Use a key type of ed25519
 
     -C "hpotter@hogwarts.wiz"      Provide an identity to associate with the key (default is
                                    user@host in the local environment)
