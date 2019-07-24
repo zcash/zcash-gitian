@@ -135,6 +135,12 @@ Host github.com
 
 The 'User' entry should match your github username.
 
+If using macOS, the IdentityFile path will be:
+
+```
+/Users/yourusername/.ssh/github_id_rsa
+```
+
 Test that ssh will successfully use your new key to connect to github.
 
 ```
