@@ -123,6 +123,7 @@ Some explanation of the arguments used in the above example:
 Add an entry to `~/.ssh/config` (create this file if necessary) telling ssh to use the keypair you
 generated above when connecting to github.com.
 
+
 For instance:
 
 ```
@@ -139,6 +140,13 @@ If using macOS, the IdentityFile path will be:
 
 ```
 /Users/yourusername/.ssh/github_id_rsa
+```
+
+If you do generate a new ssh config file you'll need to set its permission bits appropriately.  On
+a Unix system you may do so with a command like this:
+
+```
+chmod 400 ~/.ssh/config
 ```
 
 Test that ssh will successfully use your new key to connect to github.
@@ -159,7 +167,11 @@ $
 
 From a location where you want to place your local clone of this repository (e.g. `~/Projects`). If
 there's a possibility you'll want to make and contribute changes, consider forking the repository
-and cloning from your fork.
+and cloning from your fork. For example: 
+
+```
+git clone git@github.com:harrypotter/zcash-gitian.git
+```
 
 cd into the project repo
 
