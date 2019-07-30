@@ -1,6 +1,6 @@
 # Primary Dependencies
 # (Packages we actually decided to include)
-ansible==2.8.1
+ansible==2.8.3
 # Secondary Dependencies
 # (pulled in by one or more of the above dependencies)
 asn1crypto==0.24.0
