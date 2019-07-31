@@ -498,7 +498,16 @@ Load your ssh key into ssh-agent
 
 Load your ssh key (for pushing signatures to github) into ssh-agent. The approach here is to allow
 programs in the zcash-build VM to connect to ssh-agent to perform operations with the private key.
-This way, we don't need to copy ssh keys into the VM. You can verify that the key is loaded by
+This way, we don't need to copy ssh keys into the VM.
+
+If you don't already have an ssh-agent running you'll need to start one.  For example, you might be
+able to start one like this:
+
+```
+eval `ssh-agent -s`
+```
+
+ You can verify that the key is loaded by
 running `ssh-add -l`.
 
 ```
