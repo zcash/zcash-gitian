@@ -477,9 +477,9 @@ zcash-gitian$ vagrant plugin install --local
 ## Configure the version of zcash you want to build and sign
 
 Set the value of the `ZCASH_VERSION` variable in `.env` to point to the zcash commit you want to
-create a signature for. Likely you want the name of a git tag, such as `v2.0.5-2`.
-
-
+create a signature for. Likely you want the name of a
+[git-tagged zcash version](https://github.com/zcash/zcash/tags), usually the most recent released
+version.  
 
 ## Provision a virtual machine
 
@@ -498,7 +498,16 @@ Load your ssh key into ssh-agent
 
 Load your ssh key (for pushing signatures to github) into ssh-agent. The approach here is to allow
 programs in the zcash-build VM to connect to ssh-agent to perform operations with the private key.
-This way, we don't need to copy ssh keys into the VM. You can verify that the key is loaded by
+This way, we don't need to copy ssh keys into the VM.
+
+If you don't already have an ssh-agent running you may need to start one.  For example, you might be
+able to start one like this:
+
+```
+eval `ssh-agent -s`
+```
+
+ You can verify that the key is loaded by
 running `ssh-add -l`.
 
 ```
@@ -567,20 +576,26 @@ It's also a good idea to regularly `git pull` on this repository to obtain updat
 Generating and uploading signatures
 -----------------------------------
 
+Signatures can be verified by running `gitian-build.sh --verify`, but set `build=false` in the script to skip building. Run a `git pull` beforehand on `gitian.sigs` so you have the latest. The provisioning includes a task which imports Zcash developer public keys to the Vagrant user's keyring and sets them to ultimately trusted, but they can also be found at `contrib/gitian-downloader` within the Zcash source repository.
+
 After the build successfully completes, the gitian command `gsign` will be called, which will
-generate signatures, and a commit will be added. You can cd into the gitian.sigs directory, set the
-repository to point to your fork of [zcash/gitian.sigs](https://github.com/zcash/gitian.sigs), push
+generate signatures, and a commit will be added.
+
+Fork the [zcash/gitian.sigs](https://github.com/zcash/gitian.sigs) repository by following the link
+and clicking "fork".
+
+Now you can cd into the gitian.sigs directory, set the repository to point to your fork of
+[zcash/gitian.sigs](https://github.com/zcash/gitian.sigs), push
 your updates to a branch, and then make a pull request on github.
 
 ```
 cd gitian.sigs
 git remote rename origin upstream
 git remote add origin git@github.com:harrypotter/gitian.sigs.git
-git checkout -b v2.0.4
-git push origin v2.0.4
+git checkout -b v2.0.6
+git push origin v2.0.6
 ```
 
-Signatures can be verified by running `gitian-build.sh --verify`, but set `build=false` in the script to skip building. Run a `git pull` beforehand on `gitian.sigs` so you have the latest. The provisioning includes a task which imports Zcash developer public keys to the Vagrant user's keyring and sets them to ultimately trusted, but they can also be found at `contrib/gitian-downloader` within the Zcash source repository.
 
 Working with GPG
 ----------------
