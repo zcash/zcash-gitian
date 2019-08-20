@@ -2,13 +2,13 @@
 
 This document assumes you are starting from a fresh install of macOS.
 
-Most recently tested 2019-06-12 with the following macOS release:
+Most recently tested 2019-08-19 with the following macOS release:
 
 ```
 $ sw_vers
 ProductName:	Mac OS X
-ProductVersion:	10.14.5
-BuildVersion:	18F132
+ProductVersion:	10.14.6
+BuildVersion:	18G87
 ```
 
 
@@ -18,7 +18,7 @@ BuildVersion:	18F132
 macOS includes git, so you should already have that. It may prompt you to set up developer tools if
 you're using it for the first time.
 
-Most recently tested 2019-06-12 with the following git release:
+Most recently tested 2019-09-19 with the following git release:
 
 ```
 $ git --version
@@ -46,13 +46,13 @@ $ brew upgrade <formula name>
 
 Homebrew has a search page you can use to look up formula names: http://formulae.brew.sh/
 
-Most recently tested 2019-06-12 with the following Homebrew release:
+Most recently tested 2019-09-19 with the following Homebrew release:
 
 ```
 $ brew --version
-Homebrew 2.1.5
-Homebrew/homebrew-core (git revision f5887; last commit 2019-06-12)
-Homebrew/homebrew-cask (git revision 1a5b8; last commit 2019-06-12)
+Homebrew 2.1.10
+Homebrew/homebrew-core (git revision c7fbf; last commit 2019-08-18)
+Homebrew/homebrew-cask (git revision bf0cf; last commit 2019-08-19)
 ```
 
 That last line about "homebrew-cask" refers to a subcommand 'cask' that can manage the types of
@@ -72,11 +72,11 @@ that, the second attempt should succeed.
 $ brew cask install virtualbox
 ```
 
-Most recently tested 2019-06-12 with the following Virtualbox release:
+Most recently tested 2019-09-19 with the following Virtualbox release:
 
 ```
 $ virtualbox --help
-Oracle VM VirtualBox VM Selector v6.0.8
+Oracle VM VirtualBox VM Selector v6.0.10
 ```
 
 
@@ -87,11 +87,11 @@ Oracle VM VirtualBox VM Selector v6.0.8
 $ brew cask install vagrant
 ```
 
-Most recently tested 2019-06-12 with the following Vagrant release:
+Most recently tested 2019-09-19 with the following Vagrant release:
 
 ```
 $ vagrant --version
-Vagrant 2.2.4
+Vagrant 2.2.5
 ```
 
 
@@ -102,11 +102,11 @@ Vagrant 2.2.4
 $ brew install gnupg
 ```
 
-Most recently tested 2019-06-12 with the following GnuPG release:
+Most recently tested 2019-09-19 with the following GnuPG release:
 
 ```
 $ gpg --version
-gpg (GnuPG) 2.2.16
+gpg (GnuPG) 2.2.17
 libgcrypt 1.8.4
 [...]
 ```
@@ -133,11 +133,11 @@ $ type python3
 python3 is /usr/local/bin/python3
 ```
 
-Most recently tested 2019-06-12 with the following Python release:
+Most recently tested 2019-09-19 with the following Python release:
 
 ```
 $ python3 --version
-Python 3.7.3
+Python 3.7.4
 ```
 
 
@@ -170,7 +170,7 @@ _direnv_hook;[...]
 direnv also supports several other shells -- zsh, fish, tcsh, and elvish as of this writing. Its
 website includes instructions for enabling each of the shells it supports.
 
-Most recently tested 2019-05-15 with the following direnv release:
+Most recently tested 2019-09-19 with the following direnv release:
 
 ```
 $ direnv --version
