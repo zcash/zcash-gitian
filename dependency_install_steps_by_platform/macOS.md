@@ -2,13 +2,13 @@
 
 This document assumes you are starting from a fresh install of macOS.
 
-Most recently tested 2019-08-19 with the following macOS release:
+Most recently tested 2019-11-01 with the following macOS release:
 
 ```
-$ sw_vers
+% sw_vers
 ProductName:	Mac OS X
-ProductVersion:	10.14.6
-BuildVersion:	18G87
+ProductVersion:	10.15.1
+BuildVersion:	19B88
 ```
 
 
@@ -18,11 +18,11 @@ BuildVersion:	18G87
 macOS includes git, so you should already have that. It may prompt you to set up developer tools if
 you're using it for the first time.
 
-Most recently tested 2019-09-19 with the following git release:
+Most recently tested 2019-11-01 with the following git release:
 
 ```
-$ git --version
-git version 2.21.0 (Apple Git-120)
+% git --version
+git version 2.21.0 (Apple Git-122)
 ```
 
 
@@ -46,13 +46,13 @@ $ brew upgrade <formula name>
 
 Homebrew has a search page you can use to look up formula names: http://formulae.brew.sh/
 
-Most recently tested 2019-09-19 with the following Homebrew release:
+Most recently tested 2019-11-01 with the following Homebrew release:
 
 ```
-$ brew --version
-Homebrew 2.1.10
-Homebrew/homebrew-core (git revision c7fbf; last commit 2019-08-18)
-Homebrew/homebrew-cask (git revision bf0cf; last commit 2019-08-19)
+% brew --version
+Homebrew 2.1.15
+Homebrew/homebrew-core (git revision de439b; last commit 2019-11-01)
+Homebrew/homebrew-cask (git revision 3a397; last commit 2019-11-01)
 ```
 
 That last line about "homebrew-cask" refers to a subcommand 'cask' that can manage the types of
@@ -72,11 +72,12 @@ that, the second attempt should succeed.
 $ brew cask install virtualbox
 ```
 
-Most recently tested 2019-09-19 with the following Virtualbox release:
+Most recently tested 2019-11-01 with the following Virtualbox release:
 
 ```
-$ virtualbox --help
-Oracle VM VirtualBox VM Selector v6.0.10
+% virtualbox --help
+Oracle VM VirtualBox VM Selector v6.0.14
+[...]
 ```
 
 
@@ -87,11 +88,11 @@ Oracle VM VirtualBox VM Selector v6.0.10
 $ brew cask install vagrant
 ```
 
-Most recently tested 2019-09-19 with the following Vagrant release:
+Most recently tested 2019-11-01 with the following Vagrant release:
 
 ```
-$ vagrant --version
-Vagrant 2.2.5
+% vagrant --version
+Vagrant 2.2.6
 ```
 
 
@@ -102,12 +103,12 @@ Vagrant 2.2.5
 $ brew install gnupg
 ```
 
-Most recently tested 2019-09-19 with the following GnuPG release:
+Most recently tested 2019-11-01 with the following GnuPG release:
 
 ```
-$ gpg --version
+% gpg --version
 gpg (GnuPG) 2.2.17
-libgcrypt 1.8.4
+libgcrypt 1.8.5
 [...]
 ```
 
@@ -115,29 +116,21 @@ libgcrypt 1.8.4
 
 ## Install Python 3.x
 
-Python 2.x is installed by default in macOS, but we want to be more current. Installing the 'python'
-homebrew formula will get us python 3.x.
+As of this writing, python 3.7.3 is installed by default in macOS, which should work fine. You can
+optionally install the 'python' homebrew package to get a later version.
 
 ```
 $ brew install python
 ```
 
-This will install as the executable `python3`; running `python` will still get the macOS-managed
-python version:
+Note that to run python 3.x you need to use the name `python3`; running `python` will run python
+2.x.
+
+Most recently tested 2019-11-01 with the following Python release:
 
 ```
-$ type python
-python is /usr/bin/python
-
-$ type python3
-python3 is /usr/local/bin/python3
-```
-
-Most recently tested 2019-09-19 with the following Python release:
-
-```
-$ python3 --version
-Python 3.7.4
+% python3 --version
+Python 3.7.3
 ```
 
 
@@ -170,7 +163,7 @@ _direnv_hook;[...]
 direnv also supports several other shells -- zsh, fish, tcsh, and elvish as of this writing. Its
 website includes instructions for enabling each of the shells it supports.
 
-Most recently tested 2019-09-19 with the following direnv release:
+Most recently tested 2019-11-01 with the following direnv release:
 
 ```
 $ direnv --version

@@ -387,7 +387,7 @@ environment active when using a shell at (or below) that location.
 zcash-gitian$ pip install --upgrade pip
 Collecting pip
 [...]
-Successfully installed pip-19.2.2
+Successfully installed pip-19.3.1
 ```
 
 
