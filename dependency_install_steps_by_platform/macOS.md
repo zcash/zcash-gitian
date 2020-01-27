@@ -2,13 +2,13 @@
 
 This document assumes you are starting from a fresh install of macOS.
 
-Most recently tested 2019-11-01 with the following macOS release:
+Most recently tested 2020-01-21 with the following macOS release:
 
 ```
 % sw_vers
 ProductName:	Mac OS X
-ProductVersion:	10.15.1
-BuildVersion:	19B88
+ProductVersion:	10.15.2
+BuildVersion:	19C57
 ```
 
 
@@ -50,9 +50,9 @@ Most recently tested 2019-11-01 with the following Homebrew release:
 
 ```
 % brew --version
-Homebrew 2.1.15
-Homebrew/homebrew-core (git revision de439b; last commit 2019-11-01)
-Homebrew/homebrew-cask (git revision 3a397; last commit 2019-11-01)
+Homebrew 2.2.4
+Homebrew/homebrew-core (git revision e557; last commit 2020-01-21)
+Homebrew/homebrew-cask (git revision 0821e; last commit 2020-01-21)
 ```
 
 That last line about "homebrew-cask" refers to a subcommand 'cask' that can manage the types of
@@ -72,12 +72,11 @@ that, the second attempt should succeed.
 $ brew cask install virtualbox
 ```
 
-Most recently tested 2019-11-01 with the following Virtualbox release:
+Most recently tested 2020-01-21 with the following Virtualbox release:
 
 ```
-% virtualbox --help
-Oracle VM VirtualBox VM Selector v6.0.14
-[...]
+% VBoxManage --version
+6.0.15r135660
 ```
 
 
@@ -88,7 +87,7 @@ Oracle VM VirtualBox VM Selector v6.0.14
 $ brew cask install vagrant
 ```
 
-Most recently tested 2019-11-01 with the following Vagrant release:
+Most recently tested 2020-01-21 with the following Vagrant release:
 
 ```
 % vagrant --version
@@ -103,11 +102,11 @@ Vagrant 2.2.6
 $ brew install gnupg
 ```
 
-Most recently tested 2019-11-01 with the following GnuPG release:
+Most recently tested 2020-01-21 with the following GnuPG release:
 
 ```
 % gpg --version
-gpg (GnuPG) 2.2.17
+gpg (GnuPG) 2.2.19
 libgcrypt 1.8.5
 [...]
 ```
@@ -126,7 +125,7 @@ $ brew install python
 Note that to run python 3.x you need to use the name `python3`; running `python` will run python
 2.x.
 
-Most recently tested 2019-11-01 with the following Python release:
+Most recently tested 2020-01-21 with the following Python release:
 
 ```
 % python3 --version
@@ -163,7 +162,7 @@ _direnv_hook;[...]
 direnv also supports several other shells -- zsh, fish, tcsh, and elvish as of this writing. Its
 website includes instructions for enabling each of the shells it supports.
 
-Most recently tested 2019-11-01 with the following direnv release:
+Most recently tested 2020-01-21 with the following direnv release:
 
 ```
 $ direnv --version
