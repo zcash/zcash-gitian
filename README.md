@@ -387,8 +387,8 @@ environment active when using a shell at (or below) that location.
 zcash-gitian % pip3 install --upgrade pip
 Collecting pip
 [...]
-      Successfully uninstalled pip-19.3.1
-Successfully installed pip-20.0.1
+      Successfully uninstalled pip-20.0.1
+Successfully installed pip-20.0.2
 ```
 
 
