@@ -387,8 +387,8 @@ environment active when using a shell at (or below) that location.
 zcash-gitian % pip3 install --upgrade pip
 Collecting pip
 [...]
-      Successfully uninstalled pip-20.0.1
-Successfully installed pip-20.0.2
+      Successfully uninstalled pip-20.0.2
+Successfully installed pip-20.1
 ```
 
 
@@ -407,7 +407,7 @@ Check that you can run `ansible` from the command line:
 
 ```
 zcash-gitian % ansible --version
-ansible 2.9.4
+ansible 2.9.7
 [...]
 zcash-gitian %
 ```
