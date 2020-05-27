@@ -1,6 +1,6 @@
 # Primary Dependencies
 # (Packages we actually decided to include)
-ansible==2.9.7
+ansible==2.9.9
 # Secondary Dependencies
 # (pulled in by one or more of the above dependencies)
 cffi==1.14.0
@@ -9,4 +9,4 @@ Jinja2==2.11.2
 MarkupSafe==1.1.1
 pycparser==2.20
 PyYAML==5.3.1
-six==1.14.0
+six==1.15.0
