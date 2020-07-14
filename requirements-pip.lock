@@ -1,6 +1,6 @@
 # Primary Dependencies
 # (Packages we actually decided to include)
-ansible==2.9.9
+ansible==2.9.10
 # Secondary Dependencies
 # (pulled in by one or more of the above dependencies)
 cffi==1.14.0
