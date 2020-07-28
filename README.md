@@ -407,7 +407,7 @@ Check that you can run `ansible` from the command line:
 
 ```
 zcash-gitian % ansible --version
-ansible 2.9.9
+ansible 2.9.11
 [...]
 zcash-gitian %
 ```
