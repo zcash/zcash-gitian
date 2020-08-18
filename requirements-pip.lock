@@ -1,9 +1,9 @@
 # Primary Dependencies
 # (Packages we actually decided to include)
-ansible==2.9.11
+ansible==2.9.12
 # Secondary Dependencies
 # (pulled in by one or more of the above dependencies)
-cffi==1.14.1
+cffi==1.14.2
 cryptography==3.0
 Jinja2==2.11.2
 MarkupSafe==1.1.1
