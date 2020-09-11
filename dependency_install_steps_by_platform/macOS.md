@@ -2,7 +2,7 @@
 
 This document assumes you are starting from a fresh install of macOS.
 
-Most recently tested 2020-08-18 with the following macOS release:
+Most recently tested 2020-08-27 with the following macOS release:
 
 ```
 % sw_vers
@@ -46,13 +46,13 @@ $ brew upgrade <formula name>
 
 Homebrew has a search page you can use to look up formula names: http://formulae.brew.sh/
 
-Most recently tested 2020-08-18 with the following Homebrew release:
+Most recently tested 2020-08-27 with the following Homebrew release:
 
 ```
 % brew --version
-Homebrew 2.4.12
-Homebrew/homebrew-core (git revision ccdb2; last commit 2020-08-18)
-Homebrew/homebrew-cask (git revision 02f8d9; last commit 2020-08-18)
+Homebrew 2.4.13
+Homebrew/homebrew-core (git revision 2576c; last commit 2020-08-27)
+Homebrew/homebrew-cask (git revision 45288; last commit 2020-08-27)
 ```
 
 That last line about "homebrew-cask" refers to a subcommand 'cask' that can manage the types of
@@ -72,7 +72,7 @@ that, the second attempt should succeed.
 $ brew cask install virtualbox
 ```
 
-Most recently tested 2020-08-18 with the following Virtualbox release:
+Most recently tested 2020-08-27 with the following Virtualbox release:
 
 ```
 % VBoxManage --version
@@ -87,11 +87,11 @@ Most recently tested 2020-08-18 with the following Virtualbox release:
 $ brew cask install vagrant
 ```
 
-Most recently tested 2020-08-18 with the following Vagrant release:
+Most recently tested 2020-08-27 with the following Vagrant release:
 
 ```
 % vagrant --version
-Vagrant 2.2.9
+Vagrant 2.2.10
 ```
 
 
@@ -102,7 +102,7 @@ Vagrant 2.2.9
 $ brew install gnupg
 ```
 
-Most recently tested 2020-08-18 with the following GnuPG release:
+Most recently tested 2020-08-27 with the following GnuPG release:
 
 ```
 % gpg --version
@@ -125,7 +125,7 @@ $ brew install python
 Note that to run python 3.x you need to use the name `python3`; running `python` will run python
 2.x.
 
-Most recently tested 2020-08-18 with the following Python release:
+Most recently tested 2020-08-27 with the following Python release:
 
 ```
 % python3 --version
@@ -162,7 +162,7 @@ _direnv_hook;[...]
 direnv also supports several other shells -- zsh, fish, tcsh, and elvish as of this writing. Its
 website includes instructions for enabling each of the shells it supports.
 
-Most recently tested 2020-08-18 with the following direnv release:
+Most recently tested 2020-08-27 with the following direnv release:
 
 ```
 % direnv --version
