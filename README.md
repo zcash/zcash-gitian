@@ -482,7 +482,7 @@ it makes sense in this case to upload there.
 You can upload your public key like this:
 
 ```
-$ gpg2 --keyserver pgp.mit.edu --send-keys 3F14A629C06FA31D59C64FE93F0C2117D53A4A49
+$ gpg --keyserver pgp.mit.edu --send-keys 3F14A629C06FA31D59C64FE93F0C2117D53A4A49
 gpg: sending key 3F0C2117D53A4A49 to hkp://pgp.mit.edu
 ```
 
@@ -499,7 +499,7 @@ Some explanation of the arguments used in the above example:
 You can verify that the key was successfully uploaded like this:
 
 ```
-$ gpg2 --keyserver pgp.mit.edu --receive-keys 3F14A629C06FA31D59C64FE93F0C2117D53A4A49
+$ gpg --keyserver pgp.mit.edu --receive-keys 3F14A629C06FA31D59C64FE93F0C2117D53A4A49
 gpg: key 3F0C2117D53A4A49: "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>" not changed
 gpg: Total number processed: 1
 gpg:              unchanged: 1
