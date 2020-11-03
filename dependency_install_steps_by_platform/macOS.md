@@ -2,13 +2,13 @@
 
 This document assumes you are starting from a fresh install of macOS.
 
-Most recently tested 2020-08-27 with the following macOS release:
+Most recently tested 2020-10-28 with the following macOS release:
 
 ```
 % sw_vers
 ProductName:	Mac OS X
-ProductVersion:	10.15.6
-BuildVersion:	19G73
+ProductVersion:	10.15.7
+BuildVersion:	19H2
 ```
 
 
@@ -18,7 +18,7 @@ BuildVersion:	19G73
 macOS includes git, so you should already have that. It may prompt you to set up developer tools if
 you're using it for the first time.
 
-Most recently tested 2019-11-01 with the following git release:
+Most recently tested 2020-10-28 with the following git release:
 
 ```
 % git --version
@@ -46,13 +46,13 @@ $ brew upgrade <formula name>
 
 Homebrew has a search page you can use to look up formula names: http://formulae.brew.sh/
 
-Most recently tested 2020-08-27 with the following Homebrew release:
+Most recently tested 2020-10-28 with the following Homebrew release:
 
 ```
 % brew --version
-Homebrew 2.4.13
-Homebrew/homebrew-core (git revision 2576c; last commit 2020-08-27)
-Homebrew/homebrew-cask (git revision 45288; last commit 2020-08-27)
+Homebrew 2.5.7
+Homebrew/homebrew-core (git revision 8a3edd; last commit 2020-10-28)
+Homebrew/homebrew-cask (git revision 98c84; last commit 2020-10-28)
 ```
 
 That last line about "homebrew-cask" refers to a subcommand 'cask' that can manage the types of
@@ -72,7 +72,7 @@ that, the second attempt should succeed.
 $ brew cask install virtualbox
 ```
 
-Most recently tested 2020-08-27 with the following Virtualbox release:
+Most recently tested 2020-10-28 with the following Virtualbox release:
 
 ```
 % VBoxManage --version
@@ -87,7 +87,7 @@ Most recently tested 2020-08-27 with the following Virtualbox release:
 $ brew cask install vagrant
 ```
 
-Most recently tested 2020-08-27 with the following Vagrant release:
+Most recently tested 2020-10-28 with the following Vagrant release:
 
 ```
 % vagrant --version
@@ -102,7 +102,7 @@ Vagrant 2.2.10
 $ brew install gnupg
 ```
 
-Most recently tested 2020-08-27 with the following GnuPG release:
+Most recently tested 2020-10-28 with the following GnuPG release:
 
 ```
 % gpg --version
@@ -125,11 +125,11 @@ $ brew install python
 Note that to run python 3.x you need to use the name `python3`; running `python` will run python
 2.x.
 
-Most recently tested 2020-08-27 with the following Python release:
+Most recently tested 2020-10-28 with the following Python release:
 
 ```
 % python3 --version
-Python 3.7.3
+Python 3.8.2
 ```
 
 
@@ -162,9 +162,9 @@ _direnv_hook;[...]
 direnv also supports several other shells -- zsh, fish, tcsh, and elvish as of this writing. Its
 website includes instructions for enabling each of the shells it supports.
 
-Most recently tested 2020-08-27 with the following direnv release:
+Most recently tested 2020-10-28 with the following direnv release:
 
 ```
 % direnv --version
-2.21.3
+2.23.1
 ```
