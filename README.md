@@ -465,6 +465,48 @@ of the email address associated with your GPG key. In our example this is `hpott
 For more info about updating or revoking gpg keys, see [Notes on updating or revoking GPG keys](docs/gpg_keys.md)
 
 
+
+## Publish your GPG public key
+
+There is a network of key servers that we can use to quickly and easily make your key available for
+others to find, download, and use to verify any signatures you publish for gitian builds. These
+keyservers won't let you delete a key you upload, but as long as you have the private key you can
+post a revocation of a key you've previously uploaded.
+
+The keyservers (mostly) synchronize with one another using (mostly)
+[SKS Keyserver](https://bitbucket.org/skskeyserver/sks-keyserver/wiki/Home) so it may not matter
+very much which one you upload your key to. That said, at the time of writing,
+[gitian-builder's `gverify` command uses pgp.mit.edu as its keyserver](https://github.com/devrandom/gitian-builder/blob/ee1806672b7b45fa6149d0163de5828ade4f8659/bin/gverify#L116) so
+it makes sense in this case to upload there.
+
+You can upload your public key like this:
+
+```
+$ gpg --keyserver pgp.mit.edu --send-keys 3F14A629C06FA31D59C64FE93F0C2117D53A4A49
+gpg: sending key 3F0C2117D53A4A49 to hkp://pgp.mit.edu
+```
+
+Some explanation of the arguments used in the above example:
+
+    --keyserver pgp.mit.edu        Specify the keyserver to use. gpg will use a default server if
+                                   you don't provide one here or one that has been defined in
+                                   gpg.conf
+
+    --send-keys 3F14A629C06FA31D59C64FE93F0C2117D53A4A49
+                                   The gpg_key_id for the key to upload.
+
+
+You can verify that the key was successfully uploaded like this:
+
+```
+$ gpg --keyserver pgp.mit.edu --receive-keys 3F14A629C06FA31D59C64FE93F0C2117D53A4A49
+gpg: key 3F0C2117D53A4A49: "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>" not changed
+gpg: Total number processed: 1
+gpg:              unchanged: 1
+```
+
+
+
 ## Install Vagrant plugins
 
 This project uses some 3rd party Vagrant plugins. These dependencies are specified in `Vagrantfile`.
