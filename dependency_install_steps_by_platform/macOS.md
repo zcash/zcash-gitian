@@ -69,7 +69,7 @@ This one may fail on the first attempt with a prompt to allow software signed by
 that, the second attempt should succeed.
 
 ```
-$ brew cask install virtualbox
+$ brew install --cask virtualbox
 ```
 
 Most recently tested 2020-12-21 with the following Virtualbox release:
@@ -84,7 +84,7 @@ Most recently tested 2020-12-21 with the following Virtualbox release:
 ## Install Vagrant
 
 ```
-$ brew cask install vagrant
+$ brew install --cask vagrant
 ```
 
 Most recently tested 2020-12-21 with the following Vagrant release:
