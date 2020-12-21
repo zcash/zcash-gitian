@@ -76,7 +76,7 @@ Most recently tested 2020-12-21 with the following Virtualbox release:
 
 ```
 % VBoxManage --version
-6.0.15r135660
+6.1.16r140961
 ```
 
 
