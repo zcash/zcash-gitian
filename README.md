@@ -290,47 +290,37 @@ current python interpreter, or you may have built and installed one yourself. If
 a command like `type python3` should tell you where it is installed on your system. For example:
 
 ```
-zcash-gitian$ type python3
-python3 is /usr/local/bin/python3
-zcash-gitian$ /usr/local/python3 --version
-Python 3.7.4
-```
-
-You may also want to check if the `python3` in `PATH` is a symlink to a versioned location, if you
-are using a system (like `brew`) that can manage multiple installed versions. This way, our virtual
-environment will remain pinned to a specific python version even after a newer python version is
-installed later.
-
-```
-$ ls -n /usr/local/bin/python3
-lrwxr-xr-x  1 501  20  34 Mar 30 09:35 /usr/local/bin/python3 -> ../Cellar/python/3.7.4/bin/python3
+% type python3
+python3 is /usr/bin/python3
+% /usr/bin/python3 --version
+Python 3.8.2
 ```
 
 We can use python's built-in `venv` module to create a virtual environment:
 
 ```
-zcash-gitian$ /usr/local/Cellar/python/3.7.4/bin/python3 -m venv local/python_v3.7.4_venv
+zcash-gitian % /usr/bin/python3 -m venv ./local/python_v3.8.2_venv
 ```
 
-Translation: "Create a virtual environment at ./local/python_v3.7.4_venv".
+Translation: "Create a virtual environment at ./local/python_v3.8.2_venv".
 
 The project subdirectory `local` is `.gitignored` to provide a convenient location for files we
 don't want to commit and track in version control.
 
-You should now have a tree of directories and files in `local/python_v3.7.4_venv`:
+You should now have a tree of directories and files in `local/python_v3.8.2_venv`:
 
 ```
-zcash-gitian$ ls -F local/python_v3.7.4_venv/
-bin/    include/  lib/    pyvenv.cfg
+zcash-gitian % ls -F ./local/python_v3.8.2_venv
+bin/		include/	lib/		pyvenv.cfg
 ```
 
 Inside the `bin` directory, among other things, are the entries `python` and `python3`, which are
 symlinks that point back to the `python3` executable we used to create this environment:
 
 ```
-zcash-gitian$ ls -F local/python_v3.7.4_venv/bin/
-activate        activate.fish   easy_install-3.7*  pip3*       python@
-activate.csh    easy_install*   pip*               pip3.7*     python3@
+zcash-gitian % ls -F ./local/python_v3.8.2_venv/bin/
+Activate.ps1		activate.csh		easy_install*		pip*			pip3.8*			python3@
+activate		activate.fish		easy_install-3.8*	pip3*			python@
 ```
 
 A python virtual environment is 'active' if the python interpreter being executed is run from its
@@ -342,7 +332,7 @@ An `activate` script is provided, and you can use that, but if you're using `dir
 a simple automatic activation for the project directory by adding the following line to `.envrc`:
 
 ```
-load_prefix local/python_v3.7.4_venv
+load_prefix local/python_v3.8.2_venv
 ```
 
 The command `load_prefix` is provided by `direnv` to modify a whole set of common "path" variables
@@ -351,7 +341,7 @@ The command `load_prefix` is provided by `direnv` to modify a whole set of commo
 Let's add that line now:
 
 ```
-zcash-gitian$ echo "load_prefix local/python_v3.7.4_venv" >> .envrc
+zcash-gitian$ echo "load_prefix local/python_v3.8.2_venv" >> .envrc
 direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
 zcash-gitian$ direnv allow
 direnv: loading .envrc
@@ -366,11 +356,11 @@ locations we default to:
 
 ```
 zcash-gitian$ echo $PATH
-/Users/harrypotter/Projects/zcash-gitian/local/python_v3.7.4_venv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+/Users/harrypotter/Projects/zcash-gitian/local/python_v3.8.2_venv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
 zcash-gitian$ type python
-python is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.7.4_venv/bin/python
+python is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.8.2_venv/bin/python
 zcash-gitian$ type python3
-python3 is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.7.4_venv/bin/python3
+python3 is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.8.2_venv/bin/python3
 ```
 
 Since the `python` and `python3` commands will now run from the locations we've installed into our
@@ -387,8 +377,8 @@ environment active when using a shell at (or below) that location.
 zcash-gitian % pip3 install --upgrade pip
 Collecting pip
 [...]
-      Successfully uninstalled pip-20.1.1
-Successfully installed pip-20.2.4
+      Successfully uninstalled pip-19.2.3
+Successfully installed pip-20.3.3
 ```
 
 

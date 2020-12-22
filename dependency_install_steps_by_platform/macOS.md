@@ -2,13 +2,13 @@
 
 This document assumes you are starting from a fresh install of macOS.
 
-Most recently tested 2020-10-28 with the following macOS release:
+Most recently tested 2020-12-21 with the following macOS release:
 
 ```
 % sw_vers
-ProductName:	Mac OS X
-ProductVersion:	10.15.7
-BuildVersion:	19H2
+ProductName:	macOS
+ProductVersion:	11.1
+BuildVersion:	20C69
 ```
 
 
@@ -46,13 +46,13 @@ $ brew upgrade <formula name>
 
 Homebrew has a search page you can use to look up formula names: http://formulae.brew.sh/
 
-Most recently tested 2020-10-28 with the following Homebrew release:
+Most recently tested 2020-12-21 with the following Homebrew release:
 
 ```
 % brew --version
-Homebrew 2.5.7
-Homebrew/homebrew-core (git revision 8a3edd; last commit 2020-10-28)
-Homebrew/homebrew-cask (git revision 98c84; last commit 2020-10-28)
+Homebrew 2.7.0
+Homebrew/homebrew-core (git revision 84c6c; last commit 2020-12-21)
+Homebrew/homebrew-cask (git revision afbad0; last commit 2020-12-21)
 ```
 
 That last line about "homebrew-cask" refers to a subcommand 'cask' that can manage the types of
@@ -69,14 +69,14 @@ This one may fail on the first attempt with a prompt to allow software signed by
 that, the second attempt should succeed.
 
 ```
-$ brew cask install virtualbox
+$ brew install --cask virtualbox
 ```
 
-Most recently tested 2020-10-28 with the following Virtualbox release:
+Most recently tested 2020-12-21 with the following Virtualbox release:
 
 ```
 % VBoxManage --version
-6.0.15r135660
+6.1.16r140961
 ```
 
 
@@ -84,14 +84,14 @@ Most recently tested 2020-10-28 with the following Virtualbox release:
 ## Install Vagrant
 
 ```
-$ brew cask install vagrant
+$ brew install --cask vagrant
 ```
 
-Most recently tested 2020-10-28 with the following Vagrant release:
+Most recently tested 2020-12-21 with the following Vagrant release:
 
 ```
 % vagrant --version
-Vagrant 2.2.10
+Vagrant 2.2.14
 ```
 
 
@@ -102,12 +102,12 @@ Vagrant 2.2.10
 $ brew install gnupg
 ```
 
-Most recently tested 2020-10-28 with the following GnuPG release:
+Most recently tested 2020-12-21 with the following GnuPG release:
 
 ```
 % gpg --version
-gpg (GnuPG) 2.2.21
-libgcrypt 1.8.6
+gpg (GnuPG) 2.2.25
+libgcrypt 1.8.7
 [...]
 ```
 
@@ -115,7 +115,7 @@ libgcrypt 1.8.6
 
 ## Install Python 3.x
 
-As of this writing, python 3.7.3 is installed by default in macOS, which should work fine. You can
+As of this writing, python 3.8.2 is installed by default in macOS, which should work fine. You can
 optionally install the 'python' homebrew package to get a later version.
 
 ```
@@ -125,7 +125,7 @@ $ brew install python
 Note that to run python 3.x you need to use the name `python3`; running `python` will run python
 2.x.
 
-Most recently tested 2020-10-28 with the following Python release:
+Most recently tested 2020-12-21 with the following Python release:
 
 ```
 % python3 --version
@@ -150,21 +150,12 @@ end of `~/.profile`:
 eval "$(direnv hook bash)"
 ```
 
-direnv works by incorporating a call to `_direnv_hook` in the `PROMPT_COMMAND` shell variable. You
-can check that this was done by starting a new bash session and checking whether that value is
-present:
-
-```
-$ echo $PROMPT_COMMAND
-_direnv_hook;[...]
-```
-
 direnv also supports several other shells -- zsh, fish, tcsh, and elvish as of this writing. Its
 website includes instructions for enabling each of the shells it supports.
 
-Most recently tested 2020-10-28 with the following direnv release:
+Most recently tested 2020-12-21 with the following direnv release:
 
 ```
 % direnv --version
-2.23.1
+2.25.2
 ```
