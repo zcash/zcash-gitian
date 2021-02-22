@@ -23,6 +23,11 @@ Vagrant.configure(2) do |config|
       v.memory = 4096
       v.cpus = 2
     end
+
+    # Added to disable synced folders
+    # https://www.vagrantup.com/docs/synced-folders/basic_usage#disabling
+    config.vm.synced_folder ".", "/vagrant", disabled: true
+
 #    gitian.vm.synced_folder "~/.gnupg", "/home/vagrant/.gnupg", type: "sshfs"
 #    gitian.vm.synced_folder "./gitian.sigs", "/home/vagrant/gitian.sigs", create: true
 #    gitian.vm.synced_folder "./zcash-binaries", "/home/vagrant/zcash-binaries", create: true
