@@ -378,7 +378,7 @@ zcash-gitian % pip3 install --upgrade pip
 Collecting pip
 [...]
       Successfully uninstalled pip-19.2.3
-Successfully installed pip-20.3.3
+Successfully installed pip-21.0.1
 ```
 
 
@@ -397,7 +397,7 @@ Check that you can run `ansible` from the command line:
 
 ```
 zcash-gitian % ansible --version
-ansible 2.10.2
+ansible 2.10.6
 [...]
 zcash-gitian %
 ```
