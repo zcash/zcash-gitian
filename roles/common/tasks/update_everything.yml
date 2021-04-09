@@ -30,13 +30,6 @@
     update_cache: yes
     cache_valid_time: 3600
 
-- name: Perform aptitude safe-upgrade.
-  apt:
-    upgrade: safe
-    update_cache: yes
-    cache_valid_time: 3600
-  tags: apt
-
 - name: Remove unneeded packages.
   apt:
     autoremove: yes
