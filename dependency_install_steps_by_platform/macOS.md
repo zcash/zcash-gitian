@@ -2,13 +2,13 @@
 
 This document assumes you are starting from a fresh install of macOS.
 
-Most recently tested 2021-02-22 with the following macOS release:
+Most recently tested 2021-04-09 with the following macOS release:
 
 ```
 % sw_vers
 ProductName:	macOS
-ProductVersion:	11.2
-BuildVersion:	20D64
+ProductVersion:	11.2.3
+BuildVersion:	20D91
 ```
 
 
@@ -18,7 +18,7 @@ BuildVersion:	20D64
 macOS includes git, so you should already have that. It may prompt you to set up developer tools if
 you're using it for the first time.
 
-Most recently tested 2021-02-22 with the following git release:
+Most recently tested 2021-04-09 with the following git release:
 
 ```
 % git --version
@@ -50,16 +50,10 @@ Most recently tested 2021-02-22 with the following Homebrew release:
 
 ```
 % brew --version
-Homebrew 3.0.2
-Homebrew/homebrew-core (git revision 372d8a; last commit 2021-02-22)
-Homebrew/homebrew-cask (git revision 3aab2; last commit 2021-02-22)
+Homebrew 3.0.11
+Homebrew/homebrew-core (git revision 5aa04149e9; last commit 2021-04-09)
+Homebrew/homebrew-cask (git revision 77095bcb6b; last commit 2021-04-09)
 ```
-
-That last line about "homebrew-cask" refers to a subcommand 'cask' that can manage the types of
-installs mac users ordinarily do manually - the "drag to the applications folder" type and the "run
-an installer" type.
-
-We'll use both "brew" and "brew cask" install methods in the steps below.
 
 
 
@@ -69,10 +63,10 @@ This one may fail on the first attempt with a prompt to allow software signed by
 that, the second attempt should succeed.
 
 ```
-$ brew install --cask virtualbox
+$ brew install virtualbox
 ```
 
-Most recently tested 2021-02-22 with the following Virtualbox release:
+Most recently tested 2021-04-09 with the following Virtualbox release:
 
 ```
 % VBoxManage --version
@@ -84,14 +78,14 @@ Most recently tested 2021-02-22 with the following Virtualbox release:
 ## Install Vagrant
 
 ```
-$ brew install --cask vagrant
+$ brew install vagrant
 ```
 
-Most recently tested 2021-02-22 with the following Vagrant release:
+Most recently tested 2021-04-09 with the following Vagrant release:
 
 ```
 % vagrant --version
-Vagrant 2.2.14
+Vagrant 2.2.15
 ```
 
 
@@ -102,12 +96,12 @@ Vagrant 2.2.14
 $ brew install gnupg
 ```
 
-Most recently tested 2021-02-22 with the following GnuPG release:
+Most recently tested 2021-04-09 with the following GnuPG release:
 
 ```
 % gpg --version
 gpg (GnuPG) 2.2.27
-libgcrypt 1.8.7
+libgcrypt 1.9.2
 [...]
 ```
 
@@ -153,9 +147,9 @@ eval "$(direnv hook bash)"
 direnv also supports several other shells -- zsh, fish, tcsh, and elvish as of this writing. Its
 website includes instructions for enabling each of the shells it supports.
 
-Most recently tested 2021-02-22 with the following direnv release:
+Most recently tested 2021-04-09 with the following direnv release:
 
 ```
 % direnv --version
-2.27.0
+2.28.0
 ```
