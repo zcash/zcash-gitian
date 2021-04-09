@@ -80,7 +80,7 @@ with open(input_file_path) as fp:
 sequence = data[args.key_to_explode]
 
 for item in sequence:
-    print item
+    print(item)
     item_dir_path = os.path.join(output_dir_path, item)
 
     if not os.path.exists(item_dir_path):
