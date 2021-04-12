@@ -32,7 +32,7 @@
 
 - name: Install ruamel.yaml
   pip:
-    name: "ruamel.yaml"
+    name: "ruamel.yaml==0.16.11"
 
 - name: Set up the Gitian build user with sudo.
   user:

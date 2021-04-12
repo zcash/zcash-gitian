@@ -1,11 +1,11 @@
 # Primary Dependencies
 # (Packages we actually decided to include)
-ansible==3.0.0
+ansible==3.2.0
 # Secondary Dependencies
 # (pulled in by one or more of the above dependencies)
-ansible-base==2.10.6
+ansible-base==2.10.7
 cffi==1.14.5
-cryptography==3.4.6
+cryptography==3.4.7
 Jinja2==2.11.3
 MarkupSafe==1.1.1
 packaging==20.9
