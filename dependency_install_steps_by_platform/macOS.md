@@ -2,13 +2,13 @@
 
 This document assumes you are starting from a fresh install of macOS.
 
-Most recently tested 2021-04-09 with the following macOS release:
+Most recently tested 2021-09-21 with the following macOS release:
 
 ```
 % sw_vers
 ProductName:	macOS
-ProductVersion:	11.2.3
-BuildVersion:	20D91
+ProductVersion:	11.5.2
+BuildVersion:	20G95
 ```
 
 
@@ -46,13 +46,13 @@ $ brew upgrade <formula name>
 
 Homebrew has a search page you can use to look up formula names: http://formulae.brew.sh/
 
-Most recently tested 2021-02-22 with the following Homebrew release:
+Most recently tested 2021-09-21 with the following Homebrew release:
 
 ```
 % brew --version
-Homebrew 3.0.11
-Homebrew/homebrew-core (git revision 5aa04149e9; last commit 2021-04-09)
-Homebrew/homebrew-cask (git revision 77095bcb6b; last commit 2021-04-09)
+Homebrew 3.2.13
+Homebrew/homebrew-core (git revision 9a917cc5fcd; last commit 2021-09-21)
+Homebrew/homebrew-cask (git revision 0892bc690f; last commit 2021-09-21)
 ```
 
 
@@ -66,11 +66,11 @@ that, the second attempt should succeed.
 $ brew install virtualbox
 ```
 
-Most recently tested 2021-04-09 with the following Virtualbox release:
+Most recently tested 2021-09-21 with the following Virtualbox release:
 
 ```
 % VBoxManage --version
-6.1.18r142142
+6.1.26r145957
 ```
 
 
@@ -110,12 +110,12 @@ Vagrant 2.2.16
 $ brew install gnupg
 ```
 
-Most recently tested 2021-04-09 with the following GnuPG release:
+Most recently tested 2021-09-21 with the following GnuPG release:
 
 ```
 % gpg --version
-gpg (GnuPG) 2.2.27
-libgcrypt 1.9.2
+gpg (GnuPG) 2.3.2
+libgcrypt 1.9.4
 [...]
 ```
 
@@ -133,11 +133,11 @@ $ brew install python
 Note that to run python 3.x you need to use the name `python3`; running `python` will run python
 2.x.
 
-Most recently tested 2021-02-22 with the following Python release:
+Most recently tested 2021-09-21 with the following Python release:
 
 ```
 % python3 --version
-Python 3.8.2
+Python 3.9.7
 ```
 
 
@@ -161,7 +161,7 @@ eval "$(direnv hook bash)"
 direnv also supports several other shells -- zsh, fish, tcsh, and elvish as of this writing. Its
 website includes instructions for enabling each of the shells it supports.
 
-Most recently tested 2021-04-09 with the following direnv release:
+Most recently tested 2021-09-21 with the following direnv release:
 
 ```
 % direnv --version
