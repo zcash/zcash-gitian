@@ -1,14 +1,16 @@
 # Primary Dependencies
 # (Packages we actually decided to include)
-ansible==3.2.0
+ansible==4.5.0
 # Secondary Dependencies
 # (pulled in by one or more of the above dependencies)
-ansible-base==2.10.7
-cffi==1.14.5
-cryptography==3.4.7
-Jinja2==2.11.3
-MarkupSafe==1.1.1
-packaging==20.9
+WARNING: Requirement file [./requirements-pip.lock] contains ansible-base==2.10.7, but package 'ansible-base' is not installed
+ansible-core==2.11.5
+cffi==1.14.6
+cryptography==3.4.8
+Jinja2==3.0.1
+MarkupSafe==2.0.1
+packaging==21.0
 pycparser==2.20
 pyparsing==2.4.7
 PyYAML==5.4.1
+resolvelib==0.5.4
