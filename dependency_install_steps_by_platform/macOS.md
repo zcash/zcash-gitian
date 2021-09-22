@@ -2,13 +2,13 @@
 
 This document assumes you are starting from a fresh install of macOS.
 
-Most recently tested 2021-04-09 with the following macOS release:
+Most recently tested 2021-09-21 with the following macOS release:
 
 ```
 % sw_vers
 ProductName:	macOS
-ProductVersion:	11.2.3
-BuildVersion:	20D91
+ProductVersion:	11.5.2
+BuildVersion:	20G95
 ```
 
 
@@ -46,13 +46,13 @@ $ brew upgrade <formula name>
 
 Homebrew has a search page you can use to look up formula names: http://formulae.brew.sh/
 
-Most recently tested 2021-02-22 with the following Homebrew release:
+Most recently tested 2021-09-21 with the following Homebrew release:
 
 ```
 % brew --version
-Homebrew 3.0.11
-Homebrew/homebrew-core (git revision 5aa04149e9; last commit 2021-04-09)
-Homebrew/homebrew-cask (git revision 77095bcb6b; last commit 2021-04-09)
+Homebrew 3.2.13
+Homebrew/homebrew-core (git revision 9a917cc5fcd; last commit 2021-09-21)
+Homebrew/homebrew-cask (git revision 0892bc690f; last commit 2021-09-21)
 ```
 
 
@@ -66,26 +66,40 @@ that, the second attempt should succeed.
 $ brew install virtualbox
 ```
 
-Most recently tested 2021-04-09 with the following Virtualbox release:
+Most recently tested 2021-09-21 with the following Virtualbox release:
 
 ```
 % VBoxManage --version
-6.1.18r142142
+6.1.26r145957
 ```
 
 
 
 ## Install Vagrant
 
+As of 2021-09-21, the current vagrant version (2.2.18) conflicts with the most recent version of 
+vagrant-scp (0.5.7).
+
+Github issues for that version conflict:
+https://github.com/hashicorp/vagrant/issues/12504
+https://github.com/invernizzi/vagrant-scp/issues/46
+
+When that conflict is resolved, with a new release of vagrant or vagrant-scp or both, we should be
+able to `brew install vagrant` here. Until then, a workaround is to install vagrant 2.2.16:
+
 ```
+$ curl -O -L https://github.com/Homebrew/homebrew-cask/raw/015bd57c9637d517f1a814e46a1ece5de570c263/Casks/vagrant.rb
 $ brew install vagrant
+$ brew install --cask ./vagrant.rb
 ```
 
-Most recently tested 2021-04-09 with the following Vagrant release:
+(after the above steps the `vagrant.rb` file can be removed)
+
+Most recently tested 2021-09-21 with the following Vagrant release:
 
 ```
 % vagrant --version
-Vagrant 2.2.15
+Vagrant 2.2.16
 ```
 
 
@@ -96,12 +110,12 @@ Vagrant 2.2.15
 $ brew install gnupg
 ```
 
-Most recently tested 2021-04-09 with the following GnuPG release:
+Most recently tested 2021-09-21 with the following GnuPG release:
 
 ```
 % gpg --version
-gpg (GnuPG) 2.2.27
-libgcrypt 1.9.2
+gpg (GnuPG) 2.3.2
+libgcrypt 1.9.4
 [...]
 ```
 
@@ -119,11 +133,11 @@ $ brew install python
 Note that to run python 3.x you need to use the name `python3`; running `python` will run python
 2.x.
 
-Most recently tested 2021-02-22 with the following Python release:
+Most recently tested 2021-09-21 with the following Python release:
 
 ```
 % python3 --version
-Python 3.8.2
+Python 3.9.7
 ```
 
 
@@ -147,7 +161,7 @@ eval "$(direnv hook bash)"
 direnv also supports several other shells -- zsh, fish, tcsh, and elvish as of this writing. Its
 website includes instructions for enabling each of the shells it supports.
 
-Most recently tested 2021-04-09 with the following direnv release:
+Most recently tested 2021-09-21 with the following direnv release:
 
 ```
 % direnv --version

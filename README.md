@@ -293,24 +293,24 @@ a command like `type python3` should tell you where it is installed on your syst
 % type python3
 python3 is /usr/bin/python3
 % /usr/bin/python3 --version
-Python 3.8.2
+Python 3.9.7
 ```
 
 We can use python's built-in `venv` module to create a virtual environment:
 
 ```
-zcash-gitian % /usr/bin/python3 -m venv ./local/python_v3.8.2_venv
+zcash-gitian % /usr/bin/python3 -m venv ./local/python_v3.9.7_venv
 ```
 
-Translation: "Create a virtual environment at ./local/python_v3.8.2_venv".
+Translation: "Create a virtual environment at ./local/python_v3.9.7_venv".
 
 The project subdirectory `local` is `.gitignored` to provide a convenient location for files we
 don't want to commit and track in version control.
 
-You should now have a tree of directories and files in `local/python_v3.8.2_venv`:
+You should now have a tree of directories and files in `local/python_v3.9.7_venv`:
 
 ```
-zcash-gitian % ls -F ./local/python_v3.8.2_venv
+zcash-gitian % ls -F ./local/python_v3.9.7_venv
 bin/		include/	lib/		pyvenv.cfg
 ```
 
@@ -318,9 +318,9 @@ Inside the `bin` directory, among other things, are the entries `python` and `py
 symlinks that point back to the `python3` executable we used to create this environment:
 
 ```
-zcash-gitian % ls -F ./local/python_v3.8.2_venv/bin/
-Activate.ps1		activate.csh		easy_install*		pip*			pip3.8*			python3@
-activate		activate.fish		easy_install-3.8*	pip3*			python@
+zcash-gitian % ls -F ./local/python_v3.9.7_venv/bin/
+Activate.ps1	activate.csh	pip*		pip3.9*		python3@
+activate	activate.fish	pip3*		python@		python3.9@
 ```
 
 A python virtual environment is 'active' if the python interpreter being executed is run from its
@@ -332,7 +332,7 @@ An `activate` script is provided, and you can use that, but if you're using `dir
 a simple automatic activation for the project directory by adding the following line to `.envrc`:
 
 ```
-load_prefix local/python_v3.8.2_venv
+load_prefix local/python_v3.9.7_venv
 ```
 
 The command `load_prefix` is provided by `direnv` to modify a whole set of common "path" variables
@@ -341,7 +341,7 @@ The command `load_prefix` is provided by `direnv` to modify a whole set of commo
 Let's add that line now:
 
 ```
-zcash-gitian$ echo "load_prefix local/python_v3.8.2_venv" >> .envrc
+zcash-gitian$ echo "load_prefix local/python_v3.9.7_venv" >> .envrc
 direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
 zcash-gitian$ direnv allow
 direnv: loading .envrc
@@ -356,11 +356,11 @@ locations we default to:
 
 ```
 zcash-gitian$ echo $PATH
-/Users/harrypotter/Projects/zcash-gitian/local/python_v3.8.2_venv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+/Users/harrypotter/Projects/zcash-gitian/local/python_v3.9.7_venv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
 zcash-gitian$ type python
-python is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.8.2_venv/bin/python
+python is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.9.7_venv/bin/python
 zcash-gitian$ type python3
-python3 is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.8.2_venv/bin/python3
+python3 is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.9.7_venv/bin/python3
 ```
 
 Since the `python` and `python3` commands will now run from the locations we've installed into our
@@ -375,10 +375,7 @@ environment active when using a shell at (or below) that location.
 
 ```
 zcash-gitian % pip3 install --upgrade pip
-Collecting pip
-[...]
-      Successfully uninstalled pip-19.2.3
-Successfully installed pip-21.0.1
+Requirement already satisfied: pip in ./local/python_v3.9.7_venv/lib/python3.9/site-packages (21.2.4)
 ```
 
 
@@ -397,7 +394,7 @@ Check that you can run `ansible` from the command line:
 
 ```
 zcash-gitian % ansible --version
-ansible 2.10.7
+ansible [core 2.11.5]
 [...]
 zcash-gitian %
 ```
