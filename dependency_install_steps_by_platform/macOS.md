@@ -77,15 +77,29 @@ Most recently tested 2021-04-09 with the following Virtualbox release:
 
 ## Install Vagrant
 
+As of 2021-09-21, the current vagrant version (2.2.18) conflicts with the most recent version of 
+vagrant-scp (0.5.7).
+
+Github issues for that version conflict:
+https://github.com/hashicorp/vagrant/issues/12504
+https://github.com/invernizzi/vagrant-scp/issues/46
+
+When that conflict is resolved, with a new release of vagrant or vagrant-scp or both, we should be
+able to `brew install vagrant` here. Until then, a workaround is to install vagrant 2.2.16:
+
 ```
+$ curl -O -L https://github.com/Homebrew/homebrew-cask/raw/015bd57c9637d517f1a814e46a1ece5de570c263/Casks/vagrant.rb
 $ brew install vagrant
+$ brew install --cask ./vagrant.rb
 ```
 
-Most recently tested 2021-04-09 with the following Vagrant release:
+(after the above steps the `vagrant.rb` file can be removed)
+
+Most recently tested 2021-09-21 with the following Vagrant release:
 
 ```
 % vagrant --version
-Vagrant 2.2.15
+Vagrant 2.2.16
 ```
 
 
