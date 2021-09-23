@@ -8,7 +8,7 @@ Vagrant.configure(2) do |config|
   }
 
   config.ssh.forward_agent = true
-  config.disksize.size = '24GB'
+  config.disksize.size = '32GB'
   config.vm.define 'zcash-build', autostart: false do |gitian|
     gitian.vm.box = "debian/buster64"
     gitian.vm.box_version = "10.20210829.1"
