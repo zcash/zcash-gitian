@@ -89,7 +89,6 @@ able to `brew install vagrant` here. Until then, a workaround is to install vagr
 
 ```
 $ curl -O -L https://github.com/Homebrew/homebrew-cask/raw/015bd57c9637d517f1a814e46a1ece5de570c263/Casks/vagrant.rb
-$ brew install vagrant
 $ brew install --cask ./vagrant.rb
 ```
 
