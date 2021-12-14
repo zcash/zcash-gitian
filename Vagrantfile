@@ -4,7 +4,7 @@ Vagrant.configure(2) do |config|
 
   config.vagrant.plugins = {
     "vagrant-disksize" => {"version" => "0.1.3"},
-    "vagrant-scp" => {"version" => "0.5.7"}
+    "vagrant-scp" => {"version" => "0.5.9"}
   }
 
   config.ssh.forward_agent = true
