@@ -23,7 +23,7 @@
       - lintian
       - lxc
       - make
-      - python-cheetah
+      - python3-cheetah
       - qemu-utils
       - ruby
       - sudo
