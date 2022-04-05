@@ -86,23 +86,6 @@
     group: root
     mode: "0644"
 
-- name: Create directory for downloaded files.
-  file:
-    state: directory
-    dest: "{{ download_directory }}"
-    mode: "0755"
-
-- name: Download and extract VM builder source code.
-  unarchive:
-    src: "{{ vm_builder_url }}"
-    dest: "{{ download_directory }}"
-    remote_src: yes
-
-- name: Install VM builder Python module.
-  command: "python setup.py install"
-  args:
-    chdir: "/tmp/gitian/{{ vm_builder_name }}"
-
 - name: Install lxc-net configuration.
   template:
     src: lxc-net
