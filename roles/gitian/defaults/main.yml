@@ -1,8 +1,5 @@
 ---
 gitian_user: vagrant
-download_directory: /tmp/gitian
-vm_builder_name: 'vm-builder-0.12.4+bzr494'
-vm_builder_url: 'http://archive.ubuntu.com/ubuntu/pool/universe/v/vm-builder/vm-builder_0.12.4+bzr494.orig.tar.gz'
 gitian_builder_url: "{{ lookup('env','GITIAN_BUILDER_URL') }}"
 gitian_builder_version: "{{ lookup('env','GITIAN_BUILDER_VERSION') }}"
 zcash_git_repo_url: https://github.com/zcash/zcash

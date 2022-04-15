@@ -10,7 +10,7 @@ zcash_common_packages:
   - htop
   - ntp
   - ntpdate
-  - python-pip
+  - python3-pip
   - rsync
   - screen
   - sudo
