@@ -182,6 +182,15 @@
     mode: "0755"
   tags: script
 
+- name: Copy Parallel Gitian build script.
+  template:
+    src: gitian-parallel-build.sh
+    dest: "/home/{{ gitian_user }}/gitian-parallel-build.sh"
+    owner: "{{ gitian_user }}"
+    group: "{{ gitian_user }}"
+    mode: "0755"
+  tags: script
+
 - name: Clean the apt cache to free up space.
   apt:
     autoclean: yes
@@ -196,3 +205,4 @@
       Finished bootstrapping the Gitian host VM!
       To enter the environment, run `vagrant ssh zcash-build`
       and then use `./gitian-build.sh` to kick off a build.
+      For parallelism, use `./gitian-parallel-build.sh`.
