@@ -14,8 +14,8 @@ SIGNER="{{ gpg_key_name }}"
 VERSION={{ zcash_version }}
 commit=false
 url={{ zcash_git_repo_url }}
-proc=2
-mem=3584
+proc=$(nproc)
+mem=$(free -m |  awk 'FNR==2 { print $2-512}')
 lxc=true
 scriptName=$(basename -- "$0")
 signProg="gpg --detach-sign"
@@ -25,7 +25,7 @@ gitian_builder_repo_path=${HOME}/gitian-builder
 gitian_sigs_repo_path=${HOME}/gitian.sigs
 
 zcash_repo_dir_path=${HOME}/zcash
-gitian_descriptor_path=${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
+gitian_descriptor_path=${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux-parallel.yml
 
 zcash_binaries_dir_path=${HOME}/zcash-binaries
 
@@ -47,8 +47,8 @@ Options:
 -u|--url    Specify the URL of the repository. Default is {{ zcash_git_repo_url }}
 -v|--verify     Verify the gitian build
 -b|--build  Do a gitian build
--j      Number of processes to use. Default 2
--m      Memory to allocate in MiB. Default 3584
+-j      Number of processes to use. Default is $(nproc)
+-m      Memory to allocate in MiB. Default is total memory minus 512 bytes
 --detach-sign   Create the assert file for detached signing. Will not commit anything.
 --no-commit     Do not commit anything to git
 -h|--help   Print this help message
@@ -216,8 +216,8 @@ then
             echo "Compiling variant: ${VERSION}_${suite}"
             echo ""
 
-            ./bin/gbuild --fetch-tags -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${suite_dir_path}/gitian-linux.yml
-            ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION}_${suite} --destination ${gitian_sigs_repo_path}/ ${suite_dir_path}/gitian-linux.yml
+            ./bin/gbuild --fetch-tags -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${suite_dir_path}/gitian-linux-parallel.yml
+            ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION}_${suite} --destination ${gitian_sigs_repo_path}/ ${suite_dir_path}/gitian-linux-parallel.yml
 
             suite_binaries_dir_path=${zcash_binaries_dir_path}/${VERSION}/${suite}
             mkdir ${suite_binaries_dir_path}
@@ -258,7 +258,7 @@ then
         echo "Verifying ${VERSION}_${suite} Linux"
         echo ""
 
-        ./bin/gverify -v -d ${gitian_sigs_repo_path}/ -r ${VERSION}_${suite} ${suite_dir_path}/gitian-linux.yml
+        ./bin/gverify -v -d ${gitian_sigs_repo_path}/ -r ${VERSION}_${suite} ${suite_dir_path}/gitian-linux-parallel.yml
     done
 
     popd
