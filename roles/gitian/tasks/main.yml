@@ -13,7 +13,6 @@
 - name: Install Gitian dependencies.
   apt:
     name:
-      - apt-cacher-ng
       - bridge-utils
       - curl
       - debootstrap
@@ -29,6 +28,13 @@
       - sudo
     state: present
     update_cache: yes
+
+- name: Install more recent version of apt-cacher-ng
+  apt:
+    name: apt-cacher-ng
+    state: latest
+    update_cache: yes
+    default_release: bullseye-backports
 
 - name: Install ruamel.yaml
   pip:
