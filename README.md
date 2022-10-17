@@ -514,6 +514,8 @@ version.
 
 ## Provision a virtual machine
 
+Edit the `Vagrantfile` so the `v.memory` and `v.cpus` values are a bit lower than the memory and CPU count in the actual physical machine. If they're set too high then you might badly wedge your machine.
+
 From the project root directory, run:
 
 ```
@@ -597,6 +599,8 @@ Once in a shell session in the VM, we're ready to run the gitian build.
 # on the virtualbox vm
 vagrant@zcash-build:~$ ./gitian-build.sh
 ```
+
+If you want to run a parallel build, invoke `./gitian-parallel-build.sh` instead.
 
 The output from `gbuild` is informative. There are some common warnings which can be ignored, e.g. if you get an intermittent privileges error related to LXC then just execute the script again. The most important thing is that one reaches the step which says `Running build script (log in var/build.log)`. If not, then something else is wrong and you should let us know.
 
