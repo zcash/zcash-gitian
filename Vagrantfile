@@ -21,7 +21,7 @@ Vagrant.configure(2) do |config|
     gitian.vm.provider "virtualbox" do |v|
       v.name = "zcash-build"
       v.memory = 4096
-      v.cpus = 2
+      v.cpus = 4
       v.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
     end
 
