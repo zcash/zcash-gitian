@@ -22,6 +22,7 @@ Vagrant.configure(2) do |config|
       v.name = "zcash-build"
       v.memory = 4096
       v.cpus = 2
+      v.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
     end
 
     # Added to disable synced folders
