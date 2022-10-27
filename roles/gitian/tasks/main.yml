@@ -127,30 +127,6 @@
     force: yes
   become_user: "{{ gitian_user }}"
 
-- name: Reboot.
-  shell: sleep 3 && shutdown -r now "Rebooting..."
-  async: 1
-  poll: 0
-  ignore_errors: true
-  become: yes
-
-- name: Figure out the Vagrant VM's SSH port number.
-  local_action: "shell vagrant ssh-config zcash-build | grep Port | awk {'print $2'}"
-  register: vagrant_ssh_port
-  become: no
-
-- name: Wait for virtual machine to come back.
-  local_action: wait_for
-    host={{ ansible_host | default('localhost') }}
-    port={{ vagrant_ssh_port.stdout | int }}
-    delay=30
-    state=started
-  become: no
-
-- name: Wait extra time for VM to come back up.
-  pause:
-    seconds: 10
-
 - name: Set Git username.
   command: "git config --global user.name \"{{ git_name }}\""
   become_user: "{{ gitian_user }}"
@@ -182,6 +158,15 @@
     mode: "0755"
   tags: script
 
+- name: Copy Parallel Gitian build script.
+  template:
+    src: gitian-parallel-build.sh
+    dest: "/home/{{ gitian_user }}/gitian-parallel-build.sh"
+    owner: "{{ gitian_user }}"
+    group: "{{ gitian_user }}"
+    mode: "0755"
+  tags: script
+
 - name: Clean the apt cache to free up space.
   apt:
     autoclean: yes
@@ -196,3 +181,4 @@
       Finished bootstrapping the Gitian host VM!
       To enter the environment, run `vagrant ssh zcash-build`
       and then use `./gitian-build.sh` to kick off a build.
+      For parallelism, use `./gitian-parallel-build.sh`.
