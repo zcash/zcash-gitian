@@ -661,3 +661,4 @@ Other notes
 Port 2200 on the host machine should be forwarded to port 22 on the guest virtual machine.
 
 The automation and configuration management assumes that VirtualBox will assign the IP address `10.0.2.15` to the Gitian host Vagrant VM.
+#
