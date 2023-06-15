@@ -8,11 +8,13 @@
     group: "{{ gitian_user }}"
     mode: "0644"
   with_items: "{{ zcash_developer_pubkeys }}"
-
+  ignore_errors: true
+  
 - name: Import Zcash developer public keys.
   command: "gpg --import /tmp/{{ item.id }}.asc"
   become_user: "{{ gitian_user }}"
   with_items: "{{ zcash_developer_pubkeys }}"
+  ignore_errors: true
 
 - name: Set Zcash developer public keys to ultimately trusted.
   shell: >
@@ -23,3 +25,4 @@
   become_user: "{{ gitian_user }}"
   args:
     executable: /bin/bash
+  ignore_errors: true
