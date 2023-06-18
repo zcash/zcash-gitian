@@ -72,8 +72,8 @@
 - name: Add cgroup fs for LXC.
   lineinfile:
     dest: /etc/fstab
-    regexp: '^cgroup'
-    line: 'cgroup  /sys/fs/cgroup  cgroup  defaults  0   0'
+    regexp: "^cgroup"
+    line: "cgroup  /sys/fs/cgroup  cgroup  defaults  0   0"
     state: present
 
 - name: Install profile with environment variables.
@@ -108,9 +108,6 @@
     force: yes
   become_user: "{{ gitian_user }}"
 
-- include_tasks: keys.yml
-  tags: keys
-
 - name: Clone git repository for Zcash.
   git:
     repo: "{{ zcash_git_repo_url }}"
@@ -128,7 +125,7 @@
   become_user: "{{ gitian_user }}"
 
 - name: Set Git username.
-  command: "git config --global user.name \"{{ git_name }}\""
+  command: 'git config --global user.name "{{ git_name }}"'
   become_user: "{{ gitian_user }}"
 
 - name: Set Git email address.
