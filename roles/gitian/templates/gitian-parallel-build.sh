@@ -33,7 +33,7 @@ build_dir_path=${gitian_builder_repo_path}/build
 suite_descriptors_dir_path=${gitian_builder_repo_path}/suites
 
 #workaround python and python3
-ln -s $(which python3) $(which python3 | sed 's/3//g')
+sudo ln -s $(which python3) $(which python3 | sed 's/3//g')
 
 # Help Message
 read -d '' usage <<- EOF
