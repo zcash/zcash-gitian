@@ -1,0 +1,23 @@
+name: Obtener Label de PR
+
+on:
+  pull_request:
+    types:
+      - labeled
+      - unlabeled
+
+jobs:
+  obtener-label:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Código
+      uses: actions/checkout@v2
+
+    - name: Obtener Label de PR
+      id: obtener-label
+      run: echo "::set-output name=label::$(echo ${{ github.event.action }} | cut -d '/' -f 3)"
+      shell: bash
+
+    - name: Mostrar Label
+      run: echo "El label del PR es ${{ steps.obtener-label.outputs.label }}"
