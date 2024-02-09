@@ -18,8 +18,8 @@ jobs:
       with:
         version: '>= 363.0.0'
 
-    - name: Get Label PR
-      id: obtener-label
+    - name: Build Gitian
+      id: gitian
       run: |
         sudo apt update; sudo apt install wget openssh-client git -y
         echo ${{ secrets.GCP_SA_KEY }} | base64 -d > json.json
