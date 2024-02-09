@@ -1,0 +1,251 @@
+name: Get Label PR
+
+on:
+  pull_request:
+    types:
+      - labeled
+
+jobs:
+  obtener-label:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v2'
+      with:
+        version: '>= 363.0.0'
+
+    - name: Get Label PR
+      id: obtener-label
+      run: |
+        sudo apt update; sudo apt install wget openssh-client git -y
+        echo ${{ secrets.GCP_SA_KEY }} | base64 -d > json.json
+        gcloud auth activate-service-account --key-file=json.json
+
+        export random=$(cat /proc/sys/kernel/random/uuid | sed 's/[-]//g' | head -c 4; echo;)
+
+        for i in $(gcloud compute os-login ssh-keys list --format="table[no-heading](value.fingerprint)"); do
+          echo $i;
+          gcloud compute os-login ssh-keys remove --key $i || true;
+        done
+
+        gcloud compute instances create test-gitian-$random --image-family=debian-11 --image-project=debian-cloud --machine-type=c2-standard-16 --project=${{ secrets.GCP_PROJECT_ID_PROD }}' --zone=us-central1-a --no-address --network=vpc-${{ secrets.GCP_PROJECT_ID_PROD }}' --subnet=us-central1-zcash --tags=zcash --service-account=vm-iap@${{ secrets.GCP_PROJECT_ID_PROD }}'.iam.gserviceaccount.com --metadata=enable-oslogin=TRUE --scopes=cloud-platform --enable-nested-virtualization --boot-disk-size=200GB
+
+        export counter=1
+        while [[ $(gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}'" --command="ls -la" &>/dev/null || echo "re-try") == "re-try" && counter -lt 60 ]]
+        do
+          echo "attemp number: $counter"
+          export counter=$((counter+1))
+          if [ $counter -eq 60 ]; then gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}'" --zone "us-central1-a" --delete-disks=all; exit 1; fi
+          sleep 5
+        done
+
+        IFS='/' read -r -a array <<< "${{ github.event.label.name }}"
+
+        git clone -b ${array[2]} https://github.com/${array[0]}/${array[1]}.git
+        cd zcash/contrib/gitian-descriptors
+        wget -c https://github.com/mikefarah/yq/releases/download/v4.28.2/yq_linux_amd64
+        chmod +x yq_linux_amd64
+        export ZCASH_GITIAN_VERSION=$(cat gitian-linux-parallel.yml | ./yq_linux_amd64 .name)
+        cd ../../..
+
+
+        cat <<EOF > ./script.sh
+        apt update;
+        apt install ca-certificates curl gnupg lsb-release zsh software-properties-common wget git vagrant python3-venv direnv python3-pip linux-headers-\$(uname -r) ansible -y;
+        mkdir -m 0755 -p /etc/apt/keyrings;
+        curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes;
+        echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        apt update;
+        apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y;
+        apt-add-repository "deb http://download.virtualbox.org/virtualbox/debian \$(lsb_release -sc) contrib";
+        wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | apt-key add -;
+        apt update
+        apt install virtualbox-6.1 -y;
+        eval "\$(direnv hook bash)";
+        cd source
+        cp .env.example .env
+        cp .envrc.example .envrc
+        /usr/bin/python3 -m venv ./local/python_venv;
+        echo "load_prefix local/python_venv" >> .envrc;
+        export VERSION="${array[2]}"
+        echo "ZCASH_VERSION=\$VERSION" >> .env;
+        echo "ZCASH_GIT_REPO_URL=https://github.com/${array[0]}/${array[1]}" >> .env;
+        cat .env
+        direnv allow;
+        pip3 install --upgrade pip;
+        /sbin/vboxconfig;
+        vagrant plugin install --local;
+        vagrant plugin install --local;
+        gpg --quick-generate-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
+        echo "GPG_KEY_ID=\$(gpg --list-keys --with-fingerprint --with-colons | grep fpr: | head -n 1 | sed 's/fpr://g' | sed 's/://g')" >> .env;
+        git config --global user.name "Harry Potter"
+        git config --global user.email "hpotter@hogwarts.wiz"
+        direnv allow;
+        direnv exec \$(pwd) vagrant up zcash-build;
+        vagrant ssh zcash-build -c "gpg --quick-generate-key --batch --passphrase '' \"Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>\" || echo ''"
+        vagrant ssh zcash-build -c "./gitian-parallel-build.sh || exit 1"
+        vagrant ssh zcash-build -c "head -n 8 gitian.sigs/\$VERSION*/hpotter/*.assert" > assert.txt
+        tr -d \$'\r' < assert.txt > assert2.txt
+        for i in \$(cat assert2.txt | grep -E "zcash-*"  | grep -v git: | sed 's/    //g' | sed 's/  /-->/g'); do
+          curl ${{ secrets.SLACK_WEBHOOK }} -H "Content-Type: application/json" -d "{\"text\": \"\\\`\\\`\\\`\$i\\\`\\\`\\\`\"}"
+        done
+        export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | tr -d '\r')
+        for i in \$OS; do vagrant ssh zcash-build -c "mkdir \$i; tar Cxvzf \$i zcash-binaries/*/\$i/zcash-*-linux64.tar.gz"; done
+        versions=\$(for i in \$OS; do echo " \$i==>"; vagrant ssh zcash-build -c "./\$i/zcash-*/bin/zcashd --version | head -n 1 | tr -d '\n'"; done)
+        for i in "\${versions[@]}"
+        do
+          curl ${{ secrets.SLACK_WEBHOOK }} -H "Content-Type: application/json" -d "{\"text\": \"\\\`\\\`\\\`\$i\\\`\\\`\\\`\"}"
+        done
+
+        # get keys
+        gsutil rm -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}'-apt-packages/127.0.0.1 || echo ""
+        gsutil cp gs://${{ secrets.GCP_PROJECT_ID_PROD }}'-apt-packages/encrypted_gpg.kms \$HOME/encrypted_gpg.kms
+        gsutil cp gs://${{ secrets.GCP_PROJECT_ID_PROD }}'-apt-packages/public.asc \$HOME/public.asc
+        current_dir=\$(pwd)
+        cd \$HOME
+        gcloud kms decrypt \
+            --key gpg \
+            --keyring gpg \
+            --location global  \
+            --plaintext-file private.pgp \
+            --ciphertext-file encrypted_gpg.kms
+        cd \$current_dir
+        gpg --import \$HOME/private.pgp
+        vagrant scp :gitian.sigs .
+        for i in \$OS;
+        do
+          mkdir -p debs/\$i;
+          mkdir -p ./\$i-extract
+          vagrant ssh zcash-build -c "mkdir /home/vagrant/"\$i"-extract";
+          vagrant ssh zcash-build -c "tar -xvf /home/vagrant/zcash-binaries/"\$VERSION"/"\$i"/zcash-*-linux64.tar.gz -C /home/vagrant/"\$i"-extract";
+
+          docker run -d --name \$i debian:\$i bash -c "while true; do sleep 2; done";
+
+          docker exec \$i bash -c "mkdir -p /home/vagrant/\$i-deb-build && cd /home/vagrant/\$i-deb-build && apt update && apt install git dpkg-dev lintian -y && git clone -b ${array[2]} https://github.com/${array[0]}/${array[1]}.git .";
+
+          vagrant scp :/home/vagrant/\$i-extract/zcash-*/bin/zcash-tx ./\$i-extract/
+          vagrant scp :/home/vagrant/\$i-extract/zcash-*/bin/zcash-fetch-params ./\$i-extract/
+          vagrant scp :/home/vagrant/\$i-extract/zcash-*/bin/zcashd ./\$i-extract/
+          vagrant scp :/home/vagrant/\$i-extract/zcash-*/bin/zcash-cli ./\$i-extract/
+          vagrant scp :/home/vagrant/\$i-extract/zcash-*/bin/zcashd-wallet-tool ./\$i-extract/
+          docker cp ./\$i-extract \$i:/home/vagrant/\$i-deb-build/
+          docker exec -w /home/vagrant/\$i-deb-build \$i bash -c "rm -rf src && mv \$i-extract src && ./zcutil/build-debian-package.sh"
+          docker cp \$i:/tmp/zcbuild ./debs/\$i
+        done
+        vagrant scp :/home/vagrant/zcash-binaries ./
+        for i in \$OS;
+        do
+          cd ./zcash-binaries/\$VERSION/\$i
+          for j in \$(ls *linux64.tar.gz); do
+            mv \$j \$(echo \$j | sed 's/.tar.gz/-debian-'\$i'.tar.gz/g')
+          done
+          for j in \$(ls *debug.tar.gz); do
+            mv \$j \$(echo \$j | sed 's/.tar.gz/-debian-'\$i'.tar.gz/g')
+          done
+          gpg -u sysadmin@z.cash --armor --digest-algo SHA256 --detach-sign *debug-debian-\$i.tar.gz
+          gpg -u sysadmin@z.cash --armor --digest-algo SHA256 --detach-sign *linux64-debian-\$i.tar.gz
+          cd \$current_dir
+        done
+        export final_version=\$(cat assert2.txt | awk '{print \$2}' | grep "desc.yml" | head -n 1 | sed 's/-desc.yml//g')
+        gsutil -m rsync -r ./debs gs://${{ secrets.GCP_PROJECT_ID_PROD }}'-apt-packages/debs
+        gsutil -m rsync -r ./zcash-binaries gs://${{ secrets.GCP_PROJECT_ID_PROD }}'-apt-packages/zcash-binaries
+        apt install aptly -y
+
+        # generate apt
+        mkdir aptserver
+        cd aptserver
+        gsutil -m cp -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}'-apt-server/pool/main/z/zcash/ .
+        cd zcash
+        cp -a ../../debs/buster/zcbuild/*.deb \$final_version-amd64-buster.deb
+        ls \$final_version-amd64-buster.deb || exit 1
+        cp -a ../../debs/bullseye/zcbuild/*.deb \$final_version-amd64-bullseye.deb
+        ls \$final_version-amd64-bullseye.deb || exit 1
+        cp -a ../../debs/bookworm/zcbuild/*.deb \$final_version-amd64-bookworm.deb
+        ls \$final_version-amd64-bookworm.deb || exit 1
+        aptly repo create --distribution buster --comment "" --component main zcash_buster_amd64_repo
+        aptly repo create --distribution bullseye --comment "" --component main zcash_bullseye_amd64_repo
+        aptly repo create --distribution bookworm --comment "" --component main zcash_bookworm_amd64_repo
+        aptly repo create --distribution stretch --comment "" --component main zcash_stretch_amd64_repo
+        for i in \$(ls *.deb | grep buster); do
+          aptly repo add zcash_buster_amd64_repo \$i
+        done
+        for i in \$(ls *.deb | grep bullseye); do
+          aptly repo add zcash_bullseye_amd64_repo \$i
+        done
+        for i in \$(ls *.deb | grep stretch); do
+          aptly repo add zcash_stretch_amd64_repo \$i
+        done
+        for i in \$(ls *.deb | grep bookworm); do
+          aptly repo add zcash_bookworm_amd64_repo \$i
+        done
+        aptly snapshot create bookworm_snapshot from repo zcash_bookworm_amd64_repo
+        aptly snapshot create buster_snapshot from repo zcash_buster_amd64_repo
+        aptly snapshot create bullseye_snapshot from repo zcash_bullseye_amd64_repo
+        aptly snapshot create stretch_snapshot from repo zcash_stretch_amd64_repo
+
+        export key=\$(gpg --list-secret-keys --keyid-format=long sysadmin@z.cash | head -n 2 | grep -v sec)
+        aptly publish snapshot --distribution buster --component main --architectures amd64 --gpg-key="\$key" --passphrase="" buster_snapshot
+        aptly publish snapshot --distribution bookworm --component main --architectures amd64 --gpg-key="\$key" --passphrase="" bookworm_snapshot
+        aptly publish snapshot --distribution bullseye --component main --architectures amd64 --gpg-key="\$key" --passphrase="" bullseye_snapshot
+        aptly publish snapshot --distribution stretch --component main --architectures amd64 --gpg-key="\$key" --passphrase="" stretch_snapshot
+
+        apt install nginx-extras -y
+        cat << EOH > /etc/nginx/sites-enabled/default
+        server {
+                listen 80 default_server;
+                root /var/www/public;
+                location / {
+                    autoindex on;
+                }
+                server_name _;
+        }
+        EOH
+        # get apt server
+        cp -a /root/.aptly/public /var/www/
+        chown -R www-data:www-data /var/www
+        /etc/init.d/nginx restart
+        mkdir \$HOME/mirror
+        cd \$HOME/mirror
+        wget -r 127.0.0.1
+
+        cp \$HOME/public.asc \$HOME/mirror/127.0.0.1/zcash.asc
+        cd \$HOME/mirror
+        gsutil -m rsync -r ./127.0.0.1 gs://${{ secrets.GCP_PROJECT_ID_PROD }}'-apt-packages/127.0.0.1
+        cd 127.0.0.1
+        if ! [[ ${array[2]} == *"-rc"* ]]; then
+          gsutil -m rsync -r ./ gs://${{ secrets.GCP_PROJECT_ID_PROD }}'-apt-server/
+        fi
+        EOF
+
+        export FAIL=0
+        chmod +x ./script.sh || echo ""
+
+        gcloud compute scp ./script.sh --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}'" test-gitian-$random: || export FAIL=1
+        gcloud compute scp --recurse $(pwd) --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}'" test-gitian-$random:~/source || export FAIL=1
+
+        gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}'" --command="bash -i -c 'sudo -s ./script.sh'" -- -t || export FAIL=1
+
+        gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}'" --zone "us-central1-a" --delete-disks=all
+
+        if [ $FAIL -eq 1 ]; then exit 1; fi
+
+        gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}'" test-gitian-$random:/home/sa_*/source/gitian.sigs .
+
+        rm -rf gitian.sigs/.git
+        if ! [[ ${array[2]} == *"-rc"* ]]; then
+          git clone git@github.com:zcash/gitian.sigs.git sigs
+          cp -a gitian.sigs/* sigs/
+          cd sigs
+          git config --global user.name "ECC-CI"
+          git config --global user.email "serviceusers+github@z.cash"
+          git add .
+          git commit -am "$(inputs.params.LABEL_NAME)"
+          git push
+        fi
+        curl --request POST --url https://api.bunny.net/pullzone/1432616/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
+
+      shell: bash
