@@ -218,7 +218,11 @@ then
             echo ""
             echo "Compiling variant: ${VERSION}_${suite}"
             echo ""
-
+            #workaround python and python3 in buster
+            if [[ $suite = "buster" ]]
+            then
+                sed -i -e 's/- "python3"/- "python"/g' -e 's/- "python-is-python3"//g' ${suite_dir_path}/gitian-linux-parallel.yml;
+            fi
             ./bin/gbuild --fetch-tags -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${suite_dir_path}/gitian-linux-parallel.yml
             ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION}_${suite} --destination ${gitian_sigs_repo_path}/ ${suite_dir_path}/gitian-linux-parallel.yml
 
