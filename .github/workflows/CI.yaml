@@ -1,4 +1,4 @@
-name: Get Label PR
+name: Gitian CI
 
 on:
   pull_request:
