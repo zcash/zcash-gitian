@@ -6,7 +6,7 @@ on:
       - labeled
 
 jobs:
-  obtener-label:
+  build-gitian:
     runs-on: ubuntu-latest
 
     steps:
