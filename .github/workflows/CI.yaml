@@ -32,14 +32,14 @@ jobs:
           gcloud compute os-login ssh-keys remove --key $i || true;
         done
 
-        gcloud compute instances create test-gitian-$random --image-family=debian-11 --image-project=debian-cloud --machine-type=c2-standard-16 --project=ecc-infra-prod --zone=us-central1-a --no-address --network=vpc-ecc-infra-prod --subnet=us-central1-zcash --tags=zcash --service-account=vm-iap@ecc-infra-prod.iam.gserviceaccount.com --metadata=enable-oslogin=TRUE --scopes=cloud-platform --enable-nested-virtualization --boot-disk-size=200GB
+        gcloud compute instances create test-gitian-$random --image-family=debian-11 --image-project=debian-cloud --machine-type=c2-standard-16 --project=${{ secrets.GCP_PROJECT_ID_PROD }} --zone=us-central1-a --no-address --network=vpc-${{ secrets.GCP_PROJECT_ID_PROD }} --subnet=us-central1-zcash --tags=zcash --service-account=vm-iap@${{ secrets.GCP_PROJECT_ID_PROD }}.iam.gserviceaccount.com --metadata=enable-oslogin=TRUE --scopes=cloud-platform --enable-nested-virtualization --boot-disk-size=200GB
 
         export counter=1
-        while [[ $(gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "ecc-infra-prod" --command="ls -la" &>/dev/null || echo "re-try") == "re-try" && counter -lt 60 ]]
+        while [[ $(gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --command="ls -la" &>/dev/null || echo "re-try") == "re-try" && counter -lt 60 ]]
         do
           echo "attemp number: $counter"
           export counter=$((counter+1))
-          if [ $counter -eq 60 ]; then gcloud compute instances delete "test-gitian-$random" --project "ecc-infra-prod" --zone "us-central1-a" --delete-disks=all; exit 1; fi
+          if [ $counter -eq 60 ]; then gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all; exit 1; fi
           sleep 5
         done
 
@@ -102,9 +102,9 @@ jobs:
         done
 
         # get keys
-        gsutil rm -r gs://ecc-infra-prod-apt-packages/127.0.0.1 || echo ""
-        gsutil cp gs://ecc-infra-prod-apt-packages/encrypted_gpg.kms \$HOME/encrypted_gpg.kms
-        gsutil cp gs://ecc-infra-prod-apt-packages/public.asc \$HOME/public.asc
+        gsutil rm -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/127.0.0.1 || echo ""
+        gsutil cp gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/encrypted_gpg.kms \$HOME/encrypted_gpg.kms
+        gsutil cp gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/public.asc \$HOME/public.asc
         current_dir=\$(pwd)
         cd \$HOME
         gcloud kms decrypt \
@@ -151,14 +151,14 @@ jobs:
           cd \$current_dir
         done
         export final_version=\$(cat assert2.txt | awk '{print \$2}' | grep "desc.yml" | head -n 1 | sed 's/-desc.yml//g')
-        gsutil -m rsync -r ./debs gs://ecc-infra-prod-apt-packages/debs
-        gsutil -m rsync -r ./zcash-binaries gs://ecc-infra-prod-apt-packages/zcash-binaries
+        gsutil -m rsync -r ./debs gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/debs
+        gsutil -m rsync -r ./zcash-binaries gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/zcash-binaries
         apt install aptly -y
 
         # generate apt
         mkdir aptserver
         cd aptserver
-        gsutil -m cp -r gs://ecc-infra-prod-apt-server/pool/main/z/zcash/ .
+        gsutil -m cp -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/pool/main/z/zcash/ .
         cd zcash
         cp -a ../../debs/buster/zcbuild/*.deb \$final_version-amd64-buster.deb
         cp -a ../../debs/bullseye/zcbuild/*.deb \$final_version-amd64-bullseye.deb
@@ -216,39 +216,41 @@ jobs:
 
         cp \$HOME/public.asc \$HOME/mirror/127.0.0.1/zcash.asc
         cd \$HOME/mirror
-        gsutil -m rsync -r ./127.0.0.1 gs://ecc-infra-prod-apt-packages/127.0.0.1
+        gsutil -m rsync -r ./127.0.0.1 gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/127.0.0.1
         cd 127.0.0.1
         if ! [[ ${array[2]} == *"-rc"* ]]; then
-          gsutil -m rsync -r ./ gs://ecc-infra-prod-apt-server/
+          gsutil -m rsync -r ./ gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/
         fi
         EOF
 
         export FAIL=0
         chmod +x ./script.sh || echo ""
 
-        gcloud compute scp ./script.sh --zone "us-central1-a"  --tunnel-through-iap --project "ecc-infra-prod" test-gitian-$random: || export FAIL=1
-        gcloud compute scp --recurse $(pwd) --zone "us-central1-a"  --tunnel-through-iap --project "ecc-infra-prod" test-gitian-$random:~/source || export FAIL=1
+        gcloud compute scp ./script.sh --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random: || export FAIL=1
+        gcloud compute scp --recurse $(pwd) --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:~/source || export FAIL=1
 
-        gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "ecc-infra-prod" --command="bash -i -c 'sudo -s ./script.sh'" -- -t || export FAIL=1
+        gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --command="bash -i -c 'sudo -s ./script.sh'" -- -t || export FAIL=1
 
-        gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "ecc-infra-prod" test-gitian-$random:/home/sa_*/source/gitian.sigs .
+        gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs .
         
-        gcloud compute instances delete "test-gitian-$random" --project "ecc-infra-prod" --zone "us-central1-a" --delete-disks=all
+        gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
 
         if [ $FAIL -eq 1 ]; then exit 1; fi 
 
         rm -rf gitian.sigs/.git
         if ! [[ ${array[2]} == *"-rc"* ]]; then
+          echo ${{ secrets.BOT_SSH_KEY }} > .ssh/id_rsa
+          chmod 600 .ssh/id_rsa
           git clone git@github.com:zcash/gitian.sigs.git sigs
           cp -a gitian.sigs/* sigs/
           cd sigs
           git config --global user.name "ECC-CI"
-          git config --global user.email "serviceusers+github@z.cash"
+          git config --global user.email "${{ secrets.BOT_EMAIL }}"
           git add .
           git commit -am "$(inputs.params.LABEL_NAME)"
           git push
         fi
 
-        curl --request POST --url https://api.bunny.net/pullzone/1432616/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
+        curl --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
 
       shell: bash
