@@ -88,7 +88,7 @@ jobs:
         gpg --quick-generate-key --batch --passphrase '' "Lyra Silvertongue (zcash gitian) <lyra.silvertongue@ox.ac.brytain>"
         echo "GPG_KEY_ID=\$(gpg --list-keys --with-fingerprint --with-colons | grep fpr: | head -n 1 | sed 's/fpr://g' | sed 's/://g')" >> .env;
         git config --global user.name "Lyra Silvertongue"
-        git config --global user.email "hpotter@hogwarts.wiz"
+        git config --global user.email "lyra.silvertongue@ox.ac.brytain"
         direnv allow;
         direnv exec \$(pwd) vagrant up zcash-build;
         vagrant ssh zcash-build -c "gpg --quick-generate-key --batch --passphrase '' \"Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>\" || echo ''"
