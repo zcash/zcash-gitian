@@ -28,7 +28,7 @@ jobs:
         export random=$(cat /proc/sys/kernel/random/uuid | sed 's/[-]//g' | head -c 12; echo;)
 
         for i in $(gcloud compute os-login ssh-keys list --format="table[no-heading](value.fingerprint)"); do 
-          echo $i; 
+          echo "removing SSH key $i"
           gcloud compute os-login ssh-keys remove --key $i || true;
         done
 
