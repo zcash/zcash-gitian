@@ -93,7 +93,7 @@ jobs:
         direnv exec \$(pwd) vagrant up zcash-build;
         vagrant ssh zcash-build -c "gpg --quick-generate-key --batch --passphrase '' \"Lyra Silvertongue (zcash gitian) <lyra.silvertongue@ox.ac.brytain>\" || echo ''"
         vagrant ssh zcash-build -c ./gitian-parallel-build.sh || exit 1
-        vagrant ssh zcash-build -c "head -n 8 gitian.sigs/\$VERSION*/hpotter/*.assert" > assert.txt
+        vagrant ssh zcash-build -c "head -n 8 gitian.sigs/\$VERSION*/lyra.silvertongue/*.assert" > assert.txt
         tr -d \$'\r' < assert.txt > assert2.txt
         for i in \$(cat assert2.txt | grep -E "zcash-*"  | grep -v git: | sed 's/    //g' | sed 's/  /-->/g'); do
           curl ${{ secrets.SLACK_WEBHOOK }} -H "Content-Type: application/json" -d "{\"text\": \"\\\`\\\`\\\`\$i\\\`\\\`\\\`\"}"
