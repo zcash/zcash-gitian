@@ -20,7 +20,24 @@ jobs:
 
     - name: Build Gitian
       id: gitian
+      shell: bash
       run: |
+        ##############################################################################################
+        set -eE -o functrace
+        
+        failure() {
+          local lineno=$2
+          local fn=$3
+          local exitstatus=$4
+          local msg=$5
+          local lineno_fns=${1% 0}
+          if [[ "$lineno_fns" != "0" ]] ; then
+            lineno="${lineno} ${lineno_fns}"
+          fi
+          echo "${BASH_SOURCE[1]}:${fn}[${lineno}] Failed with status ${exitstatus}: $msg"
+        }
+        trap 'failure "${BASH_LINENO[*]}" "$LINENO" "${FUNCNAME[*]:-script}" "$?" "$BASH_COMMAND"' ERR
+        ##############################################################################################
         sudo apt update; sudo apt install wget openssh-client git -y
         echo ${{ secrets.GCP_SA_KEY }} | base64 -d > json.json
         gcloud auth activate-service-account --key-file=json.json
@@ -55,8 +72,25 @@ jobs:
 
 
         cat <<EOF > ./script.sh
+        #!/bin/bash
+        ##############################################################################################
+        set -eE -o functrace
+        
+        failure() {
+          local lineno=$2
+          local fn=$3
+          local exitstatus=$4
+          local msg=$5
+          local lineno_fns=${1% 0}
+          if [[ "$lineno_fns" != "0" ]] ; then
+            lineno="${lineno} ${lineno_fns}"
+          fi
+          echo "${BASH_SOURCE[1]}:${fn}[${lineno}] Failed with status ${exitstatus}: $msg"
+        }
+        trap 'failure "${BASH_LINENO[*]}" "$LINENO" "${FUNCNAME[*]:-script}" "$?" "$BASH_COMMAND"' ERR
+        ##############################################################################################
         apt update;
-        apt install ca-certificates curl gnupg lsb-release zsh software-properties-common wget git vagrant python3-venv direnv python3-pip linux-headers-\$(uname -r) ansible -y;
+        apt install ca-certificates curl gnupg lsb-release software-properties-common wget git vagrant python3-venv direnv python3-pip linux-headers-\$(uname -r) ansible -y;
         mkdir -m 0755 -p /etc/apt/keyrings;
         curl -fsSL https://download.docker.com/linux/debian/gpg -o gpg
         echo "1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570  gpg" | shasum -a 256 -c;
