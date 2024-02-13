@@ -37,7 +37,7 @@ jobs:
         export counter=1
         while [[ $(gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --command="ls -la" &>/dev/null || echo "re-try") == "re-try" && counter -lt 60 ]]
         do
-          echo "attemp number: $counter"
+          echo "attempt number: $counter"
           export counter=$((counter+1))
           if [ $counter -eq 60 ]; then gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all; exit 1; fi
           sleep 5
