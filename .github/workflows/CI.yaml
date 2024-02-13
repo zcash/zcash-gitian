@@ -85,7 +85,7 @@ jobs:
         /sbin/vboxconfig;
         vagrant plugin install --local;
         vagrant plugin install --local;
-        gpg --quick-generate-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
+        gpg --quick-generate-key --batch --passphrase '' "Lyra Silvertongue (zcash gitian) <lyra.silvertongue@ox.ac.brytain>"
         echo "GPG_KEY_ID=\$(gpg --list-keys --with-fingerprint --with-colons | grep fpr: | head -n 1 | sed 's/fpr://g' | sed 's/://g')" >> .env;
         git config --global user.name "Harry Potter"
         git config --global user.email "hpotter@hogwarts.wiz"
