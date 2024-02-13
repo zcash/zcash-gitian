@@ -91,7 +91,7 @@ jobs:
         git config --global user.email "lyra.silvertongue@ox.ac.brytain"
         direnv allow;
         direnv exec \$(pwd) vagrant up zcash-build;
-        vagrant ssh zcash-build -c "gpg --quick-generate-key --batch --passphrase '' \"Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>\" || echo ''"
+        vagrant ssh zcash-build -c "gpg --quick-generate-key --batch --passphrase '' \"Lyra Silvertongue (zcash gitian) <lyra.silvertongue@ox.ac.brytain>\" || echo ''"
         vagrant ssh zcash-build -c ./gitian-parallel-build.sh || exit 1
         vagrant ssh zcash-build -c "head -n 8 gitian.sigs/\$VERSION*/hpotter/*.assert" > assert.txt
         tr -d \$'\r' < assert.txt > assert2.txt
