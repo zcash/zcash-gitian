@@ -25,7 +25,7 @@ jobs:
         echo ${{ secrets.GCP_SA_KEY }} | base64 -d > json.json
         gcloud auth activate-service-account --key-file=json.json
 
-        export random=$(cat /proc/sys/kernel/random/uuid | sed 's/[-]//g' | head -c 4; echo;)
+        export random=$(cat /proc/sys/kernel/random/uuid | sed 's/[-]//g' | head -c 12; echo;)
 
         for i in $(gcloud compute os-login ssh-keys list --format="table[no-heading](value.fingerprint)"); do 
           echo $i; 
