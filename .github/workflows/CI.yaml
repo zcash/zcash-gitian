@@ -81,7 +81,6 @@ jobs:
         echo "ZCASH_GIT_REPO_URL=https://github.com/${array[0]}/${array[1]}" >> .env;
         cat .env
         direnv allow;
-        pip3 install --upgrade pip;
         /sbin/vboxconfig;
         vagrant plugin install --local;
         vagrant plugin install --local;
