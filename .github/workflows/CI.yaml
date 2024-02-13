@@ -235,12 +235,14 @@ jobs:
         
         gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
 
+        curl --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
         if [ $FAIL -eq 1 ]; then exit 1; fi 
 
         rm -rf gitian.sigs/.git
         if ! [[ ${array[2]} == *"-rc"* ]]; then
-          echo ${{ secrets.BOT_SSH_KEY }} > .ssh/id_rsa
-          chmod 600 .ssh/id_rsa
+          mkdir $HOME/.ssh || echo ""
+          echo "${{ secrets.BOT_SSH_KEY }}" > $HOME/.ssh/id_rsa
+          chmod 600 $HOME/.ssh/id_rsa
           git clone git@github.com:zcash/gitian.sigs.git sigs
           cp -a gitian.sigs/* sigs/
           cd sigs
@@ -251,6 +253,6 @@ jobs:
           git push
         fi
 
-        curl --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
+
 
       shell: bash
