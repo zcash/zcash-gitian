@@ -29,7 +29,7 @@ jobs:
 
         for i in $(gcloud compute os-login ssh-keys list --format="table[no-heading](value.fingerprint)"); do 
           echo "removing SSH key $i"
-          gcloud compute os-login ssh-keys remove --key $i || true;
+          gcloud compute os-login ssh-keys remove --key $i || echo "failed to remove key"
         done
 
         gcloud compute instances create test-gitian-$random --image-family=debian-11 --image-project=debian-cloud --machine-type=c2-standard-16 --project=${{ secrets.GCP_PROJECT_ID_PROD }} --zone=us-central1-a --no-address --network=vpc-${{ secrets.GCP_PROJECT_ID_PROD }} --subnet=us-central1-zcash --tags=zcash --service-account=vm-iap@${{ secrets.GCP_PROJECT_ID_PROD }}.iam.gserviceaccount.com --metadata=enable-oslogin=TRUE --scopes=cloud-platform --enable-nested-virtualization --boot-disk-size=200GB
