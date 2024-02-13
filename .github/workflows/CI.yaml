@@ -48,6 +48,7 @@ jobs:
         git clone -b ${array[2]} https://github.com/${array[0]}/${array[1]}.git
         cd zcash/contrib/gitian-descriptors
         wget -c https://github.com/mikefarah/yq/releases/download/v4.28.2/yq_linux_amd64
+        echo "7e0d59c65be5054a14ff2a76eb12c2d4ec3e5bc2f1dfa03c7356bb35b50bbf41  yq_linux_amd64" | shasum -a 256 -c
         chmod +x yq_linux_amd64
         export ZCASH_GITIAN_VERSION=$(cat gitian-linux-parallel.yml | ./yq_linux_amd64 .name)
         cd ../../..
