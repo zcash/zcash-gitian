@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-gitian:
-    runs-on: docker # ubuntu-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
@@ -64,7 +64,7 @@ jobs:
 
         git clone -b ${array[2]} https://github.com/${array[0]}/${array[1]}.git
         cd zcash/contrib/gitian-descriptors
-        wget -c https://github.com/mikefarah/yq/releases/download/v4.28.2/yq_linux_amd64
+        wget -c -q https://github.com/mikefarah/yq/releases/download/v4.28.2/yq_linux_amd64
         echo "7e0d59c65be5054a14ff2a76eb12c2d4ec3e5bc2f1dfa03c7356bb35b50bbf41  yq_linux_amd64" | shasum -a 256 -c
         chmod +x yq_linux_amd64
         export ZCASH_GITIAN_VERSION=$(cat gitian-linux-parallel.yml | ./yq_linux_amd64 .name)
@@ -129,20 +129,20 @@ jobs:
         vagrant ssh zcash-build -c "head -n 8 gitian.sigs/\$VERSION*/lyra.silvertongue/*.assert" > assert.txt
         tr -d \$'\r' < assert.txt > assert2.txt
         for i in \$(cat assert2.txt | grep -E "zcash-*"  | grep -v git: | sed 's/    //g' | sed 's/  /-->/g'); do
-          curl ${{ secrets.SLACK_WEBHOOK }} -H "Content-Type: application/json" -d "{\"text\": \"\\\`\\\`\\\`\$i\\\`\\\`\\\`\"}"
+          curl -s ${{ secrets.SLACK_WEBHOOK }} -H "Content-Type: application/json" -d "{\"text\": \"\\\`\\\`\\\`\$i\\\`\\\`\\\`\"}"
         done
         export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | tr -d '\r')
         for i in \$OS; do vagrant ssh zcash-build -c "mkdir \$i; tar Cxvzf \$i zcash-binaries/*/\$i/zcash-*-linux64.tar.gz"; done
         versions=\$(for i in \$OS; do echo " \$i==>"; vagrant ssh zcash-build -c "./\$i/zcash-*/bin/zcashd --version | head -n 1 | tr -d '\n'"; done)
         for i in "\${versions[@]}"
         do
-          curl ${{ secrets.SLACK_WEBHOOK }} -H "Content-Type: application/json" -d "{\"text\": \"\\\`\\\`\\\`\$i\\\`\\\`\\\`\"}"
+          curl -s ${{ secrets.SLACK_WEBHOOK }} -H "Content-Type: application/json" -d "{\"text\": \"\\\`\\\`\\\`\$i\\\`\\\`\\\`\"}"
         done
 
         # get keys
-        gsutil rm -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/127.0.0.1 || echo ""
-        gsutil cp gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/encrypted_gpg.kms \$HOME/encrypted_gpg.kms
-        gsutil cp gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/public.asc \$HOME/public.asc
+        gsutil -q rm -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/127.0.0.1 || echo ""
+        gsutil -q cp gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/encrypted_gpg.kms \$HOME/encrypted_gpg.kms
+        gsutil -q cp gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/public.asc \$HOME/public.asc
         current_dir=\$(pwd)
         cd \$HOME
         gcloud kms decrypt \
@@ -189,14 +189,14 @@ jobs:
           cd \$current_dir
         done
         export final_version=\$(cat assert2.txt | awk '{print \$2}' | grep "desc.yml" | head -n 1 | sed 's/-desc.yml//g')
-        gsutil -m rsync -r ./debs gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/debs
-        gsutil -m rsync -r ./zcash-binaries gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/zcash-binaries
+        gsutil -q -m rsync -r ./debs gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/debs
+        gsutil -q -m rsync -r ./zcash-binaries gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/zcash-binaries
         apt install aptly -y
 
         # generate apt
         mkdir aptserver
         cd aptserver
-        gsutil -m cp -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/pool/main/z/zcash/ .
+        gsutil -q -m cp -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/pool/main/z/zcash/ .
         cd zcash
         cp -a ../../debs/buster/zcbuild/*.deb \$final_version-amd64-buster.deb
         cp -a ../../debs/bullseye/zcbuild/*.deb \$final_version-amd64-bullseye.deb
@@ -250,14 +250,14 @@ jobs:
         /etc/init.d/nginx restart
         mkdir \$HOME/mirror
         cd \$HOME/mirror
-        wget -r 127.0.0.1
+        wget -q -r 127.0.0.1
 
         cp \$HOME/public.asc \$HOME/mirror/127.0.0.1/zcash.asc
         cd \$HOME/mirror
-        gsutil -m rsync -r ./127.0.0.1 gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/127.0.0.1
+        gsutil -q -m rsync -r ./127.0.0.1 gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/127.0.0.1
         cd 127.0.0.1
         if ! [[ ${array[2]} == *"-rc"* ]]; then
-          gsutil -m rsync -r ./ gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/
+          gsutil -q -m rsync -r ./ gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/
         fi
         EOF
 
@@ -273,7 +273,7 @@ jobs:
         
         gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
 
-        curl --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
+        curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
         if [ $FAIL -eq 1 ]; then exit 1; fi 
 
         rm -rf gitian.sigs/.git
