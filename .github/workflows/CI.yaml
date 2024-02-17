@@ -1,77 +1,3 @@
-name: Gitian CI
-
-on:
-  pull_request:
-    types:
-      - labeled
-
-jobs:
-  build-gitian:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v2'
-      with:
-        version: '>= 363.0.0'
-
-    - name: Build Gitian
-      id: gitian
-      shell: bash
-      run: |
-        ##############################################################################################
-        set -eE -o functrace
-        
-        failure() {
-          local lineno=$2
-          local fn=$3
-          local exitstatus=$4
-          local msg=$5
-          local lineno_fns=${1% 0}
-          if [[ "$lineno_fns" != "0" ]] ; then
-            lineno="${lineno} ${lineno_fns}"
-          fi
-          echo "${BASH_SOURCE[1]}:${fn}[${lineno}] Failed with status ${exitstatus}: $msg"
-        }
-        trap 'failure "${BASH_LINENO[*]}" "$LINENO" "${FUNCNAME[*]:-script}" "$?" "$BASH_COMMAND"' ERR
-        ##############################################################################################
-        sudo apt -qq update; sudo apt install wget openssh-client git -y >/dev/null
-        echo ${{ secrets.GCP_SA_KEY }} | base64 -d > json.json
-        gcloud auth activate-service-account --key-file=json.json
-
-        export random=$(cat /proc/sys/kernel/random/uuid | sed 's/[-]//g' | head -c 12; echo;)
-
-        for i in $(gcloud compute os-login ssh-keys list --format="table[no-heading](value.fingerprint)"); do 
-          echo "removing SSH key $i"
-          gcloud compute os-login ssh-keys remove --key $i || echo "failed to remove key"
-        done
-
-        gcloud compute instances create test-gitian-$random --image-family=debian-11 --image-project=debian-cloud --machine-type=c2-standard-16 --project=${{ secrets.GCP_PROJECT_ID_PROD }} --zone=us-central1-a --no-address --network=vpc-${{ secrets.GCP_PROJECT_ID_PROD }} --subnet=us-central1-zcash --tags=zcash --service-account=vm-iap@${{ secrets.GCP_PROJECT_ID_PROD }}.iam.gserviceaccount.com --metadata=enable-oslogin=TRUE --scopes=cloud-platform --enable-nested-virtualization --boot-disk-size=200GB
-
-        export counter=1
-        while [[ $(gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --command="ls -la" &>/dev/null || echo "re-try") == "re-try" && counter -lt 60 ]]
-        do
-          echo "attempt number: $counter"
-          export counter=$((counter+1))
-          if [ $counter -eq 60 ]; then gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all; exit 1; fi
-          sleep 5
-        done
-
-        IFS='/' read -r -a array <<< "${{ github.event.label.name }}"
-
-        git clone -b ${array[2]} https://github.com/${array[0]}/${array[1]}.git
-        cd zcash/contrib/gitian-descriptors
-        wget -c -q https://github.com/mikefarah/yq/releases/download/v4.28.2/yq_linux_amd64
-        echo "7e0d59c65be5054a14ff2a76eb12c2d4ec3e5bc2f1dfa03c7356bb35b50bbf41  yq_linux_amd64" | shasum -a 256 -c
-        chmod +x yq_linux_amd64
-        export ZCASH_GITIAN_VERSION=$(cat gitian-linux-parallel.yml | ./yq_linux_amd64 .name)
-        cd ../../..
-
-
-        cat <<EOF > ./script.sh
         #!/bin/bash
         ##############################################################################################
         set -eE -o functrace
@@ -129,15 +55,16 @@ jobs:
         vagrant ssh zcash-build -c ./gitian-parallel-build.sh || exit 1
         vagrant ssh zcash-build -c "head -n 8 gitian.sigs/\$VERSION*/lyra.silvertongue/*.assert" > assert.txt
         tr -d \$'\r' < assert.txt > assert2.txt
+        echo "#### sigs ####"
         for i in \$(cat assert2.txt | grep -E "zcash-*"  | grep -v git: | sed 's/    //g' | sed 's/  /-->/g'); do
-          curl -s ${{ secrets.SLACK_WEBHOOK }} -H "Content-Type: application/json" -d "{\"text\": \"\\\`\\\`\\\`\$i\\\`\\\`\\\`\"}"
+          echo \$i
         done
         export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | tr -d '\r')
         for i in \$OS; do vagrant ssh zcash-build -c "mkdir \$i; tar Cxvzf \$i zcash-binaries/*/\$i/zcash-*-linux64.tar.gz"; done
         versions=\$(for i in \$OS; do echo " \$i==>"; vagrant ssh zcash-build -c "./\$i/zcash-*/bin/zcashd --version | head -n 1 | tr -d '\n'"; done)
         for i in "\${versions[@]}"
         do
-          curl -s ${{ secrets.SLACK_WEBHOOK }} -H "Content-Type: application/json" -d "{\"text\": \"\\\`\\\`\\\`\$i\\\`\\\`\\\`\"}"
+          echo \$i
         done
 
         # get keys
@@ -259,35 +186,4 @@ jobs:
         cd 127.0.0.1
         if ! [[ ${array[2]} == *"-rc"* ]]; then
           gsutil -q -m rsync -r ./ gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/
-        fi
-        EOF
-
-        export FAIL=0
-        chmod +x ./script.sh || echo ""
-
-        gcloud compute scp ./script.sh --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random: || export FAIL=1
-        gcloud compute scp --recurse $(pwd) --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:~/source || export FAIL=1
-
-        gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --command="bash -i -c 'sudo -s ./script.sh'" -- -t || export FAIL=1
-
-        gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs .
-        
-        #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
-
-        curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
-        if [ $FAIL -eq 1 ]; then exit 1; fi 
-
-        rm -rf gitian.sigs/.git
-        if ! [[ ${array[2]} == *"-rc"* ]]; then
-          mkdir $HOME/.ssh || echo ""
-          echo "${{ secrets.BOT_SSH_KEY }}" > $HOME/.ssh/id_rsa
-          chmod 600 $HOME/.ssh/id_rsa
-          git clone git@github.com:zcash/gitian.sigs.git sigs
-          cp -a gitian.sigs/* sigs/
-          cd sigs
-          git config --global user.name "ECC-CI"
-          git config --global user.email "${{ secrets.BOT_EMAIL }}"
-          git add .
-          git commit -am "$(inputs.params.LABEL_NAME)"
-          git push
         fi
