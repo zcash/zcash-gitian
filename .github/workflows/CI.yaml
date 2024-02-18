@@ -73,22 +73,6 @@ jobs:
 
         cat <<EOF > ./script.sh
         #!/bin/bash
-        ##############################################################################################
-        set -eE -o functrace
-        
-        failure() {
-          local lineno=\$2
-          local fn=\$3
-          local exitstatus=\$4
-          local msg=\$5
-          local lineno_fns=\${1% 0}
-          if [[ "\$lineno_fns" != "0" ]] ; then
-            lineno="\${lineno} \${lineno_fns}"
-          fi
-          echo "\${BASH_SOURCE[1]}:\${fn}[\${lineno}] Failed with status \${exitstatus}: \$msg"
-        }
-        trap 'failure "\${BASH_LINENO[*]}" "\$LINENO" "\${FUNCNAME[*]:-script}" "\$?" "\$BASH_COMMAND"' ERR
-        ##############################################################################################
         apt -qq update;
         apt install ca-certificates curl gnupg lsb-release software-properties-common wget git vagrant python3-venv direnv python3-pip linux-headers-\$(uname -r) ansible -y >/dev/null;
         mkdir -m 0755 -p /etc/apt/keyrings;
@@ -135,11 +119,6 @@ jobs:
         done
         export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | tr -d '\r')
         for i in \$OS; do vagrant ssh zcash-build -c "mkdir \$i; tar Cxvzf \$i zcash-binaries/*/\$i/zcash-*-linux64.tar.gz"; done
-        versions=\$(for i in \$OS; do echo " \$i==>"; vagrant ssh zcash-build -c "./\$i/zcash-*/bin/zcashd --version | head -n 1 | tr -d '\n'"; done)
-        for i in "\${versions[@]}"
-        do
-          echo \$i
-        done
 
         # get keys
         gsutil -q rm -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/127.0.0.1 || echo ""
@@ -165,7 +144,7 @@ jobs:
 
           docker run -d --name \$i debian:\$i bash -c "while true; do sleep 2; done";
 
-          docker exec \$i bash -c "mkdir -p /home/vagrant/\$i-deb-build && cd /home/vagrant/\$i-deb-build && apt -qq update && apt install git dpkg-dev lintian -y && git clone -b ${array[2]} https://github.com/${array[0]}/${array[1]}.git .";
+          docker exec \$i bash -c "mkdir -p /home/vagrant/\$i-deb-build && cd /home/vagrant/\$i-deb-build && apt -qq update && apt install git dpkg-dev lintian -y >/dev/null && git clone -b ${array[2]} https://github.com/${array[0]}/${array[1]}.git .";
 
           vagrant scp :/home/vagrant/\$i-extract/zcash-*/bin/zcash-tx ./\$i-extract/
           vagrant scp :/home/vagrant/\$i-extract/zcash-*/bin/zcash-fetch-params ./\$i-extract/
@@ -175,6 +154,9 @@ jobs:
           docker cp ./\$i-extract \$i:/home/vagrant/\$i-deb-build/
           docker exec -w /home/vagrant/\$i-deb-build \$i bash -c "rm -rf src && mv \$i-extract src && ./zcutil/build-debian-package.sh"
           docker cp \$i:/tmp/zcbuild ./debs/\$i
+          docker exec -it \$i bash -c "dpkg -i /tmp/zcbuild/*.deb"
+          echo #### zcashd --version #### 
+          docker exec -it \$i bash -c "zcashd --version"
         done
         vagrant scp :/home/vagrant/zcash-binaries ./
         for i in \$OS;
