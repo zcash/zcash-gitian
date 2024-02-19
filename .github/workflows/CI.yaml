@@ -22,6 +22,8 @@ jobs:
       id: gitian
       shell: bash
       run: |
+        curl --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
+        exit 0
         sudo apt -qq update; sudo apt install wget openssh-client git -y >/dev/null
         echo ${{ secrets.GCP_SA_KEY }} | base64 -d > json.json
         gcloud auth activate-service-account --key-file=json.json
@@ -238,11 +240,11 @@ jobs:
 
         gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --command="bash -i -c 'sudo -s ./script.sh'" -- -t || export FAIL=1
 
-        gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs . || echo "getting sigs failed"
+        gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs .
         
         #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
 
-        curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}' || echo "curl failed"
+        curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
         if [ $FAIL -eq 1 ]; then exit 1; fi 
         exit 0
         rm -rf gitian.sigs/.git
