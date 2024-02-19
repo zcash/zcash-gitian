@@ -26,6 +26,7 @@ jobs:
         mkdir $HOME/.ssh || echo ""
         echo "${{ secrets.BOT_SSH_KEY }}" > $HOME/.ssh/id_rsa
         chmod 600 $HOME/.ssh/id_rsa
+        ssh-keyscan github.com >> $HOME/.ssh/known_hosts
         git clone git@github.com:zcash/gitian.sigs.git sigs
         git config --global user.name "ECC-CI"
         git config --global user.email "${{ secrets.BOT_EMAIL }}"
