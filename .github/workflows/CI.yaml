@@ -22,15 +22,6 @@ jobs:
       id: gitian
       shell: bash
       run: |
-        echo '${{ secrets.BOT_SSH_KEY }}' > key.txt
-        mkdir $HOME/.ssh || echo ""
-        echo "${{ secrets.BOT_SSH_KEY }}" > $HOME/.ssh/id_rsa
-        chmod 600 $HOME/.ssh/id_rsa
-        ssh-keyscan github.com >> $HOME/.ssh/known_hosts
-        git clone git@github.com:zcash/gitian.sigs.git sigs
-        git config --global user.name "ECC-CI"
-        git config --global user.email "${{ secrets.BOT_EMAIL }}"
-        exit 0
         sudo apt -qq update; sudo apt install wget openssh-client git -y >/dev/null
         echo ${{ secrets.GCP_SA_KEY }} | base64 -d > json.json
         gcloud auth activate-service-account --key-file=json.json
@@ -247,24 +238,24 @@ jobs:
 
         gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --command="bash -i -c 'sudo -s ./script.sh'" -- -t || export FAIL=1
 
-        gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs .
+        gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs . || export FAIL=1
         
-        #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
+        curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}' || export FAIL=1
 
-        curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
-        if [ $FAIL -eq 1 ]; then exit 1; fi 
-        exit 0
-        rm -rf gitian.sigs/.git
+        rm -rf gitian.sigs/.git || export FAIL=1
         if ! [[ ${array[2]} == *"-rc"* ]]; then
           mkdir $HOME/.ssh || echo ""
-          echo "${{ secrets.BOT_SSH_KEY }}" > $HOME/.ssh/id_rsa
+          ssh-keyscan github.com >> $HOME/.ssh/known_hosts || export FAIL=1
+          echo "${{ secrets.BOT_SSH_KEY }}" > $HOME/.ssh/id_rsa 
           chmod 600 $HOME/.ssh/id_rsa
-          git clone git@github.com:zcash/gitian.sigs.git sigs
+          git clone git@github.com:zcash/gitian.sigs.git sigs || export FAIL=1
           cp -a gitian.sigs/* sigs/
           cd sigs
           git config --global user.name "ECC-CI"
           git config --global user.email "${{ secrets.BOT_EMAIL }}"
           git add .
-          git commit -am "$(inputs.params.LABEL_NAME)"
-          git push
+          git commit -am "$(inputs.params.LABEL_NAME)" || export FAIL=1
+          git push || export FAIL=1
         fi
+        gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
+        if [ $FAIL -eq 1 ]; then exit 1; fi 
