@@ -22,9 +22,13 @@ jobs:
       id: gitian
       shell: bash
       run: |
-        echo '${{ secrets.BUNNY_RESOURCE }}' > resource.txt
-        echo '${{ secrets.BUNNY_API_KEY }}' > key.txt
-        curl --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
+        echo '${{ secrets.BOT_SSH_KEY }}' > key.txt
+        mkdir $HOME/.ssh || echo ""
+        echo "${{ secrets.BOT_SSH_KEY }}" > $HOME/.ssh/id_rsa
+        chmod 600 $HOME/.ssh/id_rsa
+        git clone git@github.com:zcash/gitian.sigs.git sigs
+        git config --global user.name "ECC-CI"
+        git config --global user.email "${{ secrets.BOT_EMAIL }}"
         exit 0
         sudo apt -qq update; sudo apt install wget openssh-client git -y >/dev/null
         echo ${{ secrets.GCP_SA_KEY }} | base64 -d > json.json
