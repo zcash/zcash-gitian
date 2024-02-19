@@ -227,23 +227,24 @@ jobs:
         if ! [[ ${array[2]} == *"-rc"* ]]; then
           gsutil -q -m rsync -r ./ gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/
         fi
+        echo "script finished"
         EOF
 
         export FAIL=0
-        chmod +x ./script.sh || echo ""
+        chmod +x ./script.sh
 
         gcloud compute scp ./script.sh --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random: || export FAIL=1
         gcloud compute scp --recurse $(pwd) --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:~/source || export FAIL=1
 
         gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --command="bash -i -c 'sudo -s ./script.sh'" -- -t || export FAIL=1
 
-        gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs .
+        gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs . || echo "getting sigs failed"
         
         #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
 
-        curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
+        curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}' || echo "curl failed"
         if [ $FAIL -eq 1 ]; then exit 1; fi 
-
+        exit 0
         rm -rf gitian.sigs/.git
         if ! [[ ${array[2]} == *"-rc"* ]]; then
           mkdir $HOME/.ssh || echo ""
