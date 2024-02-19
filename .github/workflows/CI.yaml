@@ -24,7 +24,7 @@ jobs:
       run: |
         echo '${{ secrets.BUNNY_RESOURCE }}' > resource.txt
         echo '${{ secrets.BUNNY_API_KEY }}' > key.txt
-        curl --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
+        curl --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: $(echo '${{ secrets.BUNNY_API_KEY }}' | tr -d '\n')'
         exit 0
         sudo apt -qq update; sudo apt install wget openssh-client git -y >/dev/null
         echo ${{ secrets.GCP_SA_KEY }} | base64 -d > json.json
