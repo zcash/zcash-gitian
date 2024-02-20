@@ -166,13 +166,9 @@ jobs:
         cd aptserver
         gsutil -q -m cp -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/pool/main/z/zcash/ .
         cd zcash
-        cp -a ../../debs/buster/zcbuild/*.deb \$final_version-amd64-buster.deb
-        cp -a ../../debs/bullseye/zcbuild/*.deb \$final_version-amd64-bullseye.deb
-        cp -a ../../debs/bookworm/zcbuild/*.deb \$final_version-amd64-bookworm.deb
-
-        ls \$final_version-amd64-buster.deb || exit 1
-        ls \$final_version-amd64-bullseye.deb || exit 1
-        ls \$final_version-amd64-bookworm.deb || exit 1
+        for i in \$OS;
+          cp -a ../../debs/\$i/zcbuild/*.deb \$final_version-amd64-\$i.deb || exit 1
+        done
 
         aptly repo create --distribution buster --comment "" --component main zcash_buster_amd64_repo
         aptly repo create --distribution bullseye --comment "" --component main zcash_bullseye_amd64_repo
