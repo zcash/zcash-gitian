@@ -1,4 +1,4 @@
-Zcash deterministic builds
+#Zcash deterministic builds
 ==========================
 
 This is a deterministic build environment for [Zcash](https://github.com/zcash/zcash/) that uses [Gitian](https://gitian.org/).
