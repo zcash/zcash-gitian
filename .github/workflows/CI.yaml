@@ -86,23 +86,6 @@ jobs:
         /sbin/vboxconfig;
         vagrant plugin install --local;
         vagrant plugin install --local;
-        gpg --quick-generate-key --batch --passphrase '' "Lyra Silvertongue (zcash gitian) <lyra.silvertongue@ox.ac.brytain>"
-        echo "GPG_KEY_ID=\$(gpg --list-keys --with-fingerprint --with-colons | grep fpr: | head -n 1 | sed 's/fpr://g' | sed 's/://g')" >> .env;
-        echo "GPG_KEY_NAME=lyra.silvertongue" >> .env;
-        git config --global user.name "Lyra Silvertongue"
-        git config --global user.email "lyra.silvertongue@ox.ac.brytain"
-        direnv allow;
-        direnv exec \$(pwd) vagrant up zcash-build;
-        vagrant ssh zcash-build -c "gpg --quick-generate-key --batch --passphrase '' \"Lyra Silvertongue (zcash gitian) <lyra.silvertongue@ox.ac.brytain>\" || echo ''"
-        vagrant ssh zcash-build -c ./gitian-parallel-build.sh || exit 1
-        vagrant ssh zcash-build -c "head -n 8 gitian.sigs/\$VERSION*/lyra.silvertongue/*.assert" > assert.txt
-        tr -d \$'\r' < assert.txt > assert2.txt
-        echo "#### sigs ####"
-        for i in \$(cat assert2.txt | grep -E "zcash-*"  | grep -v git: | sed 's/    //g' | sed 's/  /-->/g'); do
-          echo \$i
-        done
-        export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | tr -d '\r')
-        for i in \$OS; do vagrant ssh zcash-build -c "mkdir \$i; tar Cxvzf \$i zcash-binaries/*/\$i/zcash-*-linux64.tar.gz"; done
 
         # get keys
         gsutil -q rm -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/127.0.0.1 || echo ""
@@ -118,6 +101,28 @@ jobs:
             --ciphertext-file encrypted_gpg.kms
         cd \$current_dir
         gpg --import \$HOME/private.pgp
+        export key=\$(gpg --list-secret-keys --keyid-format=long sysadmin@z.cash | head -n 2 | grep -v sec)
+        echo "GPG_KEY_ID=\$(gpg --list-keys --with-fingerprint --with-colons | grep fpr: | head -n 1 | sed 's/fpr://g' | sed 's/://g')" >> .env;
+        echo "GPG_KEY_NAME=sysadmin" >> .env;
+        
+        git config --global user.name "sysadmin"
+        git config --global user.email "sysadmin@z.cash"
+
+        # build
+        direnv allow;
+        direnv exec \$(pwd) vagrant up zcash-build;
+        vagrant scp \$HOME/private.pgp :
+        vagrant ssh zcash-build -c "gpg --import private.pgp" || echo ''"
+        vagrant ssh zcash-build -c ./gitian-parallel-build.sh || exit 1
+        vagrant ssh zcash-build -c "head -n 8 gitian.sigs/\$VERSION*/sysadmin/*.assert" > assert.txt
+        tr -d \$'\r' < assert.txt > assert2.txt
+        echo "#### sigs ####"
+        for i in \$(cat assert2.txt | grep -E "zcash-*"  | grep -v git: | sed 's/    //g' | sed 's/  /-->/g'); do
+          echo \$i
+        done
+        export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | tr -d '\r')
+        for i in \$OS; do vagrant ssh zcash-build -c "mkdir \$i; tar Cxvzf \$i zcash-binaries/*/\$i/zcash-*-linux64.tar.gz"; done
+
         vagrant scp :gitian.sigs .
         for i in \$OS;
         do
@@ -142,6 +147,8 @@ jobs:
           echo #### zcashd --version #### 
           docker exec -it \$i bash -c "zcashd --version"
         done
+
+        # sign binaries
         vagrant scp :/home/vagrant/zcash-binaries ./
         for i in \$OS;
         do
@@ -159,6 +166,7 @@ jobs:
         export final_version=\$(cat assert2.txt | awk '{print \$2}' | grep "desc.yml" | head -n 1 | sed 's/-desc.yml//g')
         gsutil -q -m rsync -r ./debs gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/debs
         gsutil -q -m rsync -r ./zcash-binaries gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/zcash-binaries
+        
         apt install aptly -y >/dev/null
 
         # generate apt
@@ -223,9 +231,9 @@ jobs:
         cd \$HOME/mirror
         gsutil -q -m rsync -r ./127.0.0.1 gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/127.0.0.1
         cd 127.0.0.1
-        if ! [[ ${array[2]} == *"-rc"* ]]; then
-          gsutil -q -m rsync -r ./ gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/
-        fi
+        #if ! [[ ${array[2]} == *"-rc"* ]]; then
+          #gsutil -q -m rsync -r ./ gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/
+        #fi
         echo "script finished"
         EOF
 
@@ -237,24 +245,24 @@ jobs:
 
         gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --command="bash -i -c 'sudo -s ./script.sh'" -- -t || export FAIL=1
 
-        gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs . || export FAIL=1
+        #gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs . || export FAIL=1
         
-        curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}' || export FAIL=1
+        #curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}' || export FAIL=1
 
-        rm -rf gitian.sigs/.git || export FAIL=1
-        if ! [[ ${array[2]} == *"-rc"* ]]; then
-          mkdir $HOME/.ssh || echo ""
-          ssh-keyscan github.com >> $HOME/.ssh/known_hosts || export FAIL=1
-          echo "${{ secrets.BOT_SSH_KEY }}" > $HOME/.ssh/id_rsa 
-          chmod 600 $HOME/.ssh/id_rsa
-          git clone git@github.com:zcash/gitian.sigs.git sigs || export FAIL=1
-          cp -a gitian.sigs/* sigs/
-          cd sigs
-          git config --global user.name "ECC-CI"
-          git config --global user.email "${{ secrets.BOT_EMAIL }}"
-          git add .
-          git commit -am "${{ github.event.label.name }}" || export FAIL=1
-          git push || export FAIL=1
-        fi
+        #rm -rf gitian.sigs/.git || export FAIL=1
+        #if ! [[ ${array[2]} == *"-rc"* ]]; then
+          #mkdir $HOME/.ssh || echo ""
+          #ssh-keyscan github.com >> $HOME/.ssh/known_hosts || export FAIL=1
+          #echo "${{ secrets.BOT_SSH_KEY }}" > $HOME/.ssh/id_rsa 
+          #chmod 600 $HOME/.ssh/id_rsa
+          #git clone git@github.com:zcash/gitian.sigs.git sigs || export FAIL=1
+          #cp -a gitian.sigs/* sigs/
+          #cd sigs
+          #git config --global user.name "ECC-CI"
+          #git config --global user.email "${{ secrets.BOT_EMAIL }}"
+          #git add .
+          #git commit -am "${{ github.event.label.name }}" || export FAIL=1
+          #git push || export FAIL=1
+        #fi
         gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
         if [ $FAIL -eq 1 ]; then exit 1; fi 
