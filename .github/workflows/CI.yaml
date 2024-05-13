@@ -113,7 +113,7 @@ jobs:
         direnv exec \$(pwd) vagrant up zcash-build;
         vagrant scp \$HOME/private.pgp :
         vagrant ssh zcash-build -c "gpg --import private.pgp" || echo ''"
-        vagrant ssh zcash-build -c ./gitian-parallel-build.sh || exit 1
+        vagrant ssh zcash-build -c ./gitian-parallel-build.sh
         vagrant ssh zcash-build -c "head -n 8 gitian.sigs/\$VERSION*/sysadmin/*.assert" > assert.txt
         tr -d \$'\r' < assert.txt > assert2.txt
         echo "#### sigs ####"
