@@ -264,5 +264,5 @@ jobs:
           #git commit -am "${{ github.event.label.name }}" || export FAIL=1
           #git push || export FAIL=1
         #fi
-        gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
+        #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
         if [ $FAIL -eq 1 ]; then exit 1; fi 
