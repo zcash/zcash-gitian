@@ -221,13 +221,15 @@ jobs:
         cp -a /root/.aptly/public /var/www/
         chown -R www-data:www-data /var/www
         /etc/init.d/nginx restart
+        echo "debug 1"
         mkdir \$HOME/mirror
         cd \$HOME/mirror
         wget -q -r 127.0.0.1
-
+        echo "debug 2"
         cp \$HOME/public.asc \$HOME/mirror/127.0.0.1/zcash.asc
         cd \$HOME/mirror
         gsutil -q -m rsync -r ./127.0.0.1 gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/127.0.0.1
+        echo "debug 3"
         cd 127.0.0.1
         #if ! [[ ${array[2]} == *"-rc"* ]]; then
           #gsutil -q -m rsync -r ./ gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/
@@ -237,12 +239,13 @@ jobs:
 
         export FAIL=0
         chmod +x ./script.sh
-
+        echo "debug 4"
         gcloud compute scp ./script.sh --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random: || export FAIL=1
+        echo "debug 5"
         gcloud compute scp --recurse $(pwd) --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:~/source || export FAIL=1
-
+        echo "debug 6"
         gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --command="bash -i -c 'sudo -s ./script.sh'" -- -t || export FAIL=1
-
+        echo "debug 7"
         #gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs . || export FAIL=1
         
         #curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}' || export FAIL=1
@@ -263,4 +266,6 @@ jobs:
           #git push || export FAIL=1
         #fi
         #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
+        echo "debug 8"
         if [ $FAIL -eq 1 ]; then echo "error" && exit 1; fi 
+        echo "debug 9"
