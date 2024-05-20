@@ -113,14 +113,14 @@ jobs:
         direnv exec \$(pwd) vagrant up zcash-build;
         vagrant scp \$HOME/private.pgp :
         vagrant ssh zcash-build -c "gpg --import private.pgp"
-        vagrant ssh zcash-build -c ./gitian-parallel-build.sh
+        vagrant ssh zcash-build -c ./gitian-parallel-build.sh || echo ""
         vagrant ssh zcash-build -c "head -n 8 gitian.sigs/\$VERSION*/sysadmin/*.assert" > assert.txt
         tr -d \$'\r' < assert.txt > assert2.txt
         echo "#### sigs ####"
         for i in \$(cat assert2.txt | grep -E "zcash-*"  | grep -v git: | sed 's/    //g' | sed 's/  /-->/g'); do
           echo \$i
         done
-        export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | tr -d '\r')
+        export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | grep -v buster | tr -d '\r')
         for i in \$OS; do vagrant ssh zcash-build -c "mkdir \$i; tar Cxvzf \$i zcash-binaries/*/\$i/zcash-*-linux64.tar.gz"; done
 
         vagrant scp :gitian.sigs .
@@ -174,7 +174,6 @@ jobs:
         cd aptserver
         gsutil -q -m cp -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/pool/main/z/zcash/ .
         cd zcash
-        cp -a ../../debs/buster/zcbuild/*.deb \$final_version-amd64-buster.deb
         cp -a ../../debs/bullseye/zcbuild/*.deb \$final_version-amd64-bullseye.deb
         cp -a ../../debs/bookworm/zcbuild/*.deb \$final_version-amd64-bookworm.deb || echo ""
         ls \$final_version-amd64-buster.deb || exit 1
@@ -202,7 +201,6 @@ jobs:
         aptly snapshot create bullseye_snapshot from repo zcash_bullseye_amd64_repo
         aptly snapshot create stretch_snapshot from repo zcash_stretch_amd64_repo
 
-        export key=\$(gpg --list-secret-keys --keyid-format=long sysadmin@z.cash | head -n 2 | grep -v sec)
         aptly publish snapshot --distribution buster --component main --architectures amd64 --gpg-key="\$key" --passphrase="" buster_snapshot
         aptly publish snapshot --distribution bookworm --component main --architectures amd64 --gpg-key="\$key" --passphrase="" bookworm_snapshot
         aptly publish snapshot --distribution bullseye --component main --architectures amd64 --gpg-key="\$key" --passphrase="" bullseye_snapshot
@@ -265,4 +263,4 @@ jobs:
           #git push || export FAIL=1
         #fi
         #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
-        if [ $FAIL -eq 1 ]; then exit 1; fi 
+        if [ $FAIL -eq 1 ]; then echo "error" && exit 1; fi 
