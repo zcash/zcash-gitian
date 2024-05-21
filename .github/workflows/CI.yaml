@@ -240,30 +240,30 @@ jobs:
         export FAIL=0
         chmod +x ./script.sh
         echo "debug 4"
-        gcloud compute scp ./script.sh --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random: || export FAIL=1
+        gcloud compute scp ./script.sh --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random: 
         echo "debug 5"
-        gcloud compute scp --recurse $(pwd) --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:~/source || export FAIL=1
+        gcloud compute scp --recurse $(pwd) --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:~/source 
         echo "debug 6"
-        gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --command="bash -i -c 'sudo -s ./script.sh'" -- -t || export FAIL=1
+        gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --command="bash -i -c 'sudo -s ./script.sh'" -- -t 
         echo "debug 7"
-        #gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs . || export FAIL=1
+        #gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs . 
         
-        #curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}' || export FAIL=1
+        #curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}' 
 
-        #rm -rf gitian.sigs/.git || export FAIL=1
+        #rm -rf gitian.sigs/.git 
         #if ! [[ ${array[2]} == *"-rc"* ]]; then
           #mkdir $HOME/.ssh || echo ""
-          #ssh-keyscan github.com >> $HOME/.ssh/known_hosts || export FAIL=1
+          #ssh-keyscan github.com >> $HOME/.ssh/known_hosts 
           #echo "${{ secrets.BOT_SSH_KEY }}" > $HOME/.ssh/id_rsa 
           #chmod 600 $HOME/.ssh/id_rsa
-          #git clone git@github.com:zcash/gitian.sigs.git sigs || export FAIL=1
+          #git clone git@github.com:zcash/gitian.sigs.git sigs 
           #cp -a gitian.sigs/* sigs/
           #cd sigs
           #git config --global user.name "ECC-CI"
           #git config --global user.email "${{ secrets.BOT_EMAIL }}"
           #git add .
-          #git commit -am "${{ github.event.label.name }}" || export FAIL=1
-          #git push || export FAIL=1
+          #git commit -am "${{ github.event.label.name }}" 
+          #git push 
         #fi
         #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
         echo "debug 8"
