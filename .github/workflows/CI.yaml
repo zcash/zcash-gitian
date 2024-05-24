@@ -239,7 +239,7 @@ jobs:
 
         gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs . || export FAIL=1
         
-        curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}' || export FAIL=1
+        #curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}' || export FAIL=1
 
         rm -rf gitian.sigs/.git || export FAIL=1
         if ! [[ ${array[2]} == *"-rc"* ]]; then
@@ -254,7 +254,7 @@ jobs:
           git config --global user.email "${{ secrets.BOT_EMAIL }}"
           git add .
           git commit -am "${{ github.event.label.name }}" || export FAIL=1
-          git push || export FAIL=1
+          #git push || export FAIL=1
         fi
         gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
         if [ $FAIL -eq 1 ]; then exit 1; fi 
