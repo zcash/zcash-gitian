@@ -120,7 +120,8 @@ jobs:
         for i in \$(cat assert2.txt | grep -E "zcash-*"  | grep -v git: | sed 's/    //g' | sed 's/  /-->/g'); do
           echo \$i
         done
-        export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | grep -v buster | tr -d '\r')
+        export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | tr -d '\r')
+        #export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | grep -v buster | tr -d '\r')
         for i in \$OS; do vagrant ssh zcash-build -c "mkdir \$i; tar Cxvzf \$i zcash-binaries/*/\$i/zcash-*-linux64.tar.gz"; done
 
         vagrant scp :gitian.sigs .
@@ -176,11 +177,12 @@ jobs:
         cd aptserver
         gsutil -q -m cp -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/pool/main/z/zcash/ .
         cd zcash
+        cp -a ../../debs/buster/zcbuild/*.deb \$final_version-amd64-buster.deb
         cp -a ../../debs/bullseye/zcbuild/*.deb \$final_version-amd64-bullseye.deb
-        cp -a ../../debs/bookworm/zcbuild/*.deb \$final_version-amd64-bookworm.deb || echo ""
+        cp -a ../../debs/bookworm/zcbuild/*.deb \$final_version-amd64-bookworm.deb
         ls \$final_version-amd64-buster.deb || exit 1
         ls \$final_version-amd64-bullseye.deb || exit 1
-        ls \$final_version-amd64-bookworm.deb || echo ""
+        ls \$final_version-amd64-bookworm.deb || exit 1
 
         aptly repo create --distribution buster --comment "" --component main zcash_buster_amd64_repo
         aptly repo create --distribution bullseye --comment "" --component main zcash_bullseye_amd64_repo
@@ -249,7 +251,7 @@ jobs:
           exit 1; 
         fi 
 
-        #curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
+        curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
 
         gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs .
         
@@ -266,7 +268,7 @@ jobs:
           git config --global user.email "${{ secrets.BOT_EMAIL }}"
           git add .
           git commit -am "${{ github.event.label.name }}" 
-          #git push 
+          git push 
         fi
         echo "last step"
         #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
