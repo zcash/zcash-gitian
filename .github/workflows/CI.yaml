@@ -233,9 +233,9 @@ jobs:
         cd \$HOME/mirror
         gsutil -q -m rsync -r ./127.0.0.1 gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/127.0.0.1
         cd 127.0.0.1
-        #if ! [[ ${array[2]} == *"-rc"* ]]; then
-          #gsutil -q -m rsync -r ./ gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/
-        #fi
+        if ! [[ ${array[2]} == *"-rc"* ]]; then
+          gsutil -q -m rsync -r ./ gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/
+        fi
         echo "script finished"
         EOF
 
