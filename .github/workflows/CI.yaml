@@ -120,8 +120,8 @@ jobs:
         for i in \$(cat assert2.txt | grep -E "zcash-*"  | grep -v git: | sed 's/    //g' | sed 's/  /-->/g'); do
           echo \$i
         done
-        #export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | tr -d '\r')
-        export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | grep -v buster | tr -d '\r')
+        export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | tr -d '\r')
+        #export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | grep -v buster | tr -d '\r')
         for i in \$OS; do vagrant ssh zcash-build -c "mkdir \$i; tar Cxvzf \$i zcash-binaries/*/\$i/zcash-*-linux64.tar.gz"; done
 
         vagrant scp :gitian.sigs .
@@ -177,7 +177,7 @@ jobs:
         cd aptserver
         gsutil -q -m cp -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/pool/main/z/zcash/ .
         cd zcash
-        cp -a ../../debs/buster/zcbuild/*.deb \$final_version-amd64-buster.deb !! echo ""
+        cp -a ../../debs/buster/zcbuild/*.deb \$final_version-amd64-buster.deb || echo ""
         cp -a ../../debs/bullseye/zcbuild/*.deb \$final_version-amd64-bullseye.deb
         cp -a ../../debs/bookworm/zcbuild/*.deb \$final_version-amd64-bookworm.deb
         ls \$final_version-amd64-buster.deb || echo ""
