@@ -57,6 +57,7 @@ jobs:
 
         cat <<EOF > ./script.sh
         #!/bin/bash
+        exit 0 # debug
         apt -qq update;
         apt install ca-certificates curl gnupg lsb-release software-properties-common wget git vagrant python3-venv direnv python3-pip linux-headers-\$(uname -r) ansible -y >/dev/null;
         mkdir -m 0755 -p /etc/apt/keyrings;
@@ -121,7 +122,6 @@ jobs:
           echo \$i
         done
         export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | tr -d '\r')
-        #export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | grep -v buster | tr -d '\r')
         for i in \$OS; do vagrant ssh zcash-build -c "mkdir \$i; tar Cxvzf \$i zcash-binaries/*/\$i/zcash-*-linux64.tar.gz"; done
 
         vagrant scp :gitian.sigs .
@@ -177,10 +177,8 @@ jobs:
         cd aptserver
         gsutil -q -m cp -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/pool/main/z/zcash/ .
         cd zcash
-        cp -a ../../debs/buster/zcbuild/*.deb \$final_version-amd64-buster.deb || echo ""
         cp -a ../../debs/bullseye/zcbuild/*.deb \$final_version-amd64-bullseye.deb
         cp -a ../../debs/bookworm/zcbuild/*.deb \$final_version-amd64-bookworm.deb
-        ls \$final_version-amd64-buster.deb || echo ""
         ls \$final_version-amd64-bullseye.deb || exit 1
         ls \$final_version-amd64-bookworm.deb || exit 1
 
@@ -251,7 +249,7 @@ jobs:
           exit 1; 
         fi 
 
-        curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}'
+        # curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}' # debug
 
         gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs .
         
@@ -268,7 +266,7 @@ jobs:
           git config --global user.email "${{ secrets.BOT_EMAIL }}"
           git add .
           git commit -am "${{ github.event.label.name }}" 
-          #git push 
+          #git push # debug
         fi
         echo "last step"
-        #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
+        #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all # debug
