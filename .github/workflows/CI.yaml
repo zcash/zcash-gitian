@@ -57,7 +57,6 @@ jobs:
 
         cat <<EOF > ./script.sh
         #!/bin/bash
-        exit 0 # debug
         apt -qq update;
         apt install ca-certificates curl gnupg lsb-release software-properties-common wget git vagrant python3-venv direnv python3-pip linux-headers-\$(uname -r) ansible -y >/dev/null;
         mkdir -m 0755 -p /etc/apt/keyrings;
