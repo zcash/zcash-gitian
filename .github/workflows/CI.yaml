@@ -230,7 +230,7 @@ jobs:
         cd \$HOME/mirror
         gsutil -q -m rsync -r ./127.0.0.1 gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-packages/127.0.0.1
         cd 127.0.0.1
-        if [[ ! $version =~ -rc ]] && [[ $version =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        if [[ ! ${array[2]} =~ -rc ]] && [[ ${array[2]} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           gsutil -q -m rsync -r ./ gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/
         fi
         echo "script finished"
@@ -253,7 +253,7 @@ jobs:
         gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs .
         
         rm -rf gitian.sigs/.git 
-        if ! [[ ${array[2]} == *"-rc"* ]]; then
+          if [[ ! ${array[2]} =~ -rc ]] && [[ ${array[2]} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           mkdir $HOME/.ssh || echo ""
           ssh-keyscan github.com >> $HOME/.ssh/known_hosts 
           echo "${{ secrets.BOT_SSH_KEY }}" > $HOME/.ssh/id_rsa 
@@ -265,7 +265,7 @@ jobs:
           git config --global user.email "${{ secrets.BOT_EMAIL }}"
           git add .
           git commit -am "${{ github.event.label.name }}" 
-          #git push # debug
+          git push # debug
         fi
         echo "last step"
         #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all # debug
