@@ -24,8 +24,9 @@ Install Dependencies
 
 If you're using one of the following platforms, see the linked instructions for that platform:
 
-- [Debian 9.x](dependency_install_steps_by_platform/Debian_9.x.md)
-- [Ubuntu 18.04.x](dependency_install_steps_by_platform/Ubuntu_18.04.x.md)
+- [Debian 12 (either bookworm or trixie)](dependency_install_steps_by_platform/Debian_12.md)
+- [Debian 9](dependency_install_steps_by_platform/Debian_9.x.md)
+- [Ubuntu 18.04](dependency_install_steps_by_platform/Ubuntu_18.04.x.md)
 - [macOS](dependency_install_steps_by_platform/macOS.md)
 
 
@@ -160,7 +161,6 @@ Project-specific environment settings will come in handy in the next step, when 
 isolated python virtual environment specifically for use with this project.
 
 
-
 ## Create a python virtual environment for this project
 
 Note: The main purpose of this part is to get a current version of ansible, and keep it locally
@@ -168,32 +168,23 @@ within this project. If you already installed ansible (e.g. from an OS package m
 you can skip this part and the following parts about pip and pip packages.
 
 When creating a virtual environment, call the python executable you want the virtual environment to
-use. The location and version will depend on your specific setup -- your OS may provide a suitably
-current python interpreter, or you may have built and installed one yourself. If it's in your PATH,
-a command like `type python3` should tell you where it is installed on your system. For example:
+use. Below we will assume this is ``python3.11``.
+
+We can use Python's `virtualenv` module to create a virtual environment:
 
 ```
-% type python3
-python3 is /usr/bin/python3
-% /usr/bin/python3 --version
-Python 3.9.7
+zcash-gitian$ python3.11 -m virtualenv ./local/python_venv
 ```
 
-We can use python's built-in `venv` module to create a virtual environment:
-
-```
-zcash-gitian % /usr/bin/python3 -m venv ./local/python_v3.9.7_venv
-```
-
-Translation: "Create a virtual environment at ./local/python_v3.9.7_venv".
+Translation: "Create a virtual environment at ./local/python_venv".
 
 The project subdirectory `local` is `.gitignored` to provide a convenient location for files we
 don't want to commit and track in version control.
 
-You should now have a tree of directories and files in `local/python_v3.9.7_venv`:
+You should now have a tree of directories and files in `local/python_venv`:
 
 ```
-zcash-gitian % ls -F ./local/python_v3.9.7_venv
+zcash-gitian$ ls -F ./local/python_venv
 bin/		include/	lib/		pyvenv.cfg
 ```
 
@@ -201,9 +192,9 @@ Inside the `bin` directory, among other things, are the entries `python` and `py
 symlinks that point back to the `python3` executable we used to create this environment:
 
 ```
-zcash-gitian % ls -F ./local/python_v3.9.7_venv/bin/
-Activate.ps1	activate.csh	pip*		pip3.9*		python3@
-activate	activate.fish	pip3*		python@		python3.9@
+zcash-gitian$ ls -F ./local/python_venv/bin/
+Activate.ps1	activate.csh	pip*		pip3.11*	python3@
+activate	activate.fish	pip3*		python@		python3.11@
 ```
 
 A python virtual environment is 'active' if the python interpreter being executed is run from its
@@ -215,7 +206,7 @@ An `activate` script is provided, and you can use that, but if you're using `dir
 a simple automatic activation for the project directory by adding the following line to `.envrc`:
 
 ```
-load_prefix local/python_v3.9.7_venv
+load_prefix local/python_venv
 ```
 
 The command `load_prefix` is provided by `direnv` to modify a whole set of common "path" variables
@@ -224,7 +215,7 @@ The command `load_prefix` is provided by `direnv` to modify a whole set of commo
 Let's add that line now:
 
 ```
-zcash-gitian$ echo "load_prefix local/python_v3.9.7_venv" >> .envrc
+zcash-gitian$ echo "load_prefix local/python_venv" >> .envrc
 direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
 zcash-gitian$ direnv allow
 direnv: loading .envrc
@@ -239,38 +230,42 @@ locations we default to:
 
 ```
 zcash-gitian$ echo $PATH
-/Users/harrypotter/Projects/zcash-gitian/local/python_v3.9.7_venv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+/Users/harrietporber/Projects/zcash-gitian/local/python_venv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
 zcash-gitian$ type python
-python is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.9.7_venv/bin/python
+python is /Users/harrietporber/Projects/zcash-gitian/local/python_venv/bin/python
 zcash-gitian$ type python3
-python3 is /Users/harrypotter/Projects/zcash-gitian/local/python_v3.9.7_venv/bin/python3
+python3 is /Users/harrietporber/Projects/zcash-gitian/local/python_venv/bin/python3
 ```
 
 Since the `python` and `python3` commands will now run from the locations we've installed into our
 project's virtual environment while we are in the project directory, we can consider the virtual
 environment active when using a shell at (or below) that location.
 
+Alternatively, you can manually activate the virtualenv in the current shell:
+
+```
+zcash-gitian$ source local/python3_venv/bin/activate
+```
 
 
 ## Upgrade pip
 
-`pip3` has a command to upgrade itself. Let's go ahead and run that:
+`pip` has a command to upgrade itself. Let's go ahead and run that:
 
 ```
-zcash-gitian % pip3 install --upgrade pip
-Requirement already satisfied: pip in ./local/python_v3.9.7_venv/lib/python3.9/site-packages (21.2.4)
+zcash-gitian$ python3.11 -m pip install --upgrade pip
+Requirement already satisfied: pip in ./local/python_venv/lib/python3.11/site-packages ([...])
 ```
-
 
 
 ## Install pip packages
 
 We have some dependencies to install as python packages, using the pip package manager installed
 above. The set we need, with version numbers managed via git, is in `requirements-pip.lock`; we can
-run `pip3 install` with that file as input:
+run `python3.11 -m pip install` with that file as input:
 
 ```
-zcash-gitian$ pip3 install --requirement requirements-pip.lock
+zcash-gitian$ python3.11 -m pip install --requirement requirements-pip.lock
 ```
 
 Check that you can run `ansible` from the command line:
@@ -445,28 +440,43 @@ vagrant@zcash-build:~$ ./gitian-build.sh
 
 If you want to run a parallel build, invoke `./gitian-parallel-build.sh` instead.
 
-The output from `gbuild` is informative. There are some common warnings which can be ignored, e.g. if you get an intermittent privileges error related to LXC then just execute the script again. The most important thing is that one reaches the step which says `Running build script (log in var/build.log)`. If not, then something else is wrong and you should let us know.
+The output from `gbuild` is informative. There are some common warnings which can be ignored,
+e.g. if you get an intermittent privileges error related to LXC then just execute the script again.
+The most important thing is that one reaches the step that says
+`Running build script (log in var/build.log)`. If not, then something else is wrong and you should
+let us know.
 
-Take a look at the variables near the top of `~/gitian-build.sh` and get familiar with its functioning, as it can handle most tasks.
+Take a look at the variables near the top of `~/gitian-build.sh` and get familiar with its
+functioning, as it can handle most tasks.
 
-It's also a good idea to regularly `git pull` on this repository to obtain updates and re-run the entire VM provisioning for each release, to ensure current and consistent state for your builder.
+It's also a good idea to regularly `git pull` on this repository to obtain updates and re-run the
+entire VM provisioning for each release, to ensure current and consistent state for your builder.
 
 
 Generating and uploading signatures
 -----------------------------------
 
-The procedure used to be to import a GnuPG private key into the VM, and use it there in order to sign the manifests that get pushed to [zcash/gitian.sigs](https://github.com/zcash/gitian.sigs). We no longer do this; instead you will copy the manifests out of the VM and sign them outside. This is simpler because a developer will typically already have their GnuPG and ssh keys outside the VM.
+The procedure used to be to import a GnuPG private key into the VM, and use it there in order to
+sign the manifests that get pushed to [zcash/gitian.sigs](https://github.com/zcash/gitian.sigs).
+We no longer do this; instead you will copy the manifests out of the VM and sign them outside.
+This is simpler because a developer will typically already have their GnuPG and ssh keys outside
+the VM.
 
-Manifests for the builds you have just completed will be left in the `/home/vagrant/gitian.sigs` directory inside the VM.
+Manifests for the builds you have just completed will be left in the `/home/vagrant/gitian.sigs`
+directory inside the VM.
 
-Outside the VM, you should have a checkout of your fork of [zcash/gitian.sigs](https://github.com/zcash/gitian.sigs). Copy the manifests out of the VM and then sign them using the `gitian-sign.sh` script. For example, if the `zcash-gitian` and `gitian.sigs` checkouts are sibling directories, `cd` to the former and run:
+Outside the VM, you should have a checkout of your fork of
+[zcash/gitian.sigs](https://github.com/zcash/gitian.sigs). Copy the manifests out of the VM and
+then sign them using the `gitian-sign.sh` script. For example, if the `zcash-gitian` and
+`gitian.sigs` checkouts are sibling directories, `cd` to the former and run:
 
 ```
 vagrant scp 'zcash-build:gitian.sigs/*' ../gitian.sigs
 ./gitian-sign.sh ../gitian.sigs
 ```
 
-To validate your own signatures and those of other developers, add the public keys from `contrib/gitian-downloader` in the Zcash source repository and mark them as trusted, then run:
+To validate your own signatures and those of other developers, add the public keys from
+`contrib/gitian-downloader` in the Zcash source repository and mark them as trusted, then run:
 
 ```
 ./gitian-verify.sh ../gitian.sigs
@@ -490,4 +500,5 @@ Other notes
 
 Port 2200 on the host machine should be forwarded to port 22 on the guest virtual machine.
 
-The automation and configuration management assumes that VirtualBox will assign the IP address `10.0.2.15` to the Gitian host Vagrant VM.
+The automation and configuration management assumes that VirtualBox will assign the IP address
+`10.0.2.15` to the Gitian host Vagrant VM.
