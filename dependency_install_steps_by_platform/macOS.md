@@ -90,23 +90,6 @@ Vagrant 2.2.19
 
 
 
-## Install GnuPG 2.x (2.11.18 or greater)
-
-```
-$ brew install gnupg
-```
-
-Most recently tested 2021-12-14 with the following GnuPG release:
-
-```
-% gpg --version
-gpg (GnuPG) 2.3.3
-libgcrypt 1.9.4
-[...]
-```
-
-
-
 ## Install Python 3.x
 
 As of this writing, python 3.9.9 is installed by default in macOS, which should work fine. You ca

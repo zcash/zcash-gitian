@@ -1,15 +1,4 @@
 ---
-- name: Check that custom git variables are defined.
-  assert:
-    that:
-      - "gpg_key_name is defined"
-      - "gpg_key_name != ''"
-      - "git_name is defined"
-      - "git_name != ''"
-      - "git_email is defined"
-      - "git_email != ''"
-    msg: Please set your gpg_key_name, git_name and git_email in gitian.yml.
-
 - name: Install Gitian dependencies.
   apt:
     name:
@@ -116,12 +105,11 @@
     force: yes
   become_user: "{{ gitian_user }}"
 
-- name: Clone git repository for Gitian signatures.
-  git:
-    repo: "{{ zcash_gitian_sigs_repo }}"
-    dest: "/home/{{ gitian_user }}/gitian.sigs"
-    version: master
-    force: yes
+- name: Create directory for Gitian signatures.
+  file:
+    state: directory
+    path: "/home/{{ gitian_user }}/gitian.sigs"
+    mode: "0755"
   become_user: "{{ gitian_user }}"
 
 - name: Set Git username.
@@ -167,10 +155,6 @@
 - name: Clean the apt cache to free up space.
   apt:
     autoclean: yes
-
-- include_tasks: gpg.yml
-  tags: gpg
-  when: gpg_key_id is defined and gpg_key_id != ''
 
 - name: Display help message.
   debug:

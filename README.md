@@ -45,123 +45,6 @@ above!
 Configuration
 -------------
 
-## Configure git
-
-We want a configuration file in the home directory of the account you'll be working in. This will
-determine how you are identified on the projects you contribute to. These settings can be overridden
-on a per-project basis.
-
-Git provides some convenient command options for setting this up:
-
-```
-$ git config --global user.name "Harry Potter"
-$ git config --global user.email "hpotter@hogwarts.wiz"
-```
-
-Checking that this worked:
-
-```
-$ git config user.name
-Harry Potter
-$ git config user.email
-hpotter@hogwarts.wiz
-```
-
-This is all the git configuration needed for the steps below, but here is a good reference for
-further reading on configuring git:
-
-https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration
-
-
-
-## Decide on an ssh keypair to use when uploading build signatures to github
-
-You can generate a keypair specifically for connecting to github like this:
-
-```
-$ ssh-keygen -t ed25519 -C "hpotter@hogwarts.wiz" -f ~/.ssh/github_id_rsa -N ''
-Generating public/private ed25519 key pair.
-Your identification has been saved in /Users/hpotter/.ssh/github_id_rsa.
-Your public key has been saved in /Users/hpotter/.ssh/github_id_rsa.pub.
-The key fingerprint is:
-SHA256:qBCOybcJkgs1xdNoocYlsZz3jNQhGgOymreQAQRyh0c hpotter@hogwarts.wiz
-The key's randomart image is:
-+--[ED25519 256]--+
-|Oo*=E+.          |
-|+=.%*o..         |
-|o %oo..          |
-|o@ = + .         |
-|@o+.. + S        |
-|o+ooo.           |
-|. .o.            |
-|                 |
-|                 |
-+----[SHA256]-----+
-```
-
-Some explanation of the arguments used in the above example:
-
-```
-    -t ed25519                     Use a key type of ed25519
-
-    -C "hpotter@hogwarts.wiz"      Provide an identity to associate with the key (default is
-                                   user@host in the local environment)
-
-    -f ~/.ssh/github_id_rsa        Path to the private key to generate. The corresponding public key
-                                   will be saved at ~/.ssh/github_id_rsa.pub
-
-    -N ''                          Passphrase for the generated key. An empty string as shown here
-                                   means save the private key unencrypted.
-```
-
-
-
-# Set up your ssh keypair for use with github
-
-[Add the new key to your github account.](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/)
-
-Add an entry to `~/.ssh/config` (create this file if necessary) telling ssh to use the keypair you
-generated above when connecting to github.com.
-
-
-For instance:
-
-```
-Host github.com
-  User harrypotter
-  PreferredAuthentications publickey
-  IdentityFile /home/hpotter/.ssh/github_id_rsa
-  AddKeysToAgent yes
-```
-
-The 'User' entry should match your github username.
-
-If using macOS, the IdentityFile path will be:
-
-```
-/Users/yourusername/.ssh/github_id_rsa
-```
-
-If you do generate a new ssh config file you'll need to set its permission bits appropriately.  On
-a Unix system you may do so with a command like this:
-
-```
-chmod 400 ~/.ssh/config
-```
-
-Test that ssh will successfully use your new key to connect to github.
-
-```
-$ ssh -T git@github.com
-The authenticity of host 'github.com (192.30.253.112)' can't be established.
-RSA key fingerprint is SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8.
-Are you sure you want to continue connecting (yes/no)? yes
-Warning: Permanently added 'github.com,192.30.253.112' (RSA) to the list of known hosts.
-Hi harrypotter! You've successfully authenticated, but GitHub does not provide shell access.
-$
-```
-
-
 
 ## Clone this git project on your machine
 
@@ -170,7 +53,7 @@ there's a possibility you'll want to make and contribute changes, consider forki
 and cloning from your fork. For example: 
 
 ```
-git clone git@github.com:harrypotter/zcash-gitian.git
+git clone git@github.com:harrietporber/zcash-gitian.git
 ```
 
 cd into the project repo
@@ -251,7 +134,7 @@ zcash-gitian$ echo $ZCASH_GIT_REPO_URL
 direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
 zcash-gitian$ direnv allow
 direnv: loading .envrc
-direnv: export +GIT_EMAIL +GIT_NAME +GPG_KEY_ID +GPG_KEY_NAME +ZCASH_GIT_REPO_URL +ZCASH_VERSION
+direnv: export +GIT_EMAIL +GIT_NAME +ZCASH_GIT_REPO_URL +ZCASH_VERSION
 zcash-gitian$ echo $ZCASH_GIT_REPO_URL
 https://github.com/zcash/zcash
 zcash-gitian$
@@ -267,7 +150,7 @@ $ echo $ZCASH_GIT_REPO_URL
 
 $ cd zcash-gitian/
 direnv: loading .envrc
-direnv: export +GIT_EMAIL +GIT_NAME +GPG_KEY_ID +GPG_KEY_NAME +ZCASH_GIT_REPO_URL +ZCASH_VERSION
+direnv: export +GIT_EMAIL +GIT_NAME +ZCASH_GIT_REPO_URL +ZCASH_VERSION
 zcash-gitian$ echo $ZCASH_GIT_REPO_URL
 https://github.com/zcash/zcash
 zcash-gitian$
@@ -345,7 +228,7 @@ zcash-gitian$ echo "load_prefix local/python_v3.9.7_venv" >> .envrc
 direnv: error .envrc is blocked. Run `direnv allow` to approve its content.
 zcash-gitian$ direnv allow
 direnv: loading .envrc
-direnv: export +CPATH +GIT_EMAIL +GIT_NAME +GPG_KEY_ID +GPG_KEY_NAME +LD_LIBRARY_PATH +LIBRARY_PATH +MANPATH +PKG_CONFIG_PATH +ZCASH_GIT_REPO_URL +ZCASH_VERSION ~PATH
+direnv: export +CPATH +GIT_EMAIL +GIT_NAME +LD_LIBRARY_PATH +LIBRARY_PATH +MANPATH +PKG_CONFIG_PATH +ZCASH_GIT_REPO_URL +ZCASH_VERSION ~PATH
 zcash-gitian$
 ```
 
@@ -407,10 +290,10 @@ You can generate a keypair specifically for zcash gitian builds with a command l
 
 
 ```
-zcash-gitian$ gpg --quick-generate-key --batch --passphrase '' "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>"
+zcash-gitian$ gpg --quick-generate-key --batch --passphrase '' "Harriet Porber (zcash gitian) <harriet@tingle.example.org>"
 gpg: key 3F0C2117D53A4A49 marked as ultimately trusted
-gpg: directory '/home/hpotter/.gnupg/openpgp-revocs.d' created
-gpg: revocation certificate stored as '/home/hpotter/.gnupg/openpgp-revocs.d/3F14A629C06FA31D59C64FE93F0C2117D53A4A49.rev'
+gpg: directory '/home/harriet/.gnupg/openpgp-revocs.d' created
+gpg: revocation certificate stored as '/home/harriet/.gnupg/openpgp-revocs.d/3F14A629C06FA31D59C64FE93F0C2117D53A4A49.rev'
 ```
 
 Some explanation of the arguments used in the above example:
@@ -431,11 +314,11 @@ You can check that the key was generated and added to your local gpg key databas
 fingerprint value, like this:
 ```
 zcash-gitian$ gpg --list-keys
-/home/hpotter/.gnupg/pubring.kbx
+/home/harriet/.gnupg/pubring.kbx
 ----------------------------------
 pub   rsa2048 2018-04-23 [SC] [expires: 2020-04-22]
       3F14A629C06FA31D59C64FE93F0C2117D53A4A49
-uid           [ultimate] Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>
+uid           [ultimate] Harriet Porber (zcash gitian) <harriet@tingle.example.org>
 sub   rsa2048 2018-04-23 [E]
 ```
 
@@ -447,7 +330,7 @@ or 16 characters. You should be able to use the truncated value.
 
 - `GPG_KEY_NAME`: This is passed as the '--signer' argument to Gitian, and used as the name of a
 directory for your signatures in our `gitian.sigs` repository. We suggest using the username portion
-of the email address associated with your GPG key. In our example this is `hpotter`.
+of the email address associated with your GPG key. In our example this is `harriet`.
 
 For more info about updating or revoking gpg keys, see [Notes on updating or revoking GPG keys](docs/gpg_keys.md)
 
@@ -487,7 +370,7 @@ You can verify that the key was successfully uploaded like this:
 
 ```
 $ gpg --keyserver pgp.mit.edu --receive-keys 3F14A629C06FA31D59C64FE93F0C2117D53A4A49
-gpg: key 3F0C2117D53A4A49: "Harry Potter (zcash gitian) <hpotter@hogwarts.wiz>" not changed
+gpg: key 3F0C2117D53A4A49: "Harriet Porber (zcash gitian) <harriet@tingle.example.org>" not changed
 gpg: Total number processed: 1
 gpg:              unchanged: 1
 ```
@@ -510,7 +393,7 @@ zcash-gitian$ vagrant plugin install --local
 Set the value of the `ZCASH_VERSION` variable in `.env` to point to the zcash commit you want to
 create a signature for. Likely you want the name of a
 [git-tagged zcash version](https://github.com/zcash/zcash/tags), usually the most recent released
-version.  
+version.
 
 ## Provision a virtual machine
 
@@ -524,35 +407,6 @@ zcash-gitian$ vagrant up zcash-build
 
 This will provision a Gitian host virtual machine that uses a Linux container (LXC) guest to perform
 the actual builds.
-
-
-Load your ssh key into ssh-agent
---------------------------------
-
-Load your ssh key (for pushing signatures to github) into ssh-agent. The approach here is to allow
-programs in the zcash-build VM to connect to ssh-agent to perform operations with the private key.
-This way, we don't need to copy ssh keys into the VM.
-
-If you don't already have an ssh-agent running you may need to start one.  For example, you might be
-able to start one like this:
-
-```
-eval `ssh-agent -s`
-```
-
- You can verify that the key is loaded by
-running `ssh-add -l`.
-
-```
-zcash-gitian$ ssh-add -l
-The agent has no identities.
-
-zcash-gitian$ ssh-add ~/.ssh/github_id_rsa
-Identity added: /home/hpotter/.ssh/github_id_rsa (/home/hpotter/.ssh/github_id_rsa)
-
-zcash-gitian$ ssh-add -l
-4096 SHA256:4fFdwJ71VIpF5cW0dqrsU7jxjctaFcAKmdQZPEqR0Y4 /home/hpotter/.ssh/github_id_rsa (RSA)
-```
 
 
 SSH into the VM
@@ -572,21 +426,10 @@ suspend the virtual machine. In either case, to restart it again,
 simply run `vagrant up`.
 ```
 
-Use the `vagrant ssh` command to start a shell session in the VM. Once in that session, you can use
-ssh-add again to see that your forwarded key is available, and check that you can use that key to
-authenticate to github.
+Use the `vagrant ssh` command to start a shell session in the VM.
 
 ```
 zcash-gitian$ vagrant ssh zcash-build
-[...]
-
-# on the virtualbox vm
-vagrant@zcash-build:~$ ssh-add -l
-4096 d1:43:75:a7:95:65:9e:d4:8e:57:d8:98:58:7d:92:4c /home/hpotter/.ssh/github_id_rsa (RSA)
-
-vagrant@zcash-build:~$ ssh -T git@github.com
-Warning: Permanently added the RSA host key for IP address '192.30.253.112' to the list of known hosts.
-Hi harrypotter! You've successfully authenticated, but GitHub does not provide shell access.
 ```
 
 
@@ -608,52 +451,39 @@ Take a look at the variables near the top of `~/gitian-build.sh` and get familia
 
 It's also a good idea to regularly `git pull` on this repository to obtain updates and re-run the entire VM provisioning for each release, to ensure current and consistent state for your builder.
 
+
 Generating and uploading signatures
 -----------------------------------
 
-Signatures can be verified by running `gitian-build.sh --verify`, but set `build=false` in the script to skip building. Run a `git pull` beforehand on `gitian.sigs` so you have the latest. The provisioning includes a task which imports Zcash developer public keys to the Vagrant user's keyring and sets them to ultimately trusted, but they can also be found at `contrib/gitian-downloader` within the Zcash source repository.
+The procedure used to be to import a GnuPG private key into the VM, and use it there in order to sign the manifests that get pushed to [zcash/gitian.sigs](https://github.com/zcash/gitian.sigs). We no longer do this; instead you will copy the manifests out of the VM and sign them outside. This is simpler because a developer will typically already have their GnuPG and ssh keys outside the VM.
 
-After the build successfully completes, the gitian command `gsign` will be called, which will
-generate signatures, and a commit will be added.
+Manifests for the builds you have just completed will be left in the `/home/vagrant/gitian.sigs` directory inside the VM.
 
-Fork the [zcash/gitian.sigs](https://github.com/zcash/gitian.sigs) repository by following the link
-and clicking "fork".
-
-Now you can cd into the gitian.sigs directory, set the repository to point to your fork of
-[zcash/gitian.sigs](https://github.com/zcash/gitian.sigs), push
-your updates to a branch, and then make a pull request on github.
+Outside the VM, you should have a checkout of your fork of [zcash/gitian.sigs](https://github.com/zcash/gitian.sigs). Copy the manifests out of the VM and then sign them using the `gitian-sign.sh` script. For example, if the `zcash-gitian` and `gitian.sigs` checkouts are sibling directories, `cd` to the former and run:
 
 ```
-cd gitian.sigs
-git remote rename origin upstream
-git remote add origin git@github.com:harrypotter/gitian.sigs.git
-git checkout -b v2.0.6
-git push origin v2.0.6
+vagrant scp 'zcash-build:gitian.sigs/*' ../gitian.sigs
+./gitian-sign.sh ../gitian.sigs
 ```
 
+To validate your own signatures and those of other developers, add the public keys from `contrib/gitian-downloader` in the Zcash source repository and mark them as trusted, then run:
 
-Working with GPG
-----------------
+```
+./gitian-verify.sh ../gitian.sigs
+```
 
-We provide two options for automatically importing keys into the VM, or you may choose to copy them manually. GPG keys are needed to sign the manifests which get pushed to [gitian.sigs](https://github.com/zcash/gitian.sigs).
-
-GPG is tricky, especially if you use a smartcard and can't copy the secret key. We have a script intended to forward the gpg-agent socket into the VM, `forward_gpg_agent.sh`, but it is not currently working. If you want your full keyring to be available, you can use the following workaround involving `sshfs` and synced folders:
-
-    vagrant plugin install vagrant-sshfs
-
-Uncomment the line beginning with `gitian.vm.synced_folder "~/.gnupg"` in `Vagrantfile`. Ensure the destination mount point is empty. Then run:
-
-    vagrant sshfs --mount zcash-build
-
-Vagrant synced folders may also work natively with `vboxfs` if you install VirtualBox Guest Additions into the VM from `contrib`, but that's not as easy to setup.
+Now you can push your updates to a branch and make a pull request on GitHub.
 
 
 Copying files
 -------------
 
-To copy files to the VM: `vagrant scp file_on_host.txt :file_on_vm.txt`
+To copy files to the VM: `vagrant scp path_on_host zcash-build:path_on_vm`
 
-To copy files from the VM: `vagrant scp :file_on_vm.txt file_on_host.txt`
+To copy files from the VM: `vagrant scp zcash-build:path_on_vm path_on_host`
+
+Directories will be copied recursively.
+
 
 Other notes
 -----------

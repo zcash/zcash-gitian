@@ -18,11 +18,10 @@ proc=2
 mem=3584
 lxc=true
 scriptName=$(basename -- "$0")
-signProg="gpg --detach-sign"
 commitFiles=true
 
 gitian_builder_repo_path=${HOME}/gitian-builder
-gitian_sigs_repo_path=${HOME}/gitian.sigs
+gitian_sigs_path=${HOME}/gitian.sigs
 
 zcash_repo_dir_path=${HOME}/zcash
 gitian_descriptor_path=${zcash_repo_dir_path}/contrib/gitian-descriptors/gitian-linux.yml
@@ -39,28 +38,21 @@ Usage: $scriptName [-c|u|v|b|o|h|j|m|] signer version
 Run this script from the directory containing the zcash, gitian-builder, and gitian.sigs repositories.
 
 Arguments:
-signer          GPG signer to sign each build assert file
-version		Version number, commit, or branch to build. If building a commit or branch, the -c option must be specified
+signer          The signer's handle (used for the subdirectory in gitian.sigs)
+version         Version number, commit, or branch to build. If building a commit or branch, the -c option must be specified
 
 Options:
 -c|--commit	Indicate that the version argument is for a commit or branch
 -u|--url	Specify the URL of the repository. Default is {{ zcash_git_repo_url }}
--v|--verify 	Verify the gitian build
 -b|--build	Do a gitian build
 -j		Number of processes to use. Default 2
 -m		Memory to allocate in MiB. Default 3584
---detach-sign   Create the assert file for detached signing. Will not commit anything.
---no-commit     Do not commit anything to git
 -h|--help	Print this help message
 EOF
 
 # Get options and arguments
 while :; do
     case $1 in
-        # Verify
-        -v|--verify)
-	    verify=true
-            ;;
         # Build
         -b|--build)
 	    build=true
@@ -118,15 +110,6 @@ while :; do
 		exit 1
 	    fi
 	    ;;
-        # Detach sign
-        --detach-sign)
-            signProg="true"
-            commitFiles=false
-            ;;
-        # Commit files
-        --no-commit)
-            commitFiles=false
-            ;;
 	*)               # Default case: If no more options then break out of the loop.
              break
     esac
@@ -166,7 +149,7 @@ fi
 # Add a "v" if no -c
 if [[ $commit = false ]]
 then
-	COMMIT="${VERSION}"
+    COMMIT="${VERSION}"
 fi
 echo ${COMMIT}
 
@@ -221,7 +204,7 @@ then
                 sed -i -e 's/- "python3"/- "python"/g' -e 's/- "python-is-python3"//g' ${suite_dir_path}/gitian-linux-parallel.yml;
             fi
             ./bin/gbuild --fetch-tags -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${suite_dir_path}/gitian-linux.yml
-            ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION}_${suite} --destination ${gitian_sigs_repo_path}/ ${suite_dir_path}/gitian-linux.yml
+            ./bin/gsign -p "true" --signer "$SIGNER" --release ${VERSION}_${suite} --destination ${gitian_sigs_path}/ ${suite_dir_path}/gitian-linux.yml
 
             suite_binaries_dir_path=${zcash_binaries_dir_path}/${VERSION}/${suite}
             mkdir ${suite_binaries_dir_path}
@@ -229,41 +212,6 @@ then
             mv ${build_dir_path}/out/zcash-*.tar.gz ${build_dir_path}/out/src/zcash-*.tar.gz ${suite_binaries_dir_path}
 
             popd  # pushd ${gitian_builder_repo_path}
-
-
-            if [[ $commitFiles = true ]]
-            then
-	            # Commit to gitian.sigs repo
-                echo ""
-                echo "Committing ${VERSION}_${suite} Signatures"
-                echo ""
-                pushd ${gitian_sigs_repo_path}
-                git add ${VERSION}_${suite}/${SIGNER}
-                git commit -a -m "Add ${VERSION}_${suite} signatures for ${SIGNER}"
-                popd
-            fi
         done
 	fi
-fi
-
-# Verify the build
-if [[ $verify = true ]]
-then
-    # Linux
-    pushd ${gitian_builder_repo_path}
-
-    for suite in ${suites} ; do
-        echo "processing suite ${suite}"
-
-        suite_dir_path=${suite_descriptors_dir_path}/${suite}
-        echo "suite_dir_path: ${suite_dir_path}"
-
-        echo ""
-        echo "Verifying ${VERSION}_${suite} Linux"
-        echo ""
-
-        ./bin/gverify -v -d ${gitian_sigs_repo_path}/ -r ${VERSION}_${suite} ${suite_dir_path}/gitian-linux.yml
-    done
-
-    popd
 fi
