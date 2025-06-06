@@ -175,7 +175,6 @@ jobs:
         mkdir aptserver
         cd aptserver
         gsutil -q -m cp -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/pool/main/z/zcash/ .
-        gsutil -q -m rsync -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/pool/main/z/zallet .
         cd zcash
         cp -a ../../debs/bullseye/zcbuild/*.deb \$final_version-amd64-bullseye.deb
         cp -a ../../debs/bookworm/zcbuild/*.deb \$final_version-amd64-bookworm.deb
@@ -198,11 +197,10 @@ jobs:
         for i in \$(ls *.deb | grep bookworm); do
           aptly repo add zcash_bookworm_amd64_repo \$i
         done
-        cd ../zallet
+        gsutil -q -m rsync -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/pool/main/z/zallet .
         for i in \$(ls *.deb | grep zallet); do
           aptly repo add zcash_bookworm_amd64_repo \$i
         done
-        cd ../zcash
         aptly snapshot create bookworm_snapshot from repo zcash_bookworm_amd64_repo
         aptly snapshot create buster_snapshot from repo zcash_buster_amd64_repo
         aptly snapshot create bullseye_snapshot from repo zcash_bullseye_amd64_repo
