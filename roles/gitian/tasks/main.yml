@@ -29,13 +29,6 @@
     state: present
     update_cache: yes
 
-- name: Install more recent version of apt-cacher-ng
-  apt:
-    name: apt-cacher-ng
-    state: latest
-    update_cache: yes
-    default_release: bookworm-backports
-
 - name: Install ruamel.yaml
   pip:
     name: "ruamel.yaml>=0.15.0,<0.16.0"
@@ -163,10 +156,6 @@
     group: "{{ gitian_user }}"
     mode: "0755"
   tags: script
-
-- name: Clean the apt cache to free up space.
-  apt:
-    autoclean: yes
 
 - include_tasks: gpg.yml
   tags: gpg
