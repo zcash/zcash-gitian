@@ -67,7 +67,7 @@ jobs:
         apt -qq update;
         apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y >/dev/null;
         apt-add-repository "deb http://download.virtualbox.org/virtualbox/debian \$(lsb_release -sc) contrib";
-        wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc;
+        wget -q https://download.virtualbox.org/virtualbox/debian/oracle_vbox_2016.asc;
         echo "49e6801d45f6536232c11be6cdb43fa8e0198538d29d1075a7e10165e1fbafe2  oracle_vbox_2016.asc" | shasum -a 256 -c;
         apt-key add oracle_vbox_2016.asc;
         apt -qq update
@@ -112,10 +112,8 @@ jobs:
         direnv allow;
         direnv exec \$(pwd) vagrant up zcash-build;
         vagrant scp \$HOME/private.pgp :
-        vagrant ssh zcash-build -c "sudo apt update"
-        vagrant ssh zcash-build -c "sudo apt install gpg -y"        
         vagrant ssh zcash-build -c "gpg --import private.pgp"
-        vagrant ssh zcash-build -c ./gitian-parallel-build.sh || echo ""
+        vagrant ssh zcash-build -c ./gitian-parallel-build.sh &> log.log
         vagrant ssh zcash-build -c "head -n 8 gitian.sigs/\$VERSION*/sysadmin/*.assert" > assert.txt
         tr -d \$'\r' < assert.txt > assert2.txt
         echo "#### sigs ####"
@@ -243,7 +241,7 @@ jobs:
         gcloud compute scp ./script.sh --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random: || (echo "error 1" && export FAIL=1)
         gcloud compute scp --recurse $(pwd) --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:~/source || (echo "error 2" && export FAIL=1)
         gcloud compute ssh --zone "us-central1-a" "test-gitian-$random"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --command="bash -i -c 'sudo -s ./script.sh'" -- -t || (echo "error 3" && export FAIL=1)
-        
+
         if [ $FAIL -eq 1 ]; then 
           echo "error"
           #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
@@ -270,4 +268,4 @@ jobs:
           git push # debug
         fi
         echo "last step"
-        gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all # debug
+        #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all # debug

@@ -10,29 +10,6 @@
       - "git_email != ''"
     msg: Please set your gpg_key_name, git_name and git_email in gitian.yml.
 
-- name: Install Gitian dependencies.
-  apt:
-    name:
-      - bridge-utils
-      - curl
-      - debootstrap
-      - git-core
-      - gnupg2
-      - kpartx
-      - lintian
-      - lxc
-      - make
-      - python3-cheetah
-      - qemu-utils
-      - ruby
-      - sudo
-    state: present
-    update_cache: yes
-
-- name: Install ruamel.yaml
-  pip:
-    name: "ruamel.yaml>=0.15.0,<0.16.0"
-
 - name: Set up the Gitian build user with sudo.
   user:
     name: "{{ gitian_user }}"

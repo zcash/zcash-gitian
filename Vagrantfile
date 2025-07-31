@@ -13,6 +13,13 @@ Vagrant.configure(2) do |config|
     gitian.vm.box = "debian/bullseye64"
     gitian.vm.box_version = "11.20220328.1"
     gitian.vm.network "forwarded_port", guest: 22, host: 2200, auto_correct: true
+    gitian.vm.provision "shell", inline: <<-SHELL
+      sudo echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list
+      sudo apt update
+      sudo DEBIAN_FRONTEND=noninteractive apt install bridge-utils curl gpg sudo ruby qemu-utils python3-cheetah make lxc lintian kpartx gnupg2 git-core debootstrap apt-cacher-ng -y
+      sudo DEBIAN_FRONTEND=noninteractive apt install python3-pip -y
+      sudo pip3 install ruamel.yaml
+    SHELL
     gitian.vm.provision "ansible" do |ansible|
       ansible.playbook = "gitian.yml"
       ansible.verbose = 'vvv'
