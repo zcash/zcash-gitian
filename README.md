@@ -8,7 +8,7 @@ Gitian provides a way to be reasonably certain that the Zcash executables are re
 Multiple developers build from source code by following a specific descriptor ("recipe"), cryptographically sign the result, and upload the resulting signature. These results are compared and only if they match is the build accepted.
 
 More independent Gitian builders are needed, which is why this guide exists.
-
+#
 Requirements
 ------------
 
