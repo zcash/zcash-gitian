@@ -34,7 +34,7 @@
     name: apt-cacher-ng
     state: latest
     update_cache: yes
-    default_release: bullseye-backports
+    default_release: bookworm-backports
 
 - name: Install ruamel.yaml
   pip:
