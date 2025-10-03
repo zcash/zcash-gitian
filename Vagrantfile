@@ -16,7 +16,9 @@ Vagrant.configure(2) do |config|
     gitian.vm.provision "shell", inline: <<-SHELL
       sudo echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list
       sudo apt update
+
       sudo DEBIAN_FRONTEND=noninteractive apt install bridge-utils curl gpg sudo ruby qemu-utils python3-cheetah make lxc lintian kpartx gnupg2 git-core debootstrap -y
+
       sudo DEBIAN_FRONTEND=noninteractive apt install python3-pip -y
       sudo pip3 install ruamel.yaml
     SHELL

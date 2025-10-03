@@ -218,7 +218,17 @@ then
             #workaround python and python3
             sed -i '/- "python3"/c\- "python3"\n- "python-is-python3"' ${suite_dir_path}/gitian-linux-parallel.yml;
             
-            ./bin/gbuild --fetch-tags -j ${proc} -m ${mem} --commit zcash=${COMMIT} --url zcash=${url} ${suite_dir_path}/gitian-linux-parallel.yml
+            if ! ./bin/gbuild --fetch-tags -j "${proc}" -m "${mem}" \
+              --commit zcash="${COMMIT}" \
+              --url zcash="${url}" \
+              "${suite_dir_path}/gitian-linux-parallel.yml"; then
+                echo "First attempt failed. Retrying..."
+                sleep 120
+                ./bin/gbuild --fetch-tags -j "${proc}" -m "${mem}" \
+                  --commit zcash="${COMMIT}" \
+                  --url zcash="${url}" \
+                  "${suite_dir_path}/gitian-linux-parallel.yml"
+            fi
             ./bin/gsign -p "$signProg" --signer "$SIGNER" --release ${VERSION}_${suite} --destination ${gitian_sigs_repo_path}/ ${suite_dir_path}/gitian-linux-parallel.yml
 
             suite_binaries_dir_path=${zcash_binaries_dir_path}/${VERSION}/${suite}
