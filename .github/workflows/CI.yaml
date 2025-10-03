@@ -175,6 +175,7 @@ jobs:
         mkdir aptserver
         cd aptserver
         gsutil -q -m cp -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/pool/main/z/zcash/ .
+        gsutil -q -m cp -r gs://${{ secrets.GCP_PROJECT_ID_PROD }}-apt-server/pool/main/z/zallet/ .
         cd zcash
         cp -a ../../debs/bullseye/zcbuild/*.deb \$final_version-amd64-bullseye.deb
         cp -a ../../debs/bookworm/zcbuild/*.deb \$final_version-amd64-bookworm.deb
@@ -196,6 +197,13 @@ jobs:
         done
         for i in \$(ls *.deb | grep bookworm); do
           aptly repo add zcash_bookworm_amd64_repo \$i
+        done
+        cd ../zallet
+        for i in \$(ls *.deb | grep bookworm); do
+          aptly repo add zcash_bookworm_amd64_repo \$i
+        done
+        for i in \$(ls *.deb | grep bullseye); do
+          aptly repo add zcash_bullseye_amd64_repo \$i
         done
         aptly snapshot create bookworm_snapshot from repo zcash_bookworm_amd64_repo
         aptly snapshot create buster_snapshot from repo zcash_buster_amd64_repo
@@ -248,7 +256,7 @@ jobs:
           exit 1; 
         fi 
 
-        curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}' # debug
+        #curl -s --request POST --url https://api.bunny.net/pullzone/${{ secrets.BUNNY_RESOURCE }}/purgeCache --header 'content-type: application/json' --header 'AccessKey: ${{ secrets.BUNNY_API_KEY }}' # debug
 
         gcloud compute scp --recurse --zone "us-central1-a"  --tunnel-through-iap --project "${{ secrets.GCP_PROJECT_ID_PROD }}" test-gitian-$random:/home/sa_*/source/gitian.sigs .
         
@@ -268,4 +276,4 @@ jobs:
           git push # debug
         fi
         echo "last step"
-        gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all # debug
+        #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all # debug
