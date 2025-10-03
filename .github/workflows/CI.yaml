@@ -122,7 +122,7 @@ jobs:
         done
         export OS=\$(vagrant ssh zcash-build -c "ls zcash-binaries/\$VERSION" | tr -d '\r')
         for i in \$OS; do vagrant ssh zcash-build -c "mkdir \$i; tar Cxvzf \$i zcash-binaries/*/\$i/zcash-*-linux64.tar.gz"; done
-        exit 0 # debug
+        
         vagrant scp :gitian.sigs .
         for i in \$OS;
         do
@@ -252,7 +252,7 @@ jobs:
 
         if [ $FAIL -eq 1 ]; then 
           echo "error"
-          #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
+          gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all
           exit 1; 
         fi 
 
@@ -276,4 +276,4 @@ jobs:
           git push # debug
         fi
         echo "last step"
-        #gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all # debug
+        gcloud compute instances delete "test-gitian-$random" --project "${{ secrets.GCP_PROJECT_ID_PROD }}" --zone "us-central1-a" --delete-disks=all # debug
