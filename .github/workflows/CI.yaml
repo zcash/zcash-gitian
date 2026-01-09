@@ -113,6 +113,7 @@ jobs:
         direnv exec \$(pwd) vagrant up zcash-build;
         vagrant scp \$HOME/private.pgp :
         vagrant ssh zcash-build -c "gpg --import private.pgp"
+        vagrant ssh zcash-build -c "sudo apt-get install --reinstall debian-archive-keyring -y"
         vagrant ssh zcash-build -c ./gitian-parallel-build.sh &> log.log
         vagrant ssh zcash-build -c "head -n 8 gitian.sigs/\$VERSION*/sysadmin/*.assert" > assert.txt
         tr -d \$'\r' < assert.txt > assert2.txt
@@ -162,7 +163,7 @@ jobs:
           gpg -u sysadmin@z.cash --armor --digest-algo SHA256 --detach-sign *debug-debian-\$i.tar.gz
           gpg -u sysadmin@z.cash --armor --digest-algo SHA256 --detach-sign *linux64-debian-\$i.tar.gz
           rm -rf zcash-$(echo $VERSION | sed 's/v//g').tar.gz
-          gsutil -q -m rsync -r ./ gs://download-downloads/
+          gsutil -q -m rsync -r ./ gs://ecc-infra-prod-public-serving/download-downloads/ || echo ""
           cd \$current_dir
         done
         export final_version=\$(cat assert2.txt | awk '{print \$2}' | grep "desc.yml" | head -n 1 | sed 's/-desc.yml//g')
