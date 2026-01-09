@@ -113,6 +113,7 @@ jobs:
         direnv exec \$(pwd) vagrant up zcash-build;
         vagrant scp \$HOME/private.pgp :
         vagrant ssh zcash-build -c "gpg --import private.pgp"
+        vagrant ssh zcash-build -c "sudo apt-get install --reinstall debian-archive-keyring -y"
         vagrant ssh zcash-build -c ./gitian-parallel-build.sh &> log.log
         vagrant ssh zcash-build -c "head -n 8 gitian.sigs/\$VERSION*/sysadmin/*.assert" > assert.txt
         tr -d \$'\r' < assert.txt > assert2.txt
