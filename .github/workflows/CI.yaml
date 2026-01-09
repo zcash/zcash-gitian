@@ -162,7 +162,7 @@ jobs:
           gpg -u sysadmin@z.cash --armor --digest-algo SHA256 --detach-sign *debug-debian-\$i.tar.gz
           gpg -u sysadmin@z.cash --armor --digest-algo SHA256 --detach-sign *linux64-debian-\$i.tar.gz
           rm -rf zcash-$(echo $VERSION | sed 's/v//g').tar.gz
-          gsutil -q -m rsync -r ./ gs://download-downloads/
+          gsutil -q -m rsync -r ./ gs://ecc-infra-prod-public-serving/download-downloads/ || echo ""
           cd \$current_dir
         done
         export final_version=\$(cat assert2.txt | awk '{print \$2}' | grep "desc.yml" | head -n 1 | sed 's/-desc.yml//g')
