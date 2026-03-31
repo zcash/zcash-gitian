@@ -17,6 +17,7 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 export HOME=/root
 exec > >(tee /root/gitian-direct2.log) 2>&1
+trap 'aws s3 cp /root/gitian-direct2.log "s3://zodl-public-download/gitian-debug/$(hostname)-$(date +%Y%m%dT%H%M%S).log" 2>/dev/null || true' EXIT
 
 OWNER="${OWNER:-zcash}"
 REPO="${REPO:-zcash}"
