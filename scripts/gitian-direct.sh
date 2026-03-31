@@ -120,20 +120,15 @@ echo "Using $PROC cores, ${MEM}M RAM"
 cd $BHOME/gitian-builder
 
 echo "[7] Building suites: $SUITES"
+
+# Pre-download Linux deps (macOS optional, failures are non-fatal)
+echo "Downloading Linux dependencies..."
+make -C $BHOME/zcash/depends download SOURCES_PATH=$BHOME/gitian-builder/cache/common 2>&1 | \
+    grep -v "^make\[" | tail -5 || echo "Some downloads failed (macOS), continuing"
+
+# Build ALL base LXC images first — gbuild processes all suites in the descriptor
+# so every base image must exist before the first gbuild call
 for suite in $SUITES; do
-    echo ""
-    echo "=== Suite: $suite ==="
-
-    suite_dir=$BHOME/gitian-builder/suites/${suite}
-    mkdir -p $suite_dir
-    cp $GITIAN_DESC $suite_dir/gitian-linux-parallel.yml
-
-    # Pre-download Linux deps (macOS optional, failures are non-fatal)
-    echo "Downloading Linux dependencies..."
-    make -C $BHOME/zcash/depends download SOURCES_PATH=$BHOME/gitian-builder/cache/common 2>&1 | \
-        grep -v "^make\[" | tail -5 || echo "Some downloads failed (macOS), continuing"
-
-    # Build base LXC image if not present
     base_img=$BHOME/gitian-builder/base-${suite}-amd64
     if [ ! -f $base_img ]; then
         echo "Building base LXC image for $suite (~10 min)..."
@@ -141,6 +136,15 @@ for suite in $SUITES; do
     else
         echo "Base image exists: $base_img"
     fi
+done
+
+for suite in $SUITES; do
+    echo ""
+    echo "=== Suite: $suite ==="
+
+    suite_dir=$BHOME/gitian-builder/suites/${suite}
+    mkdir -p $suite_dir
+    cp $GITIAN_DESC $suite_dir/gitian-linux-parallel.yml
 
     echo "Running gbuild for $suite (~60-90 min)..."
     if ! ./bin/gbuild --fetch-tags -j "$PROC" -m "$MEM" \
