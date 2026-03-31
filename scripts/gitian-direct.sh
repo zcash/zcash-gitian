@@ -152,6 +152,9 @@ for suite in $SUITES; do
             --url zcash="https://github.com/${OWNER}/${REPO}" \
             "$suite_dir/gitian-linux-parallel.yml"; then
         echo "First attempt failed, retrying in 60s..."
+        echo "=== var/build.log (last 100 lines) ==="
+        tail -100 $BHOME/gitian-builder/var/build.log 2>/dev/null || echo "(no build.log)"
+        echo "=== end var/build.log ==="
         sleep 60
         ./bin/gbuild --fetch-tags -j "$PROC" -m "$MEM" \
             --commit zcash="${TAG}" \
