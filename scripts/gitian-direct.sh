@@ -44,7 +44,7 @@ echo "[0] Installing dependencies..."
 apt-get update -q
 DEBIAN_FRONTEND=noninteractive apt-get install -y -q \
   lxc debootstrap bridge-utils apt-cacher-ng python3-cheetah qemu-utils kpartx \
-  git python3-yaml curl unzip 2>&1 | tail -5
+  git python3-yaml curl unzip make ruby 2>&1 | tail -5
 
 # Install AWS CLI v2 (not in Debian repos; install from official binary)
 if ! command -v aws &>/dev/null; then
