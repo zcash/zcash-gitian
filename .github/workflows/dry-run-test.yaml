@@ -65,8 +65,8 @@ jobs:
 
         echo ""
         echo "=== Checking S3 buckets ==="
-        aws s3 ls s3://zodl-public-download/ --max-items 5
-        aws s3 ls s3://zodl-apt-server-zcash/ --max-items 5
+        aws s3 ls s3://zodl-public-download/ | head -5
+        aws s3 ls s3://zodl-apt-server-zcash/ | head -5
 
         echo ""
         echo "=== Checking Secrets Manager access ==="
