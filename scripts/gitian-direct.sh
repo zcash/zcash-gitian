@@ -97,13 +97,29 @@ else
     git clone "https://github.com/${OWNER}/${REPO}.git" --branch ${TAG} $BHOME/zcash
 fi
 
+# HOTFIX: Swap suite order to build bullseye before bookworm
+# (cxxbridge built in first suite requires GLIBC >=2.33, but bullseye has 2.31)
+# Building bullseye first creates binaries compatible with both suites
+echo "[5.5] Patching gitian descriptor to build bullseye before bookworm..."
+GITIAN_DESC=$BHOME/zcash/contrib/gitian-descriptors/gitian-linux-parallel.yml
+if grep -q 'suites:' "$GITIAN_DESC" && \
+   sed -n '/^suites:/,/^[^ ]/ p' "$GITIAN_DESC" | grep -q 'bookworm' && \
+   sed -n '/^suites:/,/^[^ ]/ p' "$GITIAN_DESC" | head -1 | grep -q 'bookworm'; then
+    # Swap bookworm and bullseye in suites list
+    sed -i '/^suites:/,/^[^ -]/ {
+        s/- "bookworm"/- "TEMP_SWAP_MARKER"/
+        s/- "bullseye"/- "bookworm"/
+        s/- "TEMP_SWAP_MARKER"/- "bullseye"/
+    }' "$GITIAN_DESC"
+    echo "✓ Swapped suite order: bullseye will build first"
+fi
+
 # gitian.sigs (local — push happens in CI)
 [ -d $BHOME/gitian.sigs ] || git clone https://github.com/zcash/gitian.sigs.git $BHOME/gitian.sigs
 
 mkdir -p $BHOME/zcash-binaries
 
 echo "[6] Determining suites from gitian descriptor..."
-GITIAN_DESC=$BHOME/zcash/contrib/gitian-descriptors/gitian-linux-parallel.yml
 SUITES=$(python3 -c "
 import yaml
 with open('$GITIAN_DESC') as f:
