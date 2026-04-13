@@ -1,0 +1,226 @@
+name: APT Repo Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number without v prefix (e.g. 6.13.0)'
+        required: true
+      suites:
+        description: 'Debian suites (space-separated, e.g. "bullseye bookworm")'
+        required: false
+        default: 'bullseye bookworm'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  update-apt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials (OIDC)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.GITIAN_AWS_ROLE_ARN }}
+        aws-region: us-east-1
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq python3 awscli dpkg-dev gnupg
+
+    - name: Import GPG key
+      run: |
+        aws secretsmanager get-secret-value \
+          --secret-id /release/gpg-signing-key-zcash \
+          --query SecretString --output text > /tmp/ecc-private.pgp
+        gpg --batch --import /tmp/ecc-private.pgp
+        rm -f /tmp/ecc-private.pgp
+
+    - name: Update APT repository metadata
+      env:
+        VERSION: ${{ inputs.version }}
+        SUITES: ${{ inputs.suites }}
+      run: |
+        BUCKET="zodl-apt-server-zcash"
+        WORKDIR="$PWD/apt-build"
+        mkdir -p "$WORKDIR"
+        cd "$WORKDIR"
+
+        for suite in $SUITES; do
+          echo ""
+          echo "=== Updating APT metadata for $suite ==="
+
+          DIST_DIR="dists/${suite}"
+          BINARY_DIR="${DIST_DIR}/main/binary-amd64"
+          mkdir -p "$BINARY_DIR"
+
+          DEB_NAME="zcash-${VERSION}-amd64-${suite}.deb"
+          DEB_PATH="pool/main/z/zcash/${DEB_NAME}"
+
+          # Download current Packages.gz (if exists)
+          if aws s3 cp "s3://${BUCKET}/${BINARY_DIR}/Packages.gz" Packages.gz 2>/dev/null; then
+            echo "Downloaded existing Packages.gz"
+            gunzip -f Packages.gz
+          else
+            echo "No existing Packages file — creating new one"
+            touch Packages
+          fi
+
+          # Download the new .deb to extract metadata
+          aws s3 cp "s3://${BUCKET}/${DEB_PATH}" "${DEB_NAME}"
+
+          # Extract metadata
+          DEB_SIZE=$(stat -c%s "${DEB_NAME}")
+          DEB_MD5=$(md5sum "${DEB_NAME}" | awk '{print $1}')
+          DEB_SHA1=$(sha1sum "${DEB_NAME}" | awk '{print $1}')
+          DEB_SHA256=$(sha256sum "${DEB_NAME}" | awk '{print $1}')
+
+          # Get control fields
+          DEB_PACKAGE=$(dpkg-deb -f "${DEB_NAME}" Package)
+          DEB_VERSION_FULL=$(dpkg-deb -f "${DEB_NAME}" Version)
+          DEB_ARCH=$(dpkg-deb -f "${DEB_NAME}" Architecture)
+          DEB_MAINTAINER=$(dpkg-deb -f "${DEB_NAME}" Maintainer)
+          DEB_DESCRIPTION=$(dpkg-deb -f "${DEB_NAME}" Description)
+
+          # Update Packages file
+          python3 <<'PYEOF'
+import sys
+import os
+
+version = os.environ['VERSION']
+deb_package = os.environ['DEB_PACKAGE']
+deb_version_full = os.environ['DEB_VERSION_FULL']
+deb_arch = os.environ['DEB_ARCH']
+deb_maintainer = os.environ['DEB_MAINTAINER']
+deb_path = os.environ['DEB_PATH']
+deb_size = os.environ['DEB_SIZE']
+deb_md5 = os.environ['DEB_MD5']
+deb_sha1 = os.environ['DEB_SHA1']
+deb_sha256 = os.environ['DEB_SHA256']
+deb_description = os.environ['DEB_DESCRIPTION']
+
+# Read current Packages file
+with open('Packages', 'r') as f:
+    content = f.read()
+
+# Split into package stanzas
+stanzas = content.split('\n\n')
+new_stanzas = []
+
+# Filter out existing entry for this version
+for stanza in stanzas:
+    if not stanza.strip():
+        continue
+    lines = stanza.split('\n')
+    pkg_name = None
+    pkg_ver = None
+    for line in lines:
+        if line.startswith('Package: '):
+            pkg_name = line.split(': ', 1)[1]
+        if line.startswith('Version: '):
+            pkg_ver = line.split(': ', 1)[1]
+
+    # Keep stanza only if different version or different package
+    if pkg_name != deb_package or pkg_ver != deb_version_full:
+        new_stanzas.append(stanza)
+
+# Add new entry
+new_entry = f"""Package: {deb_package}
+Version: {deb_version_full}
+Architecture: {deb_arch}
+Maintainer: {deb_maintainer}
+Filename: {deb_path}
+Size: {deb_size}
+MD5sum: {deb_md5}
+SHA1: {deb_sha1}
+SHA256: {deb_sha256}
+Description: {deb_description}"""
+
+new_stanzas.append(new_entry)
+
+# Write updated Packages file
+with open('Packages', 'w') as f:
+    f.write('\n\n'.join(new_stanzas))
+    f.write('\n')
+
+print(f"Updated Packages file: added {deb_package} {deb_version_full}")
+PYEOF
+
+          # Compress Packages
+          gzip -9 -k -f Packages
+
+          # Generate Release file
+          cat > "${DIST_DIR}/Release" <<RELEOF
+Origin: Zcash
+Label: Zcash
+Suite: ${suite}
+Codename: ${suite}
+Date: $(date -R -u)
+Architectures: amd64
+Components: main
+Description: Zcash APT Repository
+RELEOF
+
+          # Add checksums
+          cd "${DIST_DIR}"
+          echo "MD5Sum:" >> Release
+          for f in main/binary-amd64/Packages main/binary-amd64/Packages.gz; do
+            echo " $(md5sum $f | awk '{print $1}') $(stat -c%s $f) $f" >> Release
+          done
+          echo "SHA256:" >> Release
+          for f in main/binary-amd64/Packages main/binary-amd64/Packages.gz; do
+            echo " $(sha256sum $f | awk '{print $1}') $(stat -c%s $f) $f" >> Release
+          done
+          cd "$WORKDIR"
+
+          # Sign Release files
+          gpg --batch --clearsign --armor \
+            -u sysadmin@z.cash \
+            --output "${DIST_DIR}/InRelease" \
+            "${DIST_DIR}/Release"
+
+          gpg --batch --detach-sign --armor \
+            -u sysadmin@z.cash \
+            --output "${DIST_DIR}/Release.gpg" \
+            "${DIST_DIR}/Release"
+
+          # Upload metadata
+          for f in Release InRelease Release.gpg; do
+            aws s3 cp "${DIST_DIR}/$f" "s3://${BUCKET}/${DIST_DIR}/"
+            echo "  Uploaded: ${DIST_DIR}/$f"
+          done
+
+          for f in Packages Packages.gz; do
+            aws s3 cp "${BINARY_DIR}/$f" "s3://${BUCKET}/${BINARY_DIR}/"
+            echo "  Uploaded: ${BINARY_DIR}/$f"
+          done
+
+          echo "✓ APT metadata updated for $suite"
+        done
+
+    - name: Purge CDN cache
+      if: success()
+      run: |
+        # The apt-proxy K8s service handles caching — no CDN purge needed
+        echo "APT proxy will serve updated metadata on next request"
+
+    - name: Summary
+      env:
+        VERSION: ${{ inputs.version }}
+        SUITES: ${{ inputs.suites }}
+      run: |
+        echo ""
+        echo "=== APT REPO UPDATE COMPLETE ==="
+        echo ""
+        echo "Verify:"
+        for suite in $SUITES; do
+          echo "  curl -sI https://apt.z.cash/dists/${suite}/InRelease"
+          echo "  curl -sI https://apt.z.cash/pool/main/z/zcash/zcash-${VERSION}-amd64-${suite}.deb"
+        done
