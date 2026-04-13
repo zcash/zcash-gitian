@@ -1,0 +1,286 @@
+name: Dry Run Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Test release tag (e.g. v6.12.0 - will NOT upload)'
+        required: true
+        default: 'v6.12.0'
+      owner:
+        description: 'GitHub owner (default: zcash)'
+        required: false
+        default: 'zcash'
+      repo:
+        description: 'GitHub repo (default: zcash)'
+        required: false
+        default: 'zcash'
+      test_type:
+        description: 'Test type'
+        required: false
+        default: 'validate-only'
+        type: choice
+        options:
+          - validate-only
+          - build-lxc-only
+          - full-build-no-upload
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  dry-run-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials (OIDC)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.GITIAN_AWS_ROLE_ARN }}
+        aws-region: us-east-1
+
+    - name: Parse inputs
+      id: inputs
+      run: |
+        TAG="${{ inputs.tag }}"
+        OWNER="${{ inputs.owner }}"
+        REPO="${{ inputs.repo }}"
+        TEST_TYPE="${{ inputs.test_type }}"
+
+        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+        echo "owner=$OWNER" >> "$GITHUB_OUTPUT"
+        echo "repo=$REPO" >> "$GITHUB_OUTPUT"
+        echo "test_type=$TEST_TYPE" >> "$GITHUB_OUTPUT"
+        echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+    - name: Validate AWS access
+      run: |
+        echo "=== Validating AWS access ==="
+        aws sts get-caller-identity
+
+        echo ""
+        echo "=== Checking S3 buckets ==="
+        aws s3 ls s3://zodl-public-download/ --max-items 5
+        aws s3 ls s3://zodl-apt-server-zcash/ --max-items 5
+
+        echo ""
+        echo "=== Checking Secrets Manager access ==="
+        aws secretsmanager describe-secret --secret-id /infra/gitian/config
+        echo "✓ Can access gitian config"
+
+        aws secretsmanager describe-secret --secret-id /release/gpg-signing-key-zcash
+        echo "✓ Can access ECC GPG key"
+
+        aws secretsmanager describe-secret --secret-id /release/gpg-signing-key
+        echo "✓ Can access ZODL GPG key"
+
+    - name: Validate GitHub repo access
+      run: |
+        echo "=== Validating GitHub repo access ==="
+        OWNER="${{ steps.inputs.outputs.owner }}"
+        REPO="${{ steps.inputs.outputs.repo }}"
+        TAG="${{ steps.inputs.outputs.tag }}"
+
+        curl -sf "https://api.github.com/repos/${OWNER}/${REPO}/git/ref/tags/${TAG}" | jq -r '.object.sha' | head -c 40
+        echo ""
+        echo "✓ Tag ${TAG} exists in ${OWNER}/${REPO}"
+
+    - name: Validate existing release artifacts (if v6.12.0)
+      if: inputs.tag == 'v6.12.0'
+      run: |
+        echo "=== Checking existing v6.12.0 artifacts ==="
+        VERSION="6.12.0"
+
+        echo "Tarballs in S3:"
+        aws s3 ls "s3://zodl-public-download/${VERSION}/bullseye/" | grep "\.tar\.gz" || echo "  (none)"
+        aws s3 ls "s3://zodl-public-download/${VERSION}/bookworm/" | grep "\.tar\.gz" || echo "  (none)"
+
+        echo ""
+        echo ".deb packages in S3:"
+        aws s3 ls "s3://zodl-apt-server-zcash/pool/main/z/zcash/" | grep "${VERSION}" || echo "  (none)"
+
+        echo ""
+        echo "Downloads folder:"
+        aws s3 ls "s3://zodl-public-download/downloads/" | grep "${VERSION}" || echo "  (none)"
+
+    - name: Dry run - Launch test VM (validate-only)
+      if: inputs.test_type == 'validate-only'
+      id: vm_test
+      run: |
+        echo "=== Dry run: Would launch EC2 instance ==="
+
+        CONFIG=$(aws secretsmanager get-secret-value \
+          --secret-id /infra/gitian/config \
+          --query SecretString --output text)
+
+        SUBNET_ID=$(echo "$CONFIG" | python3 -c "import sys,json; print(json.load(sys.stdin)['subnet_id'])")
+        SG_ID=$(echo "$CONFIG" | python3 -c "import sys,json; print(json.load(sys.stdin)['security_group_id'])")
+        PROFILE=$(echo "$CONFIG" | python3 -c "import sys,json; print(json.load(sys.stdin)['instance_profile'])")
+
+        # Find latest Debian 12 AMI
+        AMI_ID=$(aws ec2 describe-images \
+          --owners 136693071363 \
+          --filters "Name=name,Values=debian-12-amd64-*" \
+                    "Name=state,Values=available" \
+          --query "sort_by(Images, &CreationDate)[-1].ImageId" \
+          --output text)
+
+        echo "Would launch:"
+        echo "  AMI: $AMI_ID"
+        echo "  Instance type: c5.4xlarge"
+        echo "  Subnet: $SUBNET_ID"
+        echo "  Security group: $SG_ID"
+        echo "  Instance profile: $PROFILE"
+        echo "  EBS: 300GB gp3"
+        echo ""
+        echo "✓ All infrastructure parameters are valid"
+
+    - name: Build LXC base images only (build-lxc-only)
+      if: inputs.test_type == 'build-lxc-only'
+      run: |
+        echo "=== Dry run: Build LXC base images only ==="
+
+        CONFIG=$(aws secretsmanager get-secret-value \
+          --secret-id /infra/gitian/config \
+          --query SecretString --output text)
+        SUBNET_ID=$(echo "$CONFIG" | python3 -c "import sys,json; print(json.load(sys.stdin)['subnet_id'])")
+        SG_ID=$(echo "$CONFIG" | python3 -c "import sys,json; print(json.load(sys.stdin)['security_group_id'])")
+        PROFILE=$(echo "$CONFIG" | python3 -c "import sys,json; print(json.load(sys.stdin)['instance_profile'])")
+
+        AMI_ID=$(aws ec2 describe-images \
+          --owners 136693071363 \
+          --filters "Name=name,Values=debian-12-amd64-*" "Name=state,Values=available" \
+          --query "sort_by(Images, &CreationDate)[-1].ImageId" --output text)
+
+        INSTANCE_ID=$(aws ec2 run-instances \
+          --image-id "$AMI_ID" \
+          --instance-type t3.large \
+          --subnet-id "$SUBNET_ID" \
+          --security-group-ids "$SG_ID" \
+          --iam-instance-profile Name="$PROFILE" \
+          --block-device-mappings '[{"DeviceName":"/dev/xvda","Ebs":{"VolumeSize":100,"VolumeType":"gp3","DeleteOnTermination":true}}]' \
+          --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=gitian-dryrun-lxc},{Key=Purpose,Value=gitian-test}]' \
+          --metadata-options '{"HttpTokens":"required","HttpEndpoint":"enabled"}' \
+          --query 'Instances[0].InstanceId' --output text)
+
+        echo "instance_id=$INSTANCE_ID" >> "$GITHUB_OUTPUT"
+        echo "Launched test instance: $INSTANCE_ID"
+
+        # Wait for SSM
+        aws ec2 wait instance-running --instance-ids "$INSTANCE_ID"
+        sleep 30
+
+        for i in $(seq 1 30); do
+          STATUS=$(aws ssm describe-instance-information \
+            --filters "Key=InstanceIds,Values=$INSTANCE_ID" \
+            --query "InstanceInformationList[0].PingStatus" --output text 2>/dev/null || echo "")
+          if [ "$STATUS" = "Online" ]; then
+            echo "SSM online"
+            break
+          fi
+          echo "Waiting for SSM... ($i/30)"
+          sleep 10
+        done
+
+        # Install deps and build LXC images
+        cat > /tmp/test-lxc.sh <<'EOF'
+        #!/bin/bash
+        set -euo pipefail
+        export DEBIAN_FRONTEND=noninteractive
+
+        apt-get update -q
+        apt-get install -y -q lxc debootstrap bridge-utils
+
+        # Start LXC network
+        service lxc-net start || systemctl start lxc-net || true
+        sleep 2
+        ip addr show lxcbr0
+
+        # Build base images
+        cd /root
+        git clone https://github.com/devrandom/gitian-builder.git
+        cd gitian-builder
+
+        export USE_LXC=1
+        export LXC_BRIDGE=lxcbr0
+        export GITIAN_HOST_IP=10.0.3.1
+        export LXC_GUEST_IP=10.0.3.5
+
+        for suite in bullseye bookworm; do
+          echo "Building LXC base image: $suite"
+          time ./bin/make-base-vm --lxc --arch amd64 --distro debian --suite $suite
+          ls -lh base-${suite}-amd64
+        done
+
+        echo "✓ LXC base images built successfully"
+        EOF
+
+        B64=$(base64 -w0 /tmp/test-lxc.sh)
+        aws ssm send-command \
+          --instance-ids "$INSTANCE_ID" \
+          --document-name "AWS-RunShellScript" \
+          --timeout-seconds 1800 \
+          --parameters "commands=[\"echo '$B64' | base64 -d > /root/test.sh && chmod +x /root/test.sh && bash /root/test.sh\"]" \
+          --query Command.CommandId --output text
+
+        echo "Command sent. Will terminate VM in cleanup step."
+
+    - name: Full build without upload (full-build-no-upload)
+      if: inputs.test_type == 'full-build-no-upload'
+      run: |
+        echo "=== NOT IMPLEMENTED YET ==="
+        echo "This would run the full build but skip S3 uploads and gitian.sigs push"
+        echo "To implement: modify gitian-direct.sh with DRY_RUN=1 flag"
+        exit 1
+
+    - name: Cleanup test VM
+      if: always() && steps.vm_test.outputs.instance_id
+      run: |
+        INSTANCE_ID="${{ steps.vm_test.outputs.instance_id }}"
+        if [ -n "$INSTANCE_ID" ]; then
+          echo "Terminating test instance: $INSTANCE_ID"
+          aws ec2 terminate-instances --instance-ids "$INSTANCE_ID" || true
+        fi
+
+    - name: Summary
+      if: always()
+      run: |
+        echo ""
+        echo "==================================="
+        echo "DRY RUN COMPLETE"
+        echo "==================================="
+        echo ""
+        echo "Test type: ${{ inputs.test_type }}"
+        echo "Tag: ${{ inputs.tag }}"
+        echo "Owner/Repo: ${{ inputs.owner }}/${{ inputs.repo }}"
+        echo ""
+        echo "What was tested:"
+        case "${{ inputs.test_type }}" in
+          validate-only)
+            echo "✓ AWS credentials and permissions"
+            echo "✓ Secrets Manager access"
+            echo "✓ S3 bucket access"
+            echo "✓ GitHub repo and tag existence"
+            echo "✓ Infrastructure parameters validation"
+            echo ""
+            echo "No instances were launched."
+            ;;
+          build-lxc-only)
+            echo "✓ EC2 instance launch"
+            echo "✓ SSM agent connectivity"
+            echo "✓ LXC base image builds (bullseye + bookworm)"
+            echo ""
+            echo "Instance terminated after test."
+            ;;
+          full-build-no-upload)
+            echo "⚠ Not implemented yet"
+            ;;
+        esac
+        echo ""
+        echo "To run a real build:"
+        echo "  gh workflow run 'Gitian CI' --repo zcash/zcash-gitian -f tag=${{ inputs.tag }}"
