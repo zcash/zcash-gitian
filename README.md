@@ -9,6 +9,75 @@ Multiple developers build from source code by following a specific descriptor ("
 
 More independent Gitian builders are needed, which is why this guide exists.
 
+---
+
+## Automated CI/CD Pipeline
+
+This repository includes GitHub Actions workflows for automated Gitian builds and Debian package releases.
+
+### Workflows
+
+1. **Gitian CI** (`.github/workflows/CI.yaml`)
+   - Builds Gitian tarballs on ephemeral AWS EC2 instances
+   - Signs builds with both ECC and ZODL GPG keys
+   - Uploads tarballs to S3 and pushes signatures to `zcash/gitian.sigs`
+   - Triggered via `workflow_dispatch` or PR labels
+
+2. **Debian Package Build** (`.github/workflows/deb-build.yaml`)
+   - Builds `.deb` packages from Gitian tarballs
+   - Uses Docker containers to run `build-debian-package.sh`
+   - Uploads packages to S3 APT pool
+
+3. **APT Repo Update** (`.github/workflows/apt-update.yaml`)
+   - Updates APT repository metadata (Packages, Release, InRelease)
+   - Signs with GPG and uploads to S3
+   - Incremental updates — no need to download all existing packages
+
+### Usage
+
+**Triggering a full release (v6.13.0 example):**
+
+```bash
+# 1. Gitian build (90-120 min)
+gh workflow run "Gitian CI" --repo zcash/zcash-gitian \
+  -f tag=v6.13.0 -f owner=zcash -f repo=zcash
+
+# 2. Build Debian packages (30-60 min)
+gh workflow run "Debian Package Build" --repo zcash/zcash-gitian \
+  -f tag=v6.13.0 -f suites="bullseye bookworm"
+
+# 3. Update APT repository (5-10 min)
+gh workflow run "APT Repo Update" --repo zcash/zcash-gitian \
+  -f version=6.13.0 -f suites="bullseye bookworm"
+
+# Monitor progress
+gh run watch --repo zcash/zcash-gitian
+```
+
+**For private/security releases:**
+```bash
+gh workflow run "Gitian CI" --repo zcash/zcash-gitian \
+  -f tag=v6.13.0 -f owner=zodl-inc -f repo=zcash-security-fixes
+```
+
+### Required GitHub Secrets
+
+The following secrets must be configured in the repository settings:
+- `GITIAN_AWS_ROLE_ARN` — IAM role for OIDC authentication
+- `BUNNY_API_KEY` — BunnyCDN API key for cache purging
+- `BUNNY_ZONE` — BunnyCDN pull zone ID (e.g., `5435099`)
+
+### AWS Infrastructure
+
+The workflows use OIDC to assume an AWS IAM role (`gitian-github-actions`) that has permissions to:
+- Launch ephemeral EC2 instances for builds
+- Access Secrets Manager for GPG keys and GitHub tokens
+- Read/write to S3 buckets (`zodl-public-download`, `zodl-apt-server-zcash`)
+
+The build VMs have their own IAM role (`gitian-build-vm`) with the necessary permissions.
+
+---
+
 Requirements
 ------------
 
