@@ -97,29 +97,14 @@ else
     git clone "https://github.com/${OWNER}/${REPO}.git" --branch ${TAG} $BHOME/zcash
 fi
 
-# HOTFIX: Swap suite order to build bullseye before bookworm
-# (cxxbridge built in first suite requires GLIBC >=2.33, but bullseye has 2.31)
-# Building bullseye first creates binaries compatible with both suites
-echo "[5.5] Patching gitian descriptor to build bullseye before bookworm..."
-GITIAN_DESC=$BHOME/zcash/contrib/gitian-descriptors/gitian-linux-parallel.yml
-if grep -q 'suites:' "$GITIAN_DESC" && \
-   sed -n '/^suites:/,/^[^ ]/ p' "$GITIAN_DESC" | grep -q 'bookworm' && \
-   sed -n '/^suites:/,/^[^ ]/ p' "$GITIAN_DESC" | head -1 | grep -q 'bookworm'; then
-    # Swap bookworm and bullseye in suites list
-    sed -i '/^suites:/,/^[^ -]/ {
-        s/- "bookworm"/- "TEMP_SWAP_MARKER"/
-        s/- "bullseye"/- "bookworm"/
-        s/- "TEMP_SWAP_MARKER"/- "bullseye"/
-    }' "$GITIAN_DESC"
-    echo "✓ Swapped suite order: bullseye will build first"
-fi
-
 # gitian.sigs (local — push happens in CI)
 [ -d $BHOME/gitian.sigs ] || git clone https://github.com/zcash/gitian.sigs.git $BHOME/gitian.sigs
 
 mkdir -p $BHOME/zcash-binaries
 
-echo "[6] Determining suites from gitian descriptor..."
+GITIAN_DESC=$BHOME/zcash/contrib/gitian-descriptors/gitian-linux-parallel.yml
+
+echo "[5] Determining suites from gitian descriptor..."
 SUITES=$(python3 -c "
 import yaml
 with open('$GITIAN_DESC') as f:
@@ -127,6 +112,16 @@ with open('$GITIAN_DESC') as f:
 suites = d.get('suites', [d.get('suite', 'bullseye')])
 print(' '.join(suites) if isinstance(suites, list) else suites)
 " 2>/dev/null || echo "bullseye")
+
+# GLIBC fix: build bullseye before bookworm.
+# The depends system builds cxxbridge as a native tool linked to the host GLIBC.
+# If bookworm (GLIBC 2.36) builds first, the cached cxxbridge binary requires
+# GLIBC >=2.33, which fails on bullseye (GLIBC 2.31). Building bullseye first
+# produces a cxxbridge compatible with both.
+if echo "$SUITES" | grep -q "bullseye" && echo "$SUITES" | grep -q "bookworm"; then
+    SUITES="bullseye bookworm"
+    echo "Suite order: bullseye first (GLIBC compatibility)"
+fi
 echo "Suites: $SUITES"
 
 PROC=$(nproc)
@@ -135,15 +130,11 @@ echo "Using $PROC cores, ${MEM}M RAM"
 
 cd $BHOME/gitian-builder
 
-echo "[7] Building suites: $SUITES"
-
-# Pre-download Linux deps (macOS optional, failures are non-fatal)
-echo "Downloading Linux dependencies..."
+echo "[6] Downloading dependencies..."
 make -C $BHOME/zcash/depends download SOURCES_PATH=$BHOME/gitian-builder/cache/common 2>&1 | \
     grep -v "^make\[" | tail -5 || echo "Some downloads failed (macOS), continuing"
 
-# Build ALL base LXC images first — gbuild processes all suites in the descriptor
-# so every base image must exist before the first gbuild call
+echo "[7] Building base LXC images..."
 for suite in $SUITES; do
     base_img=$BHOME/gitian-builder/base-${suite}-amd64
     if [ ! -f $base_img ]; then
@@ -154,13 +145,29 @@ for suite in $SUITES; do
     fi
 done
 
+echo "[8] Building suites: $SUITES"
+
+# Build each suite with its own single-suite descriptor.
+# The original descriptor lists all suites, and gbuild processes them all in one
+# invocation. This causes the depends cache (including cxxbridge) to leak between
+# suites. Using single-suite descriptors isolates each build.
 for suite in $SUITES; do
     echo ""
     echo "=== Suite: $suite ==="
 
     suite_dir=$BHOME/gitian-builder/suites/${suite}
     mkdir -p $suite_dir
-    cp $GITIAN_DESC $suite_dir/gitian-linux-parallel.yml
+
+    # Create a single-suite descriptor from the original
+    python3 -c "
+import yaml
+with open('$GITIAN_DESC') as f:
+    d = yaml.safe_load(f)
+d['suites'] = ['$suite']
+with open('$suite_dir/gitian-linux-parallel.yml', 'w') as f:
+    yaml.dump(d, f, default_flow_style=False, sort_keys=False)
+"
+    echo "Created single-suite descriptor for $suite"
 
     echo "Running gbuild for $suite (~60-90 min)..."
     if ! ./bin/gbuild --fetch-tags -j "$PROC" -m "$MEM" \
@@ -209,11 +216,11 @@ for suite in $SUITES; do
     echo "Suite $suite artifacts: $(ls $suite_out)"
 done
 
-echo "[8] Assert files:"
+echo "[9] Assert files:"
 find $BHOME/gitian.sigs/${TAG#v}* -name "*.assert" 2>/dev/null | sort
 head -8 $BHOME/gitian.sigs/${TAG#v}*/sysadmin/*.assert 2>/dev/null | head -30
 
-echo "[9] Sign + upload tarballs..."
+echo "[10] Sign + upload tarballs..."
 for suite in $(ls $BHOME/zcash-binaries/${TAG#v}/); do
     cd $BHOME/zcash-binaries/${TAG#v}/$suite
     # Rename: zcash-VERSION-linux64.tar.gz → zcash-VERSION-linux64-debian-SUITE.tar.gz
@@ -232,25 +239,23 @@ for suite in $(ls $BHOME/zcash-binaries/${TAG#v}/); do
     echo "  -> s3://zodl-public-download/${TAG#v}/$suite/"
 done
 
-# Copy to downloads/ with CI naming convention (linux64 before debian-suite)
+# Copy to downloads/ with expected naming: zcash-VERSION-linux64-debian-SUITE.tar.gz
 VERSION="${TAG#v}"
 for suite in $(ls $BHOME/zcash-binaries/${VERSION}/); do
-    for SUFFIX in "linux64.tar.gz" "linux64.tar.gz.asc" "linux64-debug.tar.gz" "linux64-debug.tar.gz.asc"; do
-        SRC="s3://zodl-public-download/${VERSION}/${suite}/zcash-${VERSION}-${SUFFIX%-debian*}-debian-${suite}-${SUFFIX#*linux64}"
-        # Reconstruct: zcash-VERSION-linux64-debian-SUITE.tar.gz
-        NEWNAME="zcash-${VERSION}-linux64-debian-${suite}-$(echo $SUFFIX | sed 's/linux64[-.]*//')"
-        DST="s3://zodl-public-download/downloads/$NEWNAME"
-        aws s3 cp "s3://zodl-public-download/${VERSION}/${suite}/zcash-${VERSION}-debian-${suite}-${SUFFIX}" "$DST" 2>/dev/null || true
+    cd $BHOME/zcash-binaries/${VERSION}/${suite}
+    for f in *.tar.gz *.tar.gz.asc; do
+        [ -f "$f" ] || continue
+        aws s3 cp "$f" "s3://zodl-public-download/downloads/$f" --no-progress 2>/dev/null || true
     done
 done
 
-echo "[10] Purge BunnyCDN..."
+echo "[11] Purge BunnyCDN..."
 curl -s -X POST "https://api.bunny.net/pullzone/${BUNNY_ZONE}/purgeCache" \
     -H "content-type: application/json" -H "AccessKey: ${BUNNY_KEY}"
 
 # Push gitian.sigs for non-RC releases only
 if [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "[11] Pushing gitian.sigs..."
+    echo "[12] Pushing gitian.sigs..."
     GH_TOKEN=$(aws secretsmanager get-secret-value \
         --secret-id /infra/gitian/gitian_sigs_deploy_key \
         --query SecretString --output text)
@@ -267,7 +272,7 @@ if [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     unset GH_TOKEN
     echo "gitian.sigs pushed for ${TAG}"
 else
-    echo "[11] Skipping gitian.sigs push (RC or pre-release tag: ${TAG})"
+    echo "[12] Skipping gitian.sigs push (RC or pre-release tag: ${TAG})"
 fi
 
 echo ""
