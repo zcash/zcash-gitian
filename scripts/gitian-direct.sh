@@ -121,10 +121,13 @@ cat > $BDB_PATCH_DIR/pthread_yield.patch <<'PATCH'
  #elif defined(HAVE_YIELD)
 PATCH
 
-# Add patch to depends recipe if not already there
+# Add patch to depends recipe: both the patches list AND the preprocess commands
 if ! grep -q "pthread_yield.patch" $BHOME/zcash/depends/packages/bdb.mk; then
+    # Add to patches list (for checksum tracking)
     sed -i 's/\($(package)_patches=.*\)/\1 pthread_yield.patch/' $BHOME/zcash/depends/packages/bdb.mk
-    echo "  Added pthread_yield.patch to bdb.mk"
+    # Add to preprocess_cmds (actual patch application)
+    sed -i '/patch.*winioctl/s/$/ \&\& \\\n  patch -p1 <$($(package)_patch_dir)\/pthread_yield.patch/' $BHOME/zcash/depends/packages/bdb.mk
+    echo "  Added pthread_yield.patch to bdb.mk (patches + preprocess_cmds)"
 fi
 
 # gitian.sigs (local — push happens in CI)
