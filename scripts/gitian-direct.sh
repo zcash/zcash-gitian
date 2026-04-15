@@ -97,6 +97,36 @@ else
     git clone "https://github.com/${OWNER}/${REPO}.git" --branch ${TAG} $BHOME/zcash
 fi
 
+# Patch BDB: pthread_yield removed from glibc 2.34+ (bookworm has 2.36).
+# BDB's configure detects it in headers but lld can't link the unversioned symbol.
+# Fix: use sched_yield() instead (POSIX, available everywhere).
+echo "[4.5] Patching BDB for glibc 2.34+ compatibility..."
+BDB_PATCH_DIR=$BHOME/zcash/depends/patches/bdb
+cat > $BDB_PATCH_DIR/pthread_yield.patch <<'PATCH'
+--- a/src/os/os_yield.c
++++ b/src/os/os_yield.c
+@@ -49,9 +49,7 @@
+ 	if (secs != 0 || usecs != 0)
+ 		__os_sleep(env, secs, usecs);
+ 	else {
+-#if defined(HAVE_MUTEX_UI_THREADS)
+-		thr_yield();
+-#elif defined(HAVE_PTHREAD_YIELD)
+-		pthread_yield();
+-#elif defined(HAVE_SCHED_YIELD)
++#if defined(HAVE_SCHED_YIELD)
+ 		(void)sched_yield();
++#elif defined(HAVE_MUTEX_UI_THREADS)
++		thr_yield();
+ #elif defined(HAVE_YIELD)
+PATCH
+
+# Add patch to depends recipe if not already there
+if ! grep -q "pthread_yield.patch" $BHOME/zcash/depends/packages/bdb.mk; then
+    sed -i 's/\($(package)_patches=.*\)/\1 pthread_yield.patch/' $BHOME/zcash/depends/packages/bdb.mk
+    echo "  Added pthread_yield.patch to bdb.mk"
+fi
+
 # gitian.sigs (local — push happens in CI)
 [ -d $BHOME/gitian.sigs ] || git clone https://github.com/zcash/gitian.sigs.git $BHOME/gitian.sigs
 
