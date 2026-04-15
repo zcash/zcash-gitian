@@ -146,34 +146,13 @@ suites = d.get('suites', [d.get('suite', 'bullseye')])
 print(' '.join(suites) if isinstance(suites, list) else suites)
 " 2>/dev/null || echo "bullseye")
 
-# GLIBC/ABI fix: build bullseye before bookworm.
-# Two issues require bullseye-first ordering with shared depends cache:
-# 1. cxxbridge: compiled as native tool, linked to host GLIBC. Bullseye's GLIBC 2.31
-#    produces a binary compatible with both suites. Bookworm's 2.36 doesn't run on bullseye.
-# 2. BDB (libdb_cxx): calls pthread_yield(), removed as unversioned symbol in GLIBC 2.34+.
-#    Bullseye's BDB links against 2.31 where pthread_yield exists. When cached and reused
-#    on bookworm, it links fine (versioned symbol still available). Building BDB fresh on
-#    bookworm would fail with "undefined symbol: pthread_yield".
-#
-# Solution: run ONE gbuild with the multi-suite descriptor (bullseye first). gbuild's
-# enable_cache shares the depends tree between suites within a single invocation.
-if echo "$SUITES" | grep -q "bullseye" && echo "$SUITES" | grep -q "bookworm"; then
-    SUITES="bullseye bookworm"
-    echo "Suite order forced: bullseye first (GLIBC/ABI compatibility)"
-fi
+# Disable cache to force fresh depends builds per suite.
+# With the BDB pthread_yield patch, each suite compiles BDB from patched source.
+# Caching between suites causes the old (unpatched) .a to be reused.
+echo "[5.5] Disabling gitian cache..."
+sed -i 's/^enable_cache: true/enable_cache: false/' "$GITIAN_DESC"
+grep "enable_cache" "$GITIAN_DESC"
 echo "Suites: $SUITES"
-
-# Patch the descriptor to use our suite order
-echo "[5.5] Patching descriptor suite order..."
-python3 -c "
-import yaml
-with open('$GITIAN_DESC') as f:
-    d = yaml.safe_load(f)
-d['suites'] = '$SUITES'.split()
-with open('$GITIAN_DESC', 'w') as f:
-    yaml.dump(d, f, default_flow_style=False, sort_keys=False)
-print('Descriptor suites:', d['suites'])
-"
 
 PROC=$(nproc)
 MEM=$(free -m | awk 'FNR==2 { print int($2 * 0.85)}')
@@ -196,35 +175,43 @@ for suite in $SUITES; do
     fi
 done
 
-echo "[8] Running gbuild (all suites in single invocation)..."
-# Single gbuild run processes all suites sequentially, sharing the depends cache.
-# This is required so bullseye's depends (cxxbridge, BDB) are reused for bookworm.
-if ! ./bin/gbuild --fetch-tags -j "$PROC" -m "$MEM" \
-        --commit zcash="${TAG}" \
-        --url zcash="https://github.com/${OWNER}/${REPO}" \
-        "$GITIAN_DESC"; then
-    echo "First attempt failed, retrying in 60s..."
-    echo "=== var/build.log (last 100 lines) ==="
-    tail -100 $BHOME/gitian-builder/var/build.log 2>/dev/null || echo "(no build.log)"
-    echo "=== end var/build.log ==="
-    sleep 60
-    ./bin/gbuild --fetch-tags -j "$PROC" -m "$MEM" \
-        --commit zcash="${TAG}" \
-        --url zcash="https://github.com/${OWNER}/${REPO}" \
-        "$GITIAN_DESC"
-fi
-
-echo "[8.5] Signing and collecting artifacts per suite..."
+echo "[8] Building each suite independently..."
 for suite in $SUITES; do
     echo ""
-    echo "=== Signing: $suite ==="
+    echo "=== Suite: $suite ==="
+
+    # Create single-suite descriptor
+    suite_dir=$BHOME/gitian-builder/suites/${suite}
+    mkdir -p $suite_dir
+    python3 -c "
+import yaml
+with open('$GITIAN_DESC') as f:
+    d = yaml.safe_load(f)
+d['suites'] = ['$suite']
+d['enable_cache'] = False
+with open('$suite_dir/gitian-linux-parallel.yml', 'w') as f:
+    yaml.dump(d, f, default_flow_style=False, sort_keys=False)
+print('Created descriptor for $suite (cache disabled)')
+"
+
+    echo "Running gbuild for $suite (~60-90 min)..."
+    if ! ./bin/gbuild --fetch-tags -j "$PROC" -m "$MEM" \
+            --commit zcash="${TAG}" \
+            --url zcash="https://github.com/${OWNER}/${REPO}" \
+            "$suite_dir/gitian-linux-parallel.yml"; then
+        echo "Build failed for $suite"
+        echo "=== var/build.log (last 100 lines) ==="
+        tail -100 $BHOME/gitian-builder/var/build.log 2>/dev/null || echo "(no build.log)"
+        echo "=== end var/build.log ==="
+        exit 1
+    fi
 
     # Sign assert with ECC key (sysadmin directory — legacy zcash key)
     ./bin/gsign -p "gpg --batch --detach-sign" \
         --signer sysadmin \
         --release ${TAG#v}_${suite} \
         --destination $BHOME/gitian.sigs/ \
-        "$GITIAN_DESC"
+        "$suite_dir/gitian-linux-parallel.yml"
 
     # Re-sign the same assert with ZODL key (sysadmin-zodl directory)
     ASSERT_SRC="$BHOME/gitian.sigs/${TAG#v}_${suite}/sysadmin"
@@ -243,12 +230,11 @@ for suite in $SUITES; do
 
     suite_out=$BHOME/zcash-binaries/${TAG#v}/${suite}
     mkdir -p $suite_out
-    # gbuild outputs go to build/out/ — copy what's there for this suite
-    cp $BHOME/gitian-builder/build/out/zcash-*.tar.gz \
+    mv $BHOME/gitian-builder/build/out/zcash-*.tar.gz \
        $suite_out/ 2>/dev/null || true
-    cp $BHOME/gitian-builder/build/out/src/zcash-*.tar.gz \
+    mv $BHOME/gitian-builder/build/out/src/zcash-*.tar.gz \
        $suite_out/ 2>/dev/null || true
-    echo "Suite $suite artifacts: $(ls $suite_out 2>/dev/null || echo '(none)')"
+    echo "Suite $suite artifacts: $(ls $suite_out)"
 done
 
 echo "[9] Assert files:"
