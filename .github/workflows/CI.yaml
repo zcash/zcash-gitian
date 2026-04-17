@@ -19,25 +19,18 @@ on:
         default: 'zcash'
 
 permissions:
-  id-token: write   # required for OIDC
+  id-token: write
   contents: read
 
 jobs:
-  build-gitian:
+  parse-inputs:
     runs-on: ubuntu-latest
-    timeout-minutes: 300
-
+    outputs:
+      owner: ${{ steps.label.outputs.owner }}
+      repo: ${{ steps.label.outputs.repo }}
+      tag: ${{ steps.label.outputs.tag }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Configure AWS credentials (OIDC)
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: ${{ secrets.GITIAN_AWS_ROLE_ARN }}
-        aws-region: us-east-1
-
-    - name: Parse label or inputs (tag or owner/repo/tag)
+    - name: Parse label or inputs
       id: label
       run: |
         if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
@@ -45,7 +38,6 @@ jobs:
           REPO="${{ inputs.repo }}"
           TAG="${{ inputs.tag }}"
         else
-          # Label format: "v6.13.0" (uses default zcash/zcash) or "owner/repo/tag" for overrides
           LABEL="${{ github.event.label.name }}"
           if [[ "$LABEL" == */* ]]; then
             IFS='/' read -r OWNER REPO TAG <<< "$LABEL"
@@ -59,15 +51,33 @@ jobs:
         echo "repo=$REPO"   >> "$GITHUB_OUTPUT"
         echo "tag=$TAG"     >> "$GITHUB_OUTPUT"
 
+  build:
+    needs: [parse-inputs]
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [bullseye, bookworm]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials (OIDC)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.GITIAN_AWS_ROLE_ARN }}
+        aws-region: us-east-1
+
     - name: Get build config from Secrets Manager
       id: config
       run: |
         CONFIG=$(aws secretsmanager get-secret-value \
           --secret-id /infra/gitian/config \
           --query SecretString --output text)
-        echo "subnet_id=$(echo "$CONFIG"         | python3 -c "import sys,json; print(json.load(sys.stdin)['subnet_id'])")"          >> "$GITHUB_OUTPUT"
-        echo "sg_id=$(echo "$CONFIG"             | python3 -c "import sys,json; print(json.load(sys.stdin)['security_group_id'])")"   >> "$GITHUB_OUTPUT"
-        echo "instance_profile=$(echo "$CONFIG"  | python3 -c "import sys,json; print(json.load(sys.stdin)['instance_profile'])")"   >> "$GITHUB_OUTPUT"
+        echo "subnet_id=$(echo "$CONFIG" | python3 -c "import sys,json; print(json.load(sys.stdin)['subnet_id'])")" >> "$GITHUB_OUTPUT"
+        echo "sg_id=$(echo "$CONFIG" | python3 -c "import sys,json; print(json.load(sys.stdin)['security_group_id'])")" >> "$GITHUB_OUTPUT"
+        echo "instance_profile=$(echo "$CONFIG" | python3 -c "import sys,json; print(json.load(sys.stdin)['instance_profile'])")" >> "$GITHUB_OUTPUT"
 
     - name: Find latest Debian 12 (Bookworm) AMI
       id: ami
@@ -79,15 +89,12 @@ jobs:
           --query "sort_by(Images, &CreationDate)[-1].ImageId" \
           --output text)
         echo "ami_id=$AMI_ID" >> "$GITHUB_OUTPUT"
-        echo "Using AMI: $AMI_ID"
 
     - name: Create ephemeral build VM
       id: vm
       run: |
         RANDOM_ID=$(cat /proc/sys/kernel/random/uuid | tr -d '-' | head -c 8)
-        VM_NAME="gitian-build-${RANDOM_ID}"
-        # Debian 12 AMIs do not include the SSM agent.
-        # amazon-ssm-agent is not in the standard Debian repos — install from the AWS-hosted .deb.
+        VM_NAME="gitian-${{ matrix.suite }}-${RANDOM_ID}"
         USER_DATA=$(printf '#!/bin/bash\ncd /tmp\nwget -q https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb\ndpkg -i amazon-ssm-agent.deb\nsystemctl enable amazon-ssm-agent\nsystemctl start amazon-ssm-agent\n')
         INSTANCE_ID=$(aws ec2 run-instances \
           --image-id "${{ steps.ami.outputs.ami_id }}" \
@@ -101,39 +108,25 @@ jobs:
           --user-data "$USER_DATA" \
           --query 'Instances[0].InstanceId' --output text)
         echo "instance_id=$INSTANCE_ID" >> "$GITHUB_OUTPUT"
-        echo "vm_name=$VM_NAME"         >> "$GITHUB_OUTPUT"
         echo "Launched: $INSTANCE_ID ($VM_NAME)"
 
-    - name: Wait for SSM agent to come online (~60s)
+    - name: Wait for SSM agent
       run: |
-        echo "Waiting for instance running state..."
         aws ec2 wait instance-running --instance-ids "${{ steps.vm.outputs.instance_id }}"
-        echo "Waiting for SSM agent to register..."
         SSM_ONLINE=false
         for i in $(seq 1 30); do
           STATUS=$(aws ssm describe-instance-information \
             --filters "Key=InstanceIds,Values=${{ steps.vm.outputs.instance_id }}" \
             --query "InstanceInformationList[0].PingStatus" --output text 2>/dev/null || echo "")
-          if [ "$STATUS" = "Online" ]; then
-            echo "SSM agent online after ${i}x10s"
-            SSM_ONLINE=true
-            break
-          fi
-          echo "Attempt $i: SSM status='$STATUS' — waiting 10s..."
+          if [ "$STATUS" = "Online" ]; then SSM_ONLINE=true; break; fi
           sleep 10
         done
-        if [ "$SSM_ONLINE" != "true" ]; then
-          echo "SSM agent never came online — user-data may have failed to install it"
-          exit 1
-        fi
-        # Extra buffer: SSM reports Online before it fully accepts SendCommand
+        if [ "$SSM_ONLINE" != "true" ]; then echo "SSM never came online"; exit 1; fi
         sleep 15
 
     - name: Upload build script
       run: |
-        # Encode the script as base64 to avoid shell escaping issues in SSM
         B64=$(base64 -w0 scripts/gitian-direct.sh)
-        # Retry up to 5 times — SSM may briefly reject SendCommand after coming Online
         SENT=false
         for i in $(seq 1 5); do
           CMD_ID=$(aws ssm send-command \
@@ -142,29 +135,25 @@ jobs:
             --timeout-seconds 120 \
             --parameters "commands=[\"echo '$B64' | base64 -d > /root/gitian-direct.sh && chmod +x /root/gitian-direct.sh && echo OK\"]" \
             --output text --query Command.CommandId 2>&1) && { SENT=true; break; }
-          echo "Attempt $i failed: $CMD_ID — retrying in 10s..."
           sleep 10
         done
-        if [ "$SENT" != "true" ]; then echo "All upload attempts failed"; exit 1; fi
-        echo "Upload command: $CMD_ID"
-        # Wait for upload to complete before proceeding
+        if [ "$SENT" != "true" ]; then exit 1; fi
         for i in $(seq 1 12); do
-          STATUS=$(aws ssm get-command-invocation \
-            --command-id "$CMD_ID" \
+          STATUS=$(aws ssm get-command-invocation --command-id "$CMD_ID" \
             --instance-id "${{ steps.vm.outputs.instance_id }}" \
             --query Status --output text 2>/dev/null || echo "Pending")
-          echo "Upload status [$i]: $STATUS"
-          if [ "$STATUS" = "Success" ]; then echo "Script uploaded OK"; break; fi
-          if [ "$STATUS" = "Failed" ]; then echo "Upload failed"; exit 1; fi
+          if [ "$STATUS" = "Success" ]; then break; fi
+          if [ "$STATUS" = "Failed" ]; then exit 1; fi
           sleep 5
         done
 
-    - name: Run Gitian build (2-4 hours)
+    - name: Run Gitian build (${{ matrix.suite }})
       id: build
       run: |
-        OWNER="${{ steps.label.outputs.owner }}"
-        REPO="${{ steps.label.outputs.repo }}"
-        TAG="${{ steps.label.outputs.tag }}"
+        OWNER="${{ needs.parse-inputs.outputs.owner }}"
+        REPO="${{ needs.parse-inputs.outputs.repo }}"
+        TAG="${{ needs.parse-inputs.outputs.tag }}"
+        SUITE="${{ matrix.suite }}"
         BUNNY_KEY="${{ secrets.BUNNY_API_KEY }}"
         BUNNY_ZONE="${{ secrets.BUNNY_ZONE }}"
 
@@ -174,54 +163,31 @@ jobs:
             --instance-ids "${{ steps.vm.outputs.instance_id }}" \
             --document-name "AWS-RunShellScript" \
             --timeout-seconds 14400 \
-            --parameters "commands=[\"OWNER='${OWNER}' REPO='${REPO}' TAG='${TAG}' BUNNY_KEY='${BUNNY_KEY}' BUNNY_ZONE='${BUNNY_ZONE}' bash /root/gitian-direct.sh\"]" \
+            --parameters "commands=[\"OWNER='${OWNER}' REPO='${REPO}' TAG='${TAG}' SUITE='${SUITE}' BUNNY_KEY='${BUNNY_KEY}' BUNNY_ZONE='${BUNNY_ZONE}' bash /root/gitian-direct.sh\"]" \
             --query Command.CommandId --output text 2>&1) && { SENT=true; break; }
-          echo "Attempt $i failed: $COMMAND_ID — retrying in 10s..."
           sleep 10
         done
-        if [ "$SENT" != "true" ]; then echo "All build dispatch attempts failed"; exit 1; fi
-        echo "command_id=$COMMAND_ID" >> "$GITHUB_OUTPUT"
+        if [ "$SENT" != "true" ]; then exit 1; fi
         echo "SSM command: $COMMAND_ID"
 
-        # Poll until done (max 4h)
         BUILD_OK=false
-        for i in $(seq 1 240); do
+        for i in $(seq 1 180); do
           STATUS=$(aws ssm get-command-invocation \
             --command-id "$COMMAND_ID" \
             --instance-id "${{ steps.vm.outputs.instance_id }}" \
             --query Status --output text 2>/dev/null || echo "Pending")
-          echo "[$i/240] Status: $STATUS"
-          if [ "$STATUS" = "Success" ]; then
-            echo "Build completed successfully."
-            BUILD_OK=true
-            break
-          elif [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "TimedOut" ]; then
-            echo "Build failed with status: $STATUS"
-            # Fetch debug log from S3 (SSM output truncates at 24KB)
-            echo "=== Fetching debug log from S3 ==="
-            aws s3 ls s3://zodl-public-download/gitian-debug/ --recursive | sort | tail -1 || true
+          echo "[$i/180] ${{ matrix.suite }}: $STATUS"
+          if [ "$STATUS" = "Success" ]; then BUILD_OK=true; break; fi
+          if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "TimedOut" ]; then
             LATEST_LOG=$(aws s3 ls s3://zodl-public-download/gitian-debug/ 2>/dev/null | sort | tail -1 | awk '{print $4}')
-            if [ -n "$LATEST_LOG" ]; then
-              aws s3 cp "s3://zodl-public-download/gitian-debug/$LATEST_LOG" /dev/stdout 2>/dev/null | tail -200
-            fi
+            [ -n "$LATEST_LOG" ] && aws s3 cp "s3://zodl-public-download/gitian-debug/$LATEST_LOG" /dev/stdout 2>/dev/null | tail -100
             exit 1
           fi
           sleep 60
         done
-        if [ "$BUILD_OK" != "true" ]; then
-          echo "Build poll exhausted after 240 minutes without terminal status."
-          echo "Last status: $STATUS"
-          exit 1
-        fi
+        if [ "$BUILD_OK" != "true" ]; then echo "Poll exhausted"; exit 1; fi
 
-    - name: Purge BunnyCDN cache
-      if: always() && steps.build.outcome == 'success'
-      run: |
-        curl -s -X POST "https://api.bunny.net/pullzone/${{ secrets.BUNNY_ZONE }}/purgeCache" \
-          -H "content-type: application/json" \
-          -H "AccessKey: ${{ secrets.BUNNY_API_KEY }}"
-
-    - name: Refresh AWS credentials before cleanup
+    - name: Refresh AWS credentials
       if: always()
       uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -233,4 +199,26 @@ jobs:
       run: |
         aws ec2 terminate-instances \
           --instance-ids "${{ steps.vm.outputs.instance_id }}" || true
-        echo "VM ${{ steps.vm.outputs.instance_id }} terminated."
+
+  finalize:
+    needs: [parse-inputs, build]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Configure AWS credentials (OIDC)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.GITIAN_AWS_ROLE_ARN }}
+        aws-region: us-east-1
+
+    - name: Purge BunnyCDN cache
+      run: |
+        curl -s -X POST "https://api.bunny.net/pullzone/${{ secrets.BUNNY_ZONE }}/purgeCache" \
+          -H "content-type: application/json" \
+          -H "AccessKey: ${{ secrets.BUNNY_API_KEY }}"
+
+    - name: Summary
+      run: |
+        TAG="${{ needs.parse-inputs.outputs.tag }}"
+        echo "BUILD COMPLETE: ${TAG}"
+        echo "Artifacts: s3://zodl-public-download/${TAG#v}/"
+        aws s3 ls "s3://zodl-public-download/${TAG#v}/" --recursive | head -20
