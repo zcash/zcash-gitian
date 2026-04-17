@@ -97,16 +97,25 @@ else
     git clone "https://github.com/${OWNER}/${REPO}.git" --branch ${TAG} $BHOME/zcash
 fi
 
-# BDB pthread_yield fix: patch the depends preprocess commands to replace
-# pthread_yield with sched_yield. We do this by editing bdb.mk's preprocess_cmds
-# to add a sed command, but WITHOUT changing the patches list (to preserve cache hash).
-echo "[4.5] Patching BDB preprocess commands for pthread_yield fix..."
+# BDB pthread_yield fix for bookworm (glibc 2.34+ removed unversioned symbol).
+# Two-part fix:
+# 1. Add sed to preprocess_cmds to replace pthread_yield→sched_yield in source
+# 2. Create a dummy patch file that changes the package hash, forcing BDB rebuild
+#    (gbuild cache keys on tarball hash + patches list, ignores preprocess_cmds)
+echo "[4.5] Patching BDB for pthread_yield fix..."
 BDB_MK=$BHOME/zcash/depends/packages/bdb.mk
-if ! grep -q "pthread_yield" "$BDB_MK"; then
-    # Add sed to preprocess_cmds that replaces pthread_yield() with sched_yield()
-    # This doesn't change the patches hash — only the preprocess commands
+BDB_PATCH_DIR=$BHOME/zcash/depends/patches/bdb
+
+if ! grep -q "sched_yield" "$BDB_MK"; then
+    # Add sed to preprocess_cmds (does the actual fix)
     sed -i '/winioctl-and-atomic_init_db.patch/s/$/ \&\& \\\n  sed -i "s\/pthread_yield()\/sched_yield()\/" src\/os\/os_yield.c/' "$BDB_MK"
-    echo "  Added pthread_yield→sched_yield sed to bdb.mk preprocess_cmds"
+
+    # Add a no-op patch file to invalidate the cache hash
+    echo "--- /dev/null" > "$BDB_PATCH_DIR/pthread_yield_fix.patch"
+    echo "+++ /dev/null" >> "$BDB_PATCH_DIR/pthread_yield_fix.patch"
+    sed -i 's/\($(package)_patches=.*\)/\1 pthread_yield_fix.patch/' "$BDB_MK"
+
+    echo "  Applied: preprocess sed + cache-invalidating patch"
     grep -A5 "preprocess_cmds" "$BDB_MK"
 fi
 
