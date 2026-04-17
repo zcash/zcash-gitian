@@ -146,7 +146,13 @@ suites = d.get('suites', [d.get('suite', 'bullseye')])
 print(' '.join(suites) if isinstance(suites, list) else suites)
 " 2>/dev/null || echo "bullseye")
 
-# Force bullseye first in multi-suite descriptor (cache enabled).
+# Force bullseye before bookworm
+if echo "$SUITES" | grep -q "bullseye" && echo "$SUITES" | grep -q "bookworm"; then
+    SUITES="bullseye bookworm"
+    echo "Suite order forced: bullseye first (GLIBC/ABI compatibility)"
+fi
+
+# Multi-suite descriptor with cache enabled.
 # bullseye builds BDB + cxxbridge, cache carries them to bookworm.
 # The March 28 build proved this works — BDB's pthread_yield is resolved
 # by GNU ld (used in configure) even on bookworm. lld only fails when
