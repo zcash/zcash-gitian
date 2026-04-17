@@ -146,13 +146,22 @@ suites = d.get('suites', [d.get('suite', 'bullseye')])
 print(' '.join(suites) if isinstance(suites, list) else suites)
 " 2>/dev/null || echo "bullseye")
 
-# Disable cache to force fresh depends builds per suite.
-# With the BDB pthread_yield patch, each suite compiles BDB from patched source.
-# Caching between suites causes the old (unpatched) .a to be reused.
-echo "[5.5] Disabling gitian cache..."
-sed -i 's/^enable_cache: true/enable_cache: false/' "$GITIAN_DESC"
-grep "enable_cache" "$GITIAN_DESC"
-echo "Suites: $SUITES"
+# Force bullseye first in multi-suite descriptor (cache enabled).
+# bullseye builds BDB + cxxbridge, cache carries them to bookworm.
+# The March 28 build proved this works — BDB's pthread_yield is resolved
+# by GNU ld (used in configure) even on bookworm. lld only fails when
+# BDB is recompiled fresh inside a bookworm-only container.
+echo "[5.5] Patching descriptor: bullseye first, cache enabled..."
+python3 -c "
+import yaml
+with open('$GITIAN_DESC') as f:
+    d = yaml.safe_load(f)
+d['suites'] = '$SUITES'.split()
+d['enable_cache'] = True
+with open('$GITIAN_DESC', 'w') as f:
+    yaml.dump(d, f, default_flow_style=False, sort_keys=False)
+print('Descriptor: suites=%s, cache=%s' % (d['suites'], d['enable_cache']))
+"
 
 PROC=$(nproc)
 MEM=$(free -m | awk 'FNR==2 { print int($2 * 0.85)}')
@@ -175,43 +184,29 @@ for suite in $SUITES; do
     fi
 done
 
-echo "[8] Building each suite independently..."
+echo "[8] Running gbuild (multi-suite, cache enabled, bullseye first)..."
+if ! ./bin/gbuild --fetch-tags -j "$PROC" -m "$MEM" \
+        --commit zcash="${TAG}" \
+        --url zcash="https://github.com/${OWNER}/${REPO}" \
+        "$GITIAN_DESC"; then
+    echo "Build failed"
+    echo "=== var/build.log (last 100 lines) ==="
+    tail -100 $BHOME/gitian-builder/var/build.log 2>/dev/null || echo "(no build.log)"
+    echo "=== end var/build.log ==="
+    exit 1
+fi
+
+echo "[8.5] Signing per suite..."
 for suite in $SUITES; do
     echo ""
-    echo "=== Suite: $suite ==="
-
-    # Create single-suite descriptor
-    suite_dir=$BHOME/gitian-builder/suites/${suite}
-    mkdir -p $suite_dir
-    python3 -c "
-import yaml
-with open('$GITIAN_DESC') as f:
-    d = yaml.safe_load(f)
-d['suites'] = ['$suite']
-d['enable_cache'] = False
-with open('$suite_dir/gitian-linux-parallel.yml', 'w') as f:
-    yaml.dump(d, f, default_flow_style=False, sort_keys=False)
-print('Created descriptor for $suite (cache disabled)')
-"
-
-    echo "Running gbuild for $suite (~60-90 min)..."
-    if ! ./bin/gbuild --fetch-tags -j "$PROC" -m "$MEM" \
-            --commit zcash="${TAG}" \
-            --url zcash="https://github.com/${OWNER}/${REPO}" \
-            "$suite_dir/gitian-linux-parallel.yml"; then
-        echo "Build failed for $suite"
-        echo "=== var/build.log (last 100 lines) ==="
-        tail -100 $BHOME/gitian-builder/var/build.log 2>/dev/null || echo "(no build.log)"
-        echo "=== end var/build.log ==="
-        exit 1
-    fi
+    echo "=== Signing: $suite ==="
 
     # Sign assert with ECC key (sysadmin directory — legacy zcash key)
     ./bin/gsign -p "gpg --batch --detach-sign" \
         --signer sysadmin \
         --release ${TAG#v}_${suite} \
         --destination $BHOME/gitian.sigs/ \
-        "$suite_dir/gitian-linux-parallel.yml"
+        "$GITIAN_DESC"
 
     # Re-sign the same assert with ZODL key (sysadmin-zodl directory)
     ASSERT_SRC="$BHOME/gitian.sigs/${TAG#v}_${suite}/sysadmin"
@@ -230,11 +225,11 @@ print('Created descriptor for $suite (cache disabled)')
 
     suite_out=$BHOME/zcash-binaries/${TAG#v}/${suite}
     mkdir -p $suite_out
-    mv $BHOME/gitian-builder/build/out/zcash-*.tar.gz \
+    cp $BHOME/gitian-builder/build/out/zcash-*.tar.gz \
        $suite_out/ 2>/dev/null || true
-    mv $BHOME/gitian-builder/build/out/src/zcash-*.tar.gz \
+    cp $BHOME/gitian-builder/build/out/src/zcash-*.tar.gz \
        $suite_out/ 2>/dev/null || true
-    echo "Suite $suite artifacts: $(ls $suite_out)"
+    echo "Suite $suite artifacts: $(ls $suite_out 2>/dev/null || echo '(none)')"
 done
 
 echo "[9] Assert files:"
