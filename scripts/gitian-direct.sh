@@ -97,10 +97,18 @@ else
     git clone "https://github.com/${OWNER}/${REPO}.git" --branch ${TAG} $BHOME/zcash
 fi
 
-# NOTE: Do NOT modify bdb.mk — changing patches invalidates the depends cache
-# hash, causing BDB to recompile fresh on bookworm where lld rejects
-# pthread_yield. The cache from bullseye carries a BDB built with GNU ld
-# where pthread_yield resolves fine via the versioned GLIBC symbol.
+# BDB pthread_yield fix: patch the depends preprocess commands to replace
+# pthread_yield with sched_yield. We do this by editing bdb.mk's preprocess_cmds
+# to add a sed command, but WITHOUT changing the patches list (to preserve cache hash).
+echo "[4.5] Patching BDB preprocess commands for pthread_yield fix..."
+BDB_MK=$BHOME/zcash/depends/packages/bdb.mk
+if ! grep -q "pthread_yield" "$BDB_MK"; then
+    # Add sed to preprocess_cmds that replaces pthread_yield() with sched_yield()
+    # This doesn't change the patches hash — only the preprocess commands
+    sed -i '/winioctl-and-atomic_init_db.patch/s/$/ \&\& \\\n  sed -i "s\/pthread_yield()\/sched_yield()\/" src\/os\/os_yield.c/' "$BDB_MK"
+    echo "  Added pthread_yield→sched_yield sed to bdb.mk preprocess_cmds"
+    grep -A5 "preprocess_cmds" "$BDB_MK"
+fi
 
 # gitian.sigs (local — push happens in CI)
 [ -d $BHOME/gitian.sigs ] || git clone https://github.com/zcash/gitian.sigs.git $BHOME/gitian.sigs
