@@ -45,7 +45,8 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -y -qq python3 awscli dpkg-dev
+        sudo apt-get install -y -qq python3 dpkg-dev
+        pip install awscli 2>/dev/null || sudo apt-get install -y -qq awscli 2>/dev/null || true
 
     - name: Import GPG keys
       env:
