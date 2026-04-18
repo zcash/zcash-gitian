@@ -175,15 +175,15 @@ jobs:
           # Remove heredoc indentation
           sed -i 's/^        //' "${DIST_DIR}/Release"
 
-          # Sign with ZODL key (InRelease = clearsign, only supports one signer)
+          # InRelease: ECC key (backward compatible with existing users)
           gpg --batch --yes --clearsign --armor \
-            -u sysadmin@zodl.com \
+            -u sysadmin@z.cash \
             --output "${DIST_DIR}/InRelease" \
             "${DIST_DIR}/Release"
 
-          # Sign with BOTH keys (Release.gpg = detached, supports multiple signers)
+          # Release.gpg: both ECC + ZODL keys
           gpg --batch --yes --detach-sign --armor \
-            -u sysadmin@zodl.com -u sysadmin@z.cash \
+            -u sysadmin@z.cash -u sysadmin@zodl.com \
             --output "${DIST_DIR}/Release.gpg" \
             "${DIST_DIR}/Release"
 
