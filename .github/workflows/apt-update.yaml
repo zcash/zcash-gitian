@@ -175,11 +175,6 @@ jobs:
           # Remove heredoc indentation
           sed -i 's/^        //' "${DIST_DIR}/Release"
 
-          # InRelease: ECC key (backward compatible with existing users)
-          gpg --batch --yes --clearsign --armor \
-            -u sysadmin@z.cash \
-            --output "${DIST_DIR}/InRelease" \
-            "${DIST_DIR}/Release"
 
           # Release.gpg: both ECC + ZODL keys
           gpg --batch --yes --detach-sign --armor \
@@ -188,7 +183,6 @@ jobs:
             "${DIST_DIR}/Release"
 
           # Upload
-          for f in Release InRelease Release.gpg; do
             aws s3 cp "${DIST_DIR}/$f" "s3://${BUCKET}/${DIST_DIR}/$f"
           done
           for f in Packages Packages.gz; do
