@@ -57,10 +57,8 @@ echo "[2] Kernel settings..."
 sysctl -w net.ipv4.ip_forward=1
 sysctl -w kernel.unprivileged_userns_clone=1 || true
 
-echo "[3] GPG keys..."
+echo "[3] GPG key..."
 aws secretsmanager get-secret-value --secret-id /release/gpg-signing-key-zcash \
-    --query SecretString --output text | gpg --batch --import
-aws secretsmanager get-secret-value --secret-id /release/gpg-signing-key \
     --query SecretString --output text | gpg --batch --import
 
 git config --global user.name "sysadmin"
@@ -137,25 +135,12 @@ if ! ./bin/gbuild --fetch-tags -j "$PROC" -m "$MEM" \
     exit 1
 fi
 
-echo "[9] Signing ${SUITE}..."
+echo "[9] Signing ${SUITE} (ECC key)..."
 ./bin/gsign -p "gpg --batch --detach-sign" \
     --signer sysadmin \
     --release ${TAG#v}_${SUITE} \
     --destination $BHOME/gitian.sigs/ \
     "$GITIAN_DESC"
-
-ASSERT_SRC="$BHOME/gitian.sigs/${TAG#v}_${SUITE}/sysadmin"
-ASSERT_DST="$BHOME/gitian.sigs/${TAG#v}_${SUITE}/sysadmin-zodl"
-mkdir -p "$ASSERT_DST"
-ASSERT_FILE=$(ls "$ASSERT_SRC"/*.assert 2>/dev/null | head -1)
-if [ -n "$ASSERT_FILE" ]; then
-    ASSERT_NAME=$(basename "$ASSERT_FILE")
-    cp "$ASSERT_FILE" "$ASSERT_DST/$ASSERT_NAME"
-    gpg --batch --no-tty -u sysadmin@zodl.com \
-        --detach-sign \
-        --output "$ASSERT_DST/${ASSERT_NAME}.sig" \
-        "$ASSERT_DST/$ASSERT_NAME"
-fi
 
 echo "[10] Collecting + renaming artifacts..."
 suite_out=$BHOME/zcash-binaries/${TAG#v}/${SUITE}
@@ -188,25 +173,35 @@ curl -s -X POST "https://api.bunny.net/pullzone/${BUNNY_ZONE}/purgeCache" \
 # Push gitian.sigs for non-RC releases only
 if [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "[13] Pushing gitian.sigs..."
-    GH_TOKEN=$(aws secretsmanager get-secret-value \
-        --secret-id /infra/gitian/gitian_sigs_deploy_key \
-        --query SecretString --output text)
-    PUSH_DIR=/root/build/gitian.sigs-push-${SUITE}
-    git clone "https://x-access-token:${GH_TOKEN}@github.com/zcash/gitian.sigs.git" "$PUSH_DIR"
-    cp -a $BHOME/gitian.sigs/. "$PUSH_DIR/"
-    cd "$PUSH_DIR"
-    git config user.name "sysadmin"
-    git config user.email "sysadmin@zodl.com"
-    git add .
-    git diff --cached --stat
-    git commit -m "${TAG} ${SUITE}" || echo "Nothing to commit"
-    # Retry push in case the other suite pushed first
-    for i in 1 2 3; do
-        git pull --rebase origin master 2>/dev/null || true
-        git push && break
+    GH_TOKEN=""
+    for attempt in 1 2 3; do
+        GH_TOKEN=$(aws secretsmanager get-secret-value \
+            --secret-id /infra/gitian/gitian_sigs_deploy_key \
+            --query SecretString --output text 2>&1) && break
+        echo "  Attempt $attempt to read deploy key failed: $GH_TOKEN"
+        GH_TOKEN=""
         sleep 5
     done
-    unset GH_TOKEN
+    if [ -z "$GH_TOKEN" ] || echo "$GH_TOKEN" | grep -qi "error\|denied"; then
+        echo "  WARNING: Could not read gitian_sigs_deploy_key — skipping push"
+        echo "  Token value: ${GH_TOKEN:0:30}..."
+    else
+        PUSH_DIR=/root/build/gitian.sigs-push-${SUITE}
+        git clone "https://x-access-token:${GH_TOKEN}@github.com/zcash/gitian.sigs.git" "$PUSH_DIR"
+        cp -a $BHOME/gitian.sigs/. "$PUSH_DIR/"
+        cd "$PUSH_DIR"
+        git config user.name "sysadmin"
+        git config user.email "sysadmin@zodl.com"
+        git add .
+        git diff --cached --stat
+        git commit -m "${TAG} ${SUITE}" || echo "Nothing to commit"
+        for i in 1 2 3; do
+            git pull --rebase origin master 2>/dev/null || true
+            git push && break || true
+            sleep 10
+        done
+        unset GH_TOKEN
+    fi
 fi
 
 echo ""
