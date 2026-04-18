@@ -74,7 +74,7 @@ jobs:
           echo "=== Building .deb for $suite ==="
 
           # Download tarball from S3
-          aws s3 cp "s3://zodl-public-download/${VERSION}/${suite}/zcash-${VERSION}-debian-${suite}-linux64.tar.gz" \
+          aws s3 cp "s3://zodl-public-download/${VERSION}/${suite}/zcash-${VERSION}-linux64-debian-${suite}.tar.gz" \
             "tarballs/zcash-${VERSION}-${suite}.tar.gz"
 
           # Extract binaries
