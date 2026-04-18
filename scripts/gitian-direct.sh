@@ -170,9 +170,14 @@ echo "[12] Purge BunnyCDN..."
 curl -s -X POST "https://api.bunny.net/pullzone/${BUNNY_ZONE}/purgeCache" \
     -H "content-type: application/json" -H "AccessKey: ${BUNNY_KEY}"
 
-# Push gitian.sigs for non-RC releases only
+# Upload gitian.sigs to S3 as backup (in case git push fails)
+echo "[13] Uploading gitian.sigs to S3..."
+tar czf /tmp/gitian-sigs-${TAG#v}-${SUITE}.tar.gz -C $BHOME/gitian.sigs .
+aws s3 cp /tmp/gitian-sigs-${TAG#v}-${SUITE}.tar.gz "s3://zodl-public-download/gitian-sigs/${TAG#v}-${SUITE}.tar.gz" --no-progress || true
+
+# Push gitian.sigs to GitHub for non-RC releases only
 if [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "[13] Pushing gitian.sigs..."
+    echo "[14] Pushing gitian.sigs to GitHub..."
     GH_TOKEN=""
     for attempt in 1 2 3; do
         GH_TOKEN=$(aws secretsmanager get-secret-value \
