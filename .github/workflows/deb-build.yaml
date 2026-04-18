@@ -77,47 +77,50 @@ jobs:
           aws s3 cp "s3://zodl-public-download/${VERSION}/${suite}/zcash-${VERSION}-linux64-debian-${suite}.tar.gz" \
             "tarballs/zcash-${VERSION}-${suite}.tar.gz"
 
-          # Extract binaries
+          # Extract binaries from tarball
           mkdir -p "extract-${suite}"
           tar -xzf "tarballs/zcash-${VERSION}-${suite}.tar.gz" -C "extract-${suite}" --strip-components=1
+          ls -la "extract-${suite}/bin/"
 
-          # Start Debian container
+          # Start Debian container with zcash source
           docker run -d --name "${suite}-build" "debian:${suite}" bash -c "while true; do sleep 2; done"
-
-          # Install dependencies and clone zcash repo
           docker exec "${suite}-build" bash -c "
             apt-get update -qq
-            apt-get install -y -qq git build-essential debhelper lintian
+            apt-get install -y -qq git build-essential debhelper lintian fakeroot
           "
-          docker exec "${suite}-build" git clone -b "${TAG}" https://github.com/zcash/zcash.git /home/build
+          docker exec "${suite}-build" git clone -b "${TAG}" --depth 1 https://github.com/zcash/zcash.git /home/build
 
-          # Copy pre-built binaries
-          docker cp "extract-${suite}/bin/." "${suite}-build:/home/build/${suite}-extract/"
+          # Copy pre-built binaries into src/ where build-debian-package.sh expects them
+          docker exec "${suite}-build" mkdir -p /home/build/src
+          docker cp "extract-${suite}/bin/zcashd" "${suite}-build:/home/build/src/zcashd"
+          docker cp "extract-${suite}/bin/zcash-cli" "${suite}-build:/home/build/src/zcash-cli"
+          docker cp "extract-${suite}/bin/zcashd-wallet-tool" "${suite}-build:/home/build/src/zcashd-wallet-tool"
+          docker cp "extract-${suite}/bin/zcash-tx" "${suite}-build:/home/build/src/zcash-tx" 2>/dev/null || true
 
-          # Build .deb
+          # Build .deb (lintian exits non-zero on warnings — ignore)
           docker exec -w /home/build "${suite}-build" bash -c "
-            rm -rf src
-            mv ${suite}-extract src
-            bash ./zcutil/build-debian-package.sh || true
-          " || echo "build-debian-package.sh may fail with lintian errors — .deb still created"
+            chmod +x src/zcashd src/zcash-cli src/zcashd-wallet-tool
+            bash ./zcutil/build-debian-package.sh
+          " || echo "build-debian-package.sh exited non-zero (lintian warnings are normal)"
 
-          # Copy .deb out
+          # Copy .deb out — script puts it in /tmp/zcbuild/ AND in /home/build/
           mkdir -p "debs/${suite}"
-          docker cp "${suite}-build:/tmp/zcbuild/." "debs/${suite}/" || echo "Warning: no .deb found"
+          docker cp "${suite}-build:/home/build/zcash-${VERSION}-amd64.deb" "debs/${suite}/" 2>/dev/null || \
+          docker cp "${suite}-build:/tmp/zcbuild/zcash-${VERSION}-amd64.deb" "debs/${suite}/" 2>/dev/null || \
+          docker cp "${suite}-build:/tmp/zcbuild/." "debs/${suite}/" 2>/dev/null || true
 
-          # Clean up container
           docker rm -f "${suite}-build"
 
-          # Rename to expected format
-          if ls debs/${suite}/zcash_*.deb 1>/dev/null 2>&1; then
-            for deb in debs/${suite}/zcash_*.deb; do
-              NEW_NAME="debs/${suite}/zcash-${VERSION}-amd64-${suite}.deb"
-              mv "$deb" "$NEW_NAME"
-              echo "Built: $NEW_NAME"
-              dpkg-deb -I "$NEW_NAME" | head -20
-            done
+          # Find and rename the .deb
+          DEB_FILE=$(find "debs/${suite}" -name "zcash*.deb" | head -1)
+          if [ -n "$DEB_FILE" ]; then
+            NEW_NAME="debs/${suite}/zcash-${VERSION}-amd64-${suite}.deb"
+            mv "$DEB_FILE" "$NEW_NAME"
+            echo "Built: $NEW_NAME"
+            dpkg-deb -I "$NEW_NAME" | head -20
           else
             echo "ERROR: No .deb found for $suite"
+            ls -laR "debs/${suite}/" 2>/dev/null
             exit 1
           fi
         done
