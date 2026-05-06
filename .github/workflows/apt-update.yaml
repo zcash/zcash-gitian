@@ -35,11 +35,8 @@ jobs:
         sudo apt-get update -qq
         sudo apt-get install -y -qq python3 dpkg-dev gnupg
 
-    - name: Import GPG keys
+    - name: Import GPG key (ZODL only — ECC key deprecated)
       run: |
-        aws secretsmanager get-secret-value \
-          --secret-id /release/gpg-signing-key-zcash \
-          --query SecretString --output text | gpg --batch --import
         aws secretsmanager get-secret-value \
           --secret-id /release/gpg-signing-key \
           --query SecretString --output text | gpg --batch --import
@@ -176,9 +173,10 @@ jobs:
           sed -i 's/^        //' "${DIST_DIR}/Release"
 
 
-          # Release.gpg: both ECC + ZODL keys
+          # Release.gpg: ZODL key only (ECC key deprecated 2026 — revocation planned 2026-06-23)
           gpg --batch --yes --detach-sign --armor \
-            -u sysadmin@z.cash -u sysadmin@zodl.com \
+            -u sysadmin@zodl.com \
+            --digest-algo SHA256 \
             --output "${DIST_DIR}/Release.gpg" \
             "${DIST_DIR}/Release"
 
