@@ -180,7 +180,8 @@ jobs:
             --output "${DIST_DIR}/Release.gpg" \
             "${DIST_DIR}/Release"
 
-          # Upload
+          # Upload dist metadata (Release + Release.gpg) and binary Packages files
+          for f in Release Release.gpg; do
             aws s3 cp "${DIST_DIR}/$f" "s3://${BUCKET}/${DIST_DIR}/$f"
           done
           for f in Packages Packages.gz; do
