@@ -58,7 +58,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [bullseye, bookworm]
+        # bullseye dropped 2026-06-02. v6.12.5 introduced LLVM 22.1.2 in
+        # depends/, which links against glibc 2.32-2.34 and GLIBCXX 3.4.29-3.30.
+        # Debian 11 (bullseye) ships glibc 2.31, so the bundled clang++
+        # cannot run on a bullseye host and the boost configure step fails
+        # at `clang++ --version`. To restore bullseye we'd need a downgraded
+        # LLVM in depends/ (see the excise-llvm-22 branch), or to give up
+        # on Debian 11 as a target. Per y4ssi 2026-06-02: drop bullseye.
+        suite: [bookworm]
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
