@@ -118,9 +118,13 @@ make -C $BHOME/zcash/depends download SOURCES_PATH=$BHOME/gitian-builder/cache/c
     grep -v "^make\[" | tail -5 || echo "Some downloads failed, continuing"
 
 echo "[7] Building base LXC image for ${SUITE}..."
+# v6.12.5+ depends pulls LLVM 22.1.2 which alone extracts to ~7 GB inside
+# the LXC rootfs. The make-base-vm default of 12287 MB fills up before
+# native_clang finishes extracting. 40 GB gives the full depends tree
+# (LLVM + boost + rust + everything else) plus headroom.
 base_img=$BHOME/gitian-builder/base-${SUITE}-amd64
 if [ ! -f $base_img ]; then
-    ./bin/make-base-vm --lxc --arch amd64 --distro debian --suite $SUITE
+    ./bin/make-base-vm --lxc --arch amd64 --distro debian --suite $SUITE --disksize 40960
 else
     echo "Base image exists"
 fi
